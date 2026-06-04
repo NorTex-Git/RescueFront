@@ -847,7 +847,7 @@ class EmpresasModals {
     this.sedes = ['Principal'];
     this.renderSedes();
     
-    this.roles = [{ nombre: 'Empleado', is_creator: false }];
+    this.roles = [{ nombre: 'Empleado', is_creator: false, is_alert_manager: false }];
     this.renderRoles();
   }
 
@@ -932,7 +932,7 @@ class EmpresasModals {
             ${roles.length > 0 ? 
               roles.map(rol => 
                 `<span class="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded-full text-xs font-medium">
-                  ${rol.nombre || 'Sin nombre'}${rol.is_creator ? ' • Genera alertas' : ''}
+                  ${rol.nombre || 'Sin nombre'}${rol.is_creator ? ' • Genera alertas' : ''}${rol.is_alert_manager ? ' • Manager alertas' : ''}
                 </span>`
               ).join('') : 
               '<span class="text-gray-500 dark:text-gray-400">Sin roles definidos</span>'
@@ -1051,7 +1051,8 @@ class EmpresasModals {
         .filter(rol => rol && typeof rol.nombre === 'string')
         .map(rol => ({
           nombre: rol.nombre.trim(),
-          is_creator: Boolean(rol.is_creator)
+          is_creator: Boolean(rol.is_creator),
+          is_alert_manager: Boolean(rol.is_alert_manager)
         }))
         .filter(rol => rol.nombre !== '')
     };
@@ -1165,7 +1166,7 @@ class EmpresasModals {
    * Rol management
    */
   addRol() {
-    this.roles.push({ nombre: '', is_creator: false });
+    this.roles.push({ nombre: '', is_creator: false, is_alert_manager: false });
     this.renderRoles();
     
     // Focus on the new input
@@ -1191,6 +1192,11 @@ class EmpresasModals {
     this.roles[index].is_creator = Boolean(isChecked);
   }
 
+  toggleRolAlertManager(index, isChecked) {
+    if (!this.roles[index]) return;
+    this.roles[index].is_alert_manager = Boolean(isChecked);
+  }
+
   renderRoles() {
     const container = document.getElementById('rolesList');
     container.innerHTML = '';
@@ -1200,7 +1206,7 @@ class EmpresasModals {
     }
 
     if (this.roles.length === 0) {
-      this.roles.push({ nombre: '', is_creator: false });
+      this.roles.push({ nombre: '', is_creator: false, is_alert_manager: false });
     }
 
     this.roles.forEach((rol, index) => {
@@ -1212,9 +1218,14 @@ class EmpresasModals {
                  placeholder="Nombre del rol" 
                  onchange="empresasModals.updateRolNombre(${index}, this.value)">
           <label class="inline-flex items-center gap-2 text-xs font-medium text-white/80 dark:text-gray-300">
-            <input type="checkbox" class="empresa-rol-checkbox" ${rol.is_creator ? 'checked' : ''} 
+            <input type="checkbox" class="empresa-rol-checkbox" ${rol.is_creator ? 'checked' : ''}
                    onchange="empresasModals.toggleRolCreator(${index}, this.checked)">
             Puede generar alertas
+          </label>
+          <label class="inline-flex items-center gap-2 text-xs font-medium text-white/80 dark:text-gray-300">
+            <input type="checkbox" class="empresa-rol-checkbox" ${rol.is_alert_manager ? 'checked' : ''}
+                   onchange="empresasModals.toggleRolAlertManager(${index}, this.checked)">
+            Manager de alertas
           </label>
         </div>
         <button type="button" class="ios-blur-btn ios-blur-btn-secondary !p-2 !min-w-0 flex-shrink-0" onclick="empresasModals.removeRol(${index})">
@@ -1235,22 +1246,25 @@ class EmpresasModals {
         if (typeof rol === 'string') {
           return {
             nombre: rol.trim(),
-            is_creator: false
+            is_creator: false,
+            is_alert_manager: false
           };
         }
 
         if (rol && typeof rol === 'object') {
           const nombre = (rol.nombre || rol.name || '').toString().trim();
           const isCreator = rol.is_creator ?? rol.isCreator ?? rol.creates_alerts ?? rol.crea_alertas;
+          const isAlertManager = rol.is_alert_manager ?? rol.isAlertManager ?? rol.alert_manager;
           return {
             nombre,
-            is_creator: Boolean(isCreator)
+            is_creator: Boolean(isCreator),
+            is_alert_manager: Boolean(isAlertManager)
           };
         }
 
-        return { nombre: '', is_creator: false };
+        return { nombre: '', is_creator: false, is_alert_manager: false };
       })
-      .filter((rol) => rol.nombre !== '' || rol.is_creator === true);
+      .filter((rol) => rol.nombre !== '' || rol.is_creator === true || rol.is_alert_manager === true);
   }
 
   // ===== GESTIÓN UNIFICADA DE MODALES CON MODALSCROLLMANAGER =====
@@ -1379,7 +1393,7 @@ class EmpresasModals {
     this.sedes = ['Principal'];
     this.renderSedes();
     
-    this.roles = [{ nombre: 'Empleado', is_creator: false }];
+    this.roles = [{ nombre: 'Empleado', is_creator: false, is_alert_manager: false }];
     this.renderRoles();
   }
 

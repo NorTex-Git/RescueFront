@@ -1347,8 +1347,12 @@ class UsuariosModals {
       this.availableRoles.forEach((rol) => {
         const option = document.createElement('option');
         option.value = rol.nombre;
-        option.textContent = rol.is_creator ? `${rol.nombre} • Genera alertas` : rol.nombre;
+        const tags = [];
+        if (rol.is_creator) tags.push('Genera alertas');
+        if (rol.is_alert_manager) tags.push('Manager alertas');
+        option.textContent = tags.length ? `${rol.nombre} • ${tags.join(', ')}` : rol.nombre;
         option.dataset.isCreator = rol.is_creator ? 'true' : 'false';
+        option.dataset.isAlertManager = rol.is_alert_manager ? 'true' : 'false';
         selectElement.appendChild(option);
       });
 
@@ -1375,22 +1379,25 @@ class UsuariosModals {
         if (typeof rol === 'string') {
           return {
             nombre: rol.trim(),
-            is_creator: false
+            is_creator: false,
+            is_alert_manager: false
           };
         }
 
         if (rol && typeof rol === 'object') {
           const nombre = (rol.nombre || rol.name || '').toString().trim();
           const isCreator = rol.is_creator ?? rol.isCreator ?? rol.creates_alerts ?? rol.crea_alertas;
+          const isAlertManager = rol.is_alert_manager ?? rol.isAlertManager ?? rol.alert_manager;
           return {
             nombre,
-            is_creator: Boolean(isCreator)
+            is_creator: Boolean(isCreator),
+            is_alert_manager: Boolean(isAlertManager)
           };
         }
 
-        return { nombre: '', is_creator: false };
+        return { nombre: '', is_creator: false, is_alert_manager: false };
       })
-      .filter((rol) => rol.nombre !== '' || rol.is_creator === true);
+      .filter((rol) => rol.nombre !== '' || rol.is_creator === true || rol.is_alert_manager === true);
   }
 
   // ===== NOTIFICATIONS =====
