@@ -32,6 +32,39 @@ services:
     networks:
       - rescue-network
 
+  # ==========================================
+  # Frontend Next.js (migración en curso — ver MIGRATION_NEXTJS.md)
+  # Convive con `frontend` hasta la Fase 6; el reverse proxy enruta por path.
+  # ==========================================
+  frontend-next:
+    build:
+      context: ./frontend-next
+      dockerfile: Dockerfile
+      args:
+        # NEXT_PUBLIC_* se inlinea en build time, no en runtime.
+        - NEXT_PUBLIC_WEBSOCKET_URL=${WEBSOCKET_URL}
+    image: rescue-frontend-next:latest
+    container_name: rescue-frontend-next
+    environment:
+      - NODE_ENV=production
+      - BACKEND_API_URL=${BACKEND_API_URL}
+      - IMAGES_SERVICE_BASE_URL=${IMAGES_SERVICE_BASE_URL}
+      - NEXT_PUBLIC_WEBSOCKET_URL=${WEBSOCKET_URL}
+      # Pendiente de conseguir del backend. Vacío = el gating de rutas no verifica
+      # la firma del token (ver docs/api-contract.md §12).
+      - JWT_SECRET=${JWT_SECRET:-}
+    expose:
+      - "3000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - rescue-network
+
 networks:
   rescue-network:
     external: true

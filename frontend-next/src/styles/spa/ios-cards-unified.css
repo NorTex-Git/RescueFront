@@ -1,0 +1,699 @@
+/* ===== iOS CARDS UNIFIED SYSTEM ===== */
+/* 
+ * Este archivo unifica los sistemas de tarjetas de Hardware y Empresas
+ * para trabajar con el sistema global de optimización de tarjetas
+ * definido en base.html
+ */
+
+/* ===== GRID CONTAINERS ===== */
+
+/* Hardware Grid */
+.ios-hardware-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+/* Empresas Grid */
+.ios-empresas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Usuarios Grid */
+.ios-usuarios-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+/* Alertas Grid */
+.ios-alertas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+/* ===== UNIFIED DISPLAY SYSTEM ===== */
+
+/* Ensure dynamic cards display properly - ALL TYPES */
+.ios-hardware-grid .hardware-item,
+.ios-empresas-grid .empresa-item,
+.ios-usuarios-grid .usuario-item,
+.ios-alertas-grid .alerta-item {
+  display: block !important;
+}
+
+.ios-hardware-grid .hardware-item.hidden,
+.ios-empresas-grid .empresa-item.hidden,
+.ios-usuarios-grid .usuario-item.hidden,
+.ios-alertas-grid .alerta-item.hidden {
+  display: none !important;
+}
+
+/* ===== BASE CARD STYLES ===== */
+
+/* Base iOS Card - Compatible with Global Optimization System */
+.ios-hardware-card,
+.ios-empresa-card,
+.ios-usuario-card,
+.ios-alerta-card {
+  /* Core structure */
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+  
+  /* Glass morphism base */
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  
+  /* Global optimization compatibility - Initially hidden for GSAP */
+  opacity: 0;
+  transform: translateY(30px);
+  
+  /* Ensure visibility for users without GSAP */
+  display: block !important;
+  visibility: visible !important;
+}
+
+/* Light theme (default) */
+.ios-hardware-card,
+.ios-empresa-card,
+.ios-usuario-card,
+.ios-alerta-card {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* Dark theme */
+.dark .ios-hardware-card,
+.dark .ios-empresa-card,
+.dark .ios-usuario-card,
+.dark .ios-alerta-card {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Physical status alert (inactive) */
+.ios-hardware-card.hardware-physical-inactive {
+  background: rgba(239, 68, 68, 0.38) !important;
+  border: 1px solid rgba(239, 68, 68, 0.6) !important;
+  box-shadow:
+    0 12px 32px rgba(239, 68, 68, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  color: #ffffff;
+}
+
+.ios-hardware-card.hardware-physical-inactive .ios-card-title,
+.ios-hardware-card.hardware-physical-inactive .ios-card-subtitle,
+.ios-hardware-card.hardware-physical-inactive .ios-info-label,
+.ios-hardware-card.hardware-physical-inactive .ios-info-value,
+.ios-hardware-card.hardware-physical-inactive .ios-card-icon,
+.ios-hardware-card.hardware-physical-inactive .ios-card-actions i {
+  color: #ffffff !important;
+}
+
+.ios-hardware-card.hardware-physical-inactive .ios-info-label {
+  opacity: 0.85;
+}
+
+.ios-hardware-card.hardware-physical-inactive .ios-status-badge {
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+}
+
+.ios-hardware-card.hardware-physical-inactive * {
+  color: #ffffff !important;
+  text-shadow: none !important;
+}
+
+/* ===== GLOBAL OPTIMIZATION STATES ===== */
+
+/* Cards animated by GSAP or Global System */
+.ios-hardware-card.gsap-animated,
+.ios-empresa-card.gsap-animated,
+.ios-usuario-card.gsap-animated,
+.ios-alerta-card.gsap-animated,
+.ios-hardware-card.optimized,
+.ios-empresa-card.optimized,
+.ios-usuario-card.optimized,
+.ios-alerta-card.optimized {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+  display: block !important;
+  visibility: visible !important;
+}
+
+/* Fallback for users without GSAP - Force visibility */
+.ios-hardware-card.force-visible,
+.ios-empresa-card.force-visible,
+.ios-usuario-card.force-visible,
+.ios-alerta-card.force-visible {
+  opacity: 1 !important;
+  transform: none !important;
+  display: block !important;
+  visibility: visible !important;
+  animation: fallbackFadeIn 0.5s ease-out;
+}
+
+@keyframes fallbackFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== HOVER EFFECTS ===== */
+
+.ios-hardware-card:hover,
+.ios-empresa-card:hover,
+.ios-usuario-card:hover,
+.ios-alerta-card:hover {
+  transform: translateY(-8px) scale(1.02) !important;
+  box-shadow: 
+    0 25px 60px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+/* ===== CARD COMPONENTS ===== */
+
+/* Card Header */
+.ios-card-header,
+.ios-hardware-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+/* Card Icons */
+.ios-card-icon,
+.empresa-avatar {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.8) 0%, 
+    rgba(147, 51, 234, 0.8) 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: white;
+  box-shadow: 
+    0 6px 15px rgba(59, 130, 246, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Larger avatar for empresas */
+.empresa-avatar {
+  width: 56px;
+  height: 56px;
+  font-size: 1.4rem;
+  border-radius: 16px;
+}
+
+/* Icon shimmer effect */
+.ios-card-icon::before,
+.empresa-avatar::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, 
+    transparent 30%, 
+    rgba(255, 255, 255, 0.2) 50%, 
+    transparent 70%);
+  transform: rotate(45deg) translateX(-100%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.ios-card-icon:hover::before,
+.empresa-avatar:hover::before {
+  opacity: 1;
+  transform: rotate(45deg) translateX(100%);
+}
+
+/* Status Badges */
+.ios-status-badge,
+.hardware-status-indicator {
+  padding: 0.375rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Hardware status specific */
+.hardware-status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  padding: 0;
+}
+
+/* Status Colors */
+.ios-status-available,
+.hardware-status-indicator.active {
+  background: rgba(16, 185, 129, 0.2);
+  color: rgba(16, 185, 129, 1);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.hardware-status-indicator.active {
+  background: radial-gradient(circle, #10b981, #059669);
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+}
+
+.ios-status-stock,
+.hardware-status-indicator.inactive {
+  background: rgba(239, 68, 68, 0.2);
+  color: rgba(239, 68, 68, 1);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.hardware-status-indicator.inactive {
+  background: radial-gradient(circle, #ef4444, #dc2626);
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+}
+
+.ios-status-discontinued {
+  background: rgba(107, 114, 128, 0.2);
+  color: rgba(107, 114, 128, 1);
+  border-color: rgba(107, 114, 128, 0.3);
+}
+
+/* Card Titles */
+.ios-card-title,
+.empresa-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  margin-bottom: 0.375rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  line-height: 1.3;
+}
+
+.empresa-title {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Card Subtitles */
+.ios-card-subtitle,
+.empresa-subtitle {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+}
+
+.empresa-subtitle {
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+/* Card Info/Details */
+.ios-card-info,
+.empresa-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.empresa-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ios-info-item,
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+}
+
+.detail-row {
+  align-items: center;
+  padding: 0.25rem 0;
+}
+
+.ios-info-label,
+.detail-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+}
+
+.detail-label {
+  flex-shrink: 0;
+}
+
+.ios-info-value,
+.detail-value {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+}
+
+.detail-value {
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 60%;
+}
+
+.detail-value.status-active {
+  color: #10b981;
+  text-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.detail-value.status-inactive {
+  color: #ef4444;
+  text-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+}
+
+/* Card Body */
+.ios-hardware-card-body {
+  margin-bottom: 1.5rem;
+}
+
+/* Card Footer */
+.ios-hardware-card-footer {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 1.5rem;
+  right: 1.5rem;
+}
+
+/* ===== CARD ACTIONS ===== */
+
+.ios-card-actions,
+.empresa-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Unified Action Buttons */
+.ios-card-btn,
+.ios-action-btn {
+  flex: 1;
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 10px !important;
+  padding: 0.625rem !important;
+  font-weight: 600 !important;
+  font-size: 0.8rem !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1) !important;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+/* Hardware cards specific sizing */
+.ios-card-btn {
+  basis: calc(33.333% - 0.33rem);
+}
+
+.ios-card-btn:nth-child(4),
+.ios-card-btn:nth-child(5) {
+  basis: calc(50% - 0.25rem);
+}
+
+/* Empresa cards specific sizing */
+.ios-action-btn {
+  border-radius: 12px !important;
+  padding: 0.75rem !important;
+}
+
+/* Button Hover Effects */
+.ios-card-btn:hover,
+.ios-action-btn:hover {
+  transform: translateY(-2px) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 
+    0 8px 20px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+/* ===== BUTTON VARIANTS ===== */
+
+/* Primary buttons */
+.ios-card-btn-primary,
+.ios-action-btn.primary {
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.6) 0%, 
+    rgba(147, 51, 234, 0.6) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 
+    0 6px 15px rgba(59, 130, 246, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+
+.ios-card-btn-primary:hover,
+.ios-action-btn.primary:hover {
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.8) 0%, 
+    rgba(147, 51, 234, 0.8) 100%) !important;
+  box-shadow: 
+    0 10px 25px rgba(59, 130, 246, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Secondary buttons */
+.ios-action-btn.secondary {
+  background: linear-gradient(135deg, 
+    rgba(107, 114, 128, 0.6) 0%, 
+    rgba(75, 85, 99, 0.6) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 
+    0 6px 15px rgba(107, 114, 128, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Success buttons */
+.ios-card-btn-success,
+.ios-action-btn.success {
+  background: linear-gradient(135deg, 
+    rgba(16, 185, 129, 0.6) 0%, 
+    rgba(5, 150, 105, 0.6) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 
+    0 6px 15px rgba(16, 185, 129, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Warning buttons */
+.ios-card-btn-warning,
+.ios-action-btn.warning {
+  background: linear-gradient(135deg, 
+    rgba(245, 158, 11, 0.6) 0%, 
+    rgba(217, 119, 6, 0.6) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 
+    0 6px 15px rgba(245, 158, 11, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Danger buttons */
+.ios-action-btn.danger {
+  background: linear-gradient(135deg, 
+    rgba(239, 68, 68, 0.6) 0%, 
+    rgba(220, 38, 38, 0.6) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 
+    0 6px 15px rgba(239, 68, 68, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+
+/* ===== SPECIAL LOCATION BUTTONS ===== */
+
+.ios-location-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.75rem !important;
+}
+
+.ios-location-btn .ios-btn-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.ios-google-maps-btn {
+  background: linear-gradient(135deg, 
+    rgba(66, 133, 244, 0.7) 0%, 
+    rgba(52, 168, 83, 0.7) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: white !important;
+  box-shadow: 
+    0 4px 12px rgba(66, 133, 244, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+
+.ios-google-maps-btn:hover {
+  background: linear-gradient(135deg, 
+    rgba(66, 133, 244, 0.9) 0%, 
+    rgba(52, 168, 83, 0.9) 100%) !important;
+  box-shadow: 
+    0 6px 16px rgba(66, 133, 244, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+
+/* ===== CARD SHIMMER EFFECT - COMMENTED OUT FOR PERFORMANCE ===== */
+
+/*
+.ios-card-shimmer {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, 
+    transparent 30%, 
+    rgba(255, 255, 255, 0.06) 50%, 
+    transparent 70%);
+  transform: rotate(45deg);
+  animation: cardShimmer 5s ease-in-out infinite;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.ios-hardware-card:hover .ios-card-shimmer,
+.ios-empresa-card:hover .ios-card-shimmer,
+.ios-usuario-card:hover .ios-card-shimmer,
+.ios-alerta-card:hover .ios-card-shimmer {
+  opacity: 1;
+}
+
+@keyframes cardShimmer {
+  0%, 100% { transform: translateX(-100%) rotate(45deg); opacity: 0; }
+  50% { transform: translateX(100%) rotate(45deg); opacity: 1; }
+}
+*/
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+@media (max-width: 1024px) {
+  .ios-empresas-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .ios-hardware-grid,
+  .ios-empresas-grid,
+  .ios-usuarios-grid,
+  .ios-alertas-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .ios-hardware-card,
+  .ios-empresa-card,
+  .ios-usuario-card,
+  .ios-alerta-card {
+    padding: 1.25rem !important;
+  }
+  
+  .ios-hardware-card {
+    min-height: 260px !important;
+  }
+  
+  .ios-location-btn .ios-btn-label {
+    font-size: 0.65rem;
+  }
+  
+  .ios-card-actions,
+  .empresa-actions {
+    gap: 0.375rem;
+    flex-wrap: wrap;
+  }
+  
+  .ios-action-btn {
+    min-width: 0;
+    flex: 1 1 calc(50% - 0.25rem);
+  }
+}
+
+@media (max-width: 480px) {
+  .ios-action-btn {
+    flex: 1 1 100%;
+    margin-bottom: 0.25rem;
+  }
+  
+  .ios-action-btn:last-child {
+    margin-bottom: 0;
+  }
+}
+
+/* ===== COMPATIBILITY CLASSES ===== */
+
+/* Ensure old classes still work */
+.ios-hardware-card.empresa-card {
+  /* Use empresa styling */
+  min-height: 280px;
+}
+
+.ios-hardware-card.hardware-item {
+  /* Use hardware styling */
+  min-height: auto;
+}
+
+/* ===== SHIMMER HIDING SYSTEM ===== */
+
+/* Hide shimmer effects when cards are optimized (no complex animations) */
+.ios-hardware-card.optimized .ios-card-shimmer,
+.ios-empresa-card.optimized .ios-card-shimmer,
+.ios-usuario-card.optimized .ios-card-shimmer,
+.ios-alerta-card.optimized .ios-card-shimmer {
+  display: none !important;
+}
+
+/* Force show shimmer only on hover for optimized cards */
+.ios-hardware-card.optimized:hover .ios-card-shimmer,
+.ios-empresa-card.optimized:hover .ios-card-shimmer,
+.ios-usuario-card.optimized:hover .ios-card-shimmer,
+.ios-alerta-card.optimized:hover .ios-card-shimmer {
+  display: block !important;
+  opacity: 0.3;
+}

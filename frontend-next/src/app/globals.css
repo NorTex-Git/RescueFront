@@ -1,0 +1,59 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/typography";
+
+/**
+ * Dark mode por clase, no por `prefers-color-scheme`.
+ *
+ * Corrige el bug preexistente de Tailwind 3: el CSS heredado usa selectores
+ * `html:not(.dark)` (estrategia de clase) pero `tailwind.config.js` nunca declaró
+ * `darkMode`, así que Tailwind operaba en modo `media` y las dos estrategias
+ * se contradecían. Aquí queda explícito.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Equivale al `theme.extend` de tailwind.config.js */
+@theme {
+  --color-rescue-red: #ef4444;
+  --color-rescue-blue: #3b82f6;
+  --color-rescue-gray: #6b7280;
+  --font-rescue: Inter, sans-serif;
+}
+
+/**
+ * Anchos del panel de modal.
+ *
+ * En CSS plano y no con utilidades `max-w-*`: al elegirse el ancho desde un objeto
+ * (`SIZES[size]` en `components/ui/modal.tsx`), Tailwind no siempre genera esas
+ * utilidades y el panel se quedaba sin `max-width`, ocupando toda la pantalla.
+ * `!important` para ganarle al CSS heredado, que abusa de él.
+ */
+.modal-panel {
+  width: 100%;
+}
+.modal-panel[data-size='xs'] {
+  max-width: 22rem !important;
+}
+.modal-panel[data-size='sm'] {
+  max-width: 28rem !important;
+}
+.modal-panel[data-size='md'] {
+  max-width: 34rem !important;
+}
+.modal-panel[data-size='lg'] {
+  max-width: 44rem !important;
+}
+.modal-panel[data-size='xl'] {
+  max-width: 64rem !important;
+}
+
+@layer base {
+  /**
+   * Preflight de Tailwind 4 cambió `button { cursor: default }` (en v3 era `pointer`).
+   * Se restaura para no degradar la UI actual.
+   */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}

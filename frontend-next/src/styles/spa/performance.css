@@ -1,0 +1,72 @@
+/* ===== PERFORMANCE OPTIMIZATIONS ===== */
+
+/* DESHABILITAR TODAS LAS ANIMACIONES INFINITAS */
+.ios-card-shimmer,
+.ios-stat-shimmer,
+.ios-card-icon::before,
+.toggle-modal-container::before {
+  /* NO más animaciones infinitas */
+  animation: none !important;
+  /* Solo transitions para hover */
+  transition: transform 0.6s ease-out, opacity 0.3s ease;
+  /* Estado inicial oculto */
+  opacity: 0;
+  transform: rotate(45deg) translateX(-100%);
+  pointer-events: none;
+}
+
+/* GPU acceleration solo cuando sea necesario */
+.ios-hardware-card:hover .ios-card-shimmer,
+.ios-stat-card:hover .ios-stat-shimmer,
+.ios-card-icon:hover::before,
+.toggle-modal-container:hover::before {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* Remover will-change cuando no hay hover para liberar memoria */
+.ios-hardware-card:not(:hover) .ios-card-shimmer,
+.ios-stat-card:not(:hover) .ios-stat-shimmer {
+  will-change: auto;
+}
+
+/* Optimizaciones para dispositivos móviles */
+@media (max-width: 768px) {
+  /* Deshabilitar efectos pesados en móvil */
+  .ios-card-shimmer,
+  .ios-stat-shimmer,
+  .ios-card-icon::before {
+    display: none !important;
+  }
+  
+  /* Reducir transforms en hover para móvil */
+  .ios-hardware-card:hover,
+  .ios-stat-card:hover {
+    transform: translateY(-2px) scale(1.01) !important;
+  }
+}
+
+/* Respetar preferencias de accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+  /* Deshabilitar todas las animaciones shimmer */
+  .ios-card-shimmer,
+  .ios-stat-shimmer,
+  .ios-card-icon::before,
+  .toggle-modal-container::before {
+    display: none !important;
+  }
+  
+  /* Reducir todas las transiciones */
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* Optimización para conexiones lentas */
+@media (prefers-reduced-data: reduce) {
+  .ios-card-shimmer,
+  .ios-stat-shimmer {
+    display: none !important;
+  }
+}

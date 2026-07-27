@@ -27,8 +27,24 @@ Documento de arquitectura y plan de ejecución. Estado actual: Flask 3 + Jinja2 
 
 ## 2. Stack objetivo
 
+> **Actualización (2026-07-25, Fase 0+1 ejecutadas)**: se instaló **Next.js 16.2**, no 15.
+> Tres cambios respecto a lo escrito abajo:
+>
+> 1. **`middleware.ts` ya no existe**: la convención se llama `proxy.ts` y la función se
+>    exporta como `proxy`. Corre en **runtime de Node, no en Edge** (el `runtime` no es
+>    configurable). `jose` sigue sirviendo igual. Está en `frontend-next/src/proxy.ts`.
+> 2. **La pregunta de Tailwind 4 quedó resuelta sola**: Next 16 exige Chrome 111+ /
+>    Safari 16.4+ / Firefox 111+, exactamente el mismo piso que Tailwind 4. No hay
+>    decisión que tomar: si el parque de navegadores no da para Tailwind 4, tampoco da
+>    para Next 16. El plan B de bajar a Tailwind 3.4 no aplica.
+> 3. `cookies()` y `headers()` son **asíncronas** (hay que `await`), y `params` en Route
+>    Handlers también. Turbopack es el default.
+>
+> El catch-all del BFF se llama `app/api/[...path]/route.ts`, no `[...proxy]`, para no
+> confundirlo con la convención `proxy.ts` de Next.
+
 ```
-Next.js 15 (App Router) + TypeScript (strict)
+Next.js 16 (App Router) + TypeScript (strict)
 Tailwind CSS 4          → config CSS-first (@theme), sin tailwind.config.js
 TanStack Query v5       → cache/refetch/invalidación de CRUD
 React Hook Form + Zod   → formularios y validación compartida
@@ -180,34 +196,37 @@ Las cookies son del mismo dominio, así que una sesión iniciada en Next funcion
 
 ### Fase 0 — Preparación (1–2 días)
 - [ ] Congelar features nuevas en Flask durante la migración (o aceptar doble implementación).
-- [ ] Inventariar la API real del backend: los ~33 endpoints detectados (`/api/hardware`, `/api/usuarios`, `/api/empresas`, `/api/mqtt-alerts/*`, `/api/tipos-alarma/*`, `/api/tipos_empresa/*`, `/api/dashboard/*`, `/api/contact/send`). Documentar request/response de cada uno.
-- [ ] Generar tipos TypeScript de esos payloads (`features/*/types.ts`). Si el backend expone OpenAPI, generarlos automático.
-- [ ] Conseguir `JWT_SECRET` / `JWKS_URL` del backend y verificar que un `auth_token` real valida con `jose`.
+- [x] Inventariar la API real del backend → **`docs/api-contract.md`**, ~60 endpoints en 10 familias.
+- [ ] Generar tipos TypeScript de esos payloads (`features/*/types.ts`). Bloqueado: el contrato documenta el *envelope* pero no la forma de `data` de cada listado; hace falta el backend arriba o su OpenAPI.
+- [ ] Conseguir `JWT_SECRET` / `JWKS_URL` del backend y verificar que un `auth_token` real valida con `jose`. **No está en `.env` ni `.env.production`.** Mientras tanto `verifyAuthToken` decodifica sin verificar firma y avisa por consola.
 - [ ] Inventariar el CSS custom a conservar (`login.css`, `spa/`, `gsap_css/`, `global-text-theme.css`, `scrollbar-global.css`) → se copian tal cual a `styles/`.
-- [ ] **Confirmar parque de navegadores** (analytics o política de la operación). Tailwind 4 exige Safari 16.4+ / Chrome 111+ / Firefox 128+. Si hay equipos por debajo, se baja a Tailwind 3.4 y se ajusta la sección 8.1.
+- [x] ~~Confirmar parque de navegadores~~ → moot: Next 16 impone el mismo piso que Tailwind 4 (ver nota de la sección 2).
 - [ ] Copiar a `public/` los assets de `s3-us-west-2.amazonaws.com/s.cdpn.io/68819/` que usa `tunnel.js` (shaders, texturas). Dependencia externa no controlada.
-- **Entregable**: `docs/api-contract.md` + tipos + prueba de verificación de JWT + veredicto sobre Tailwind 4.
+- **Entregable**: `docs/api-contract.md` ✅ + tipos ⏸ + prueba de verificación de JWT ⏸ + veredicto sobre Tailwind 4 ✅.
 
 ### Fase 1 — Esqueleto (2–3 días)
-- [ ] `create-next-app` con TS + Tailwind 4 + App Router en `frontend-next/`; el `extend` del `tailwind.config.js` actual pasa a un bloque `@theme`.
-- [ ] `@custom-variant dark` + `ThemeProvider` (reemplaza `theme-toggle.js` y arregla la inconsistencia `.dark` vs modo `media`).
-- [ ] `lib/gsap/register.ts` con `registerPlugin` de los 8 plugins; `npm i gsap @gsap/react`; cero `<script>` de CDN.
-- [ ] `lib/config.ts`, `lib/api/{server,client}.ts`, `app/api/[...proxy]/route.ts`, `app/api/health/route.ts`.
-- [ ] Dockerfile multi-stage con `output: 'standalone'`; servicio nuevo en `docker-compose.yml` en la misma red.
+- [x] `create-next-app` con TS + Tailwind 4 + App Router en `frontend-next/`; el `extend` del `tailwind.config.js` actual pasa a un bloque `@theme`.
+- [x] `@custom-variant dark` + `ThemeProvider` (reemplaza `theme-toggle.js` y arregla la inconsistencia `.dark` vs modo `media`), con script anti-FOUC en `<head>`.
+- [x] `lib/gsap/register.ts` con `registerPlugin` de los 8 plugins; `npm i gsap @gsap/react`; cero `<script>` de CDN.
+- [x] `lib/config.ts`, `lib/api/{server,client,errors}.ts`, `app/api/[...path]/route.ts`, `app/api/health/route.ts`.
+- [x] `src/proxy.ts` con el gating por rol (adelantado de la Fase 2 porque el scaffold lo pedía).
+- [x] Dockerfile multi-stage con `output: 'standalone'`; servicio `frontend-next` en `docker-compose.yml` en `rescue-network`.
 - [ ] Componentes base en `components/ui/` (Button, Input, Select, Modal, Table, Badge, Card) con los estilos actuales.
-- **Criterio de aceptación**: `curl http://next:3000/api/health` responde 200 y `/api/api/hardware` (vía proxy) devuelve lo mismo que `/proxy/api/hardware` de Flask.
+- **Criterio de aceptación**: `/api/health` responde ✅ (503 `degraded` con el backend caído, que es lo correcto). El contraste `/api/api/hardware` vs `/proxy/api/hardware` **sigue pendiente**: requiere el backend levantado. Verificado por ahora que sin cookie devuelve 401 y que `/empresa` sin sesión redirige a `/login?next=/empresa`.
 
 ### Fase 2 — Auth (3–4 días)
-- [ ] `/login` con Server Action, transferencia de cookies con flags correctos.
-- [ ] `middleware.ts` con gating por rol para `(empresa)` y `(admin)`.
-- [ ] `/api/auth/refresh` + interceptor con cola de peticiones concurrentes.
-- [ ] `/logout`.
-- **Criterio de aceptación**: login como `empresa` y como `super_admin`; expirar el access token a mano y confirmar refresh transparente; acceder a `/admin` con rol `empresa` redirige a `/empresa`.
-- **Riesgo**: si el backend fija cookies con `Domain` o `Path` específicos, ajustar el reenvío. Probar temprano.
+- [x] `/login` con Server Action, transferencia de cookies con flags correctos.
+- [x] `proxy.ts` (ex-`middleware.ts`) con gating por rol para `(empresa)` y `(admin)`.
+- [x] `/api/auth/refresh` + interceptor con cola de peticiones concurrentes.
+- [x] `/api/auth/logout`.
+- **Criterio de aceptación**: verificado contra un backend simulado (el real no estaba disponible). Login como `empresa` y como `super_admin` ✅; `/admin` con rol `empresa` redirige a `/empresa` y viceversa ✅; refresh devuelve un `auth_token` nuevo ✅; logout borra ambas cookies ✅; `document.cookie` vacío en el navegador, o sea HttpOnly efectivo ✅. **Falta repetirlo contra el backend real.**
+- [x] **Riesgo de cookies resuelto**: el simulado emitió `Secure; SameSite=None; Domain`, y el BFF los reescribió a `SameSite=Lax` sin `Secure` en dev. El reenvío descarta los flags del backend por diseño.
+- [x] **Verificado el impacto de no tener `JWT_SECRET`**: sin secreto, un token forjado con `role: super_admin` y firma inválida **pasa el gating**. Con secreto, es rechazado. Es la razón concreta para conseguirlo antes de producción.
 
 ### Fase 3 — Portal empresa (2–3 semanas)
 Orden por dependencia y valor, de menor a mayor complejidad:
-1. `stats` (230 líneas JS) — la más simple, sirve de plantilla del patrón.
+0. [x] **Layout `(empresa)`** con navbar + sidebar persistentes. Verificado que al navegar el shell no se remonta y el estado activo lo da `usePathname()`, sin el `router.js` casero.
+1. [x] `stats` (230 líneas JS) — la más simple, sirve de plantilla del patrón. Verificada contra backend simulado.
 2. `dashboard` (200 líneas template).
 3. `usuarios` (1126 + 1529 líneas de modales).
 4. `hardware` (2326 líneas) — incluye mapa Leaflet y estado en vivo.
@@ -268,6 +287,8 @@ En App Router la navegación es client-side: el contexto **sobrevive**. Sin clea
    Todos vienen en el paquete `gsap` de npm en 3.13 — el propio código actual ya los carga desde `cdn.jsdelivr.net/npm/gsap@3.13.0/dist/`, o sea que están en el paquete público. Se instala `gsap` y se borran los 8 `<script>` del CDN.
 4. **Nada de mezclar `transition-*` o `animate-*` de Tailwind en elementos que GSAP anima.** La transición CSS pelea contra las escrituras por frame de GSAP. GSAP escribe `transform` inline y gana sobre las utilidades de Tailwind (que en v4 son variables CSS), así que no hay conflicto de especificidad — el conflicto es de *timing*.
 5. **Estado inicial en CSS, no en `gsap.set` post-montaje.** Si un elemento entra con `from: {opacity: 0}`, sin esto se ve un flash del contenido ya visible antes de hidratar. Se pinta el estado inicial con una clase y `useGSAP` la retira.
+6. **El CSS heredado no se puede copiar sin tocar: los `@import` anidados hay que aplanarlos.** `spa-global.css` importa otros 10 archivos, pero esos `@import` van después de reglas CSS. El navegador los ignora en silencio (por eso los templates Jinja enlazan cada archivo a mano), pero Turbopack lo trata como **error de parseo y la página entera no carga**. Al copiar CSS a `src/styles/`, comentar los `@import` internos y listarlos en el archivo agregador (`portal.css`).
+7. **Cuidado con el CSS heredado que deja elementos en `opacity: 0`.** Encontrado al migrar el login: `login.css` deja `.fade-in-up` invisible y solo `:nth-child(1..4)` tiene animación CSS; el resto depende de que un JS los revele. Si se porta el markup sin portar ese JS, **los campos del formulario quedan invisibles y la página parece rota**. Cada vista con `fade-in-*` necesita su componente de reveal con `useGSAP` (ver `features/auth/components/login-reveal.tsx` como patrón).
 
 ### 6.3 ScrollSmoother (14 usos) — el caso difícil
 
@@ -300,6 +321,7 @@ Criterio de aceptación: navegar landing → portal → landing 5 veces y verifi
 
 ## 7. Reglas de reescritura (para no repetir la deuda)
 
+0. **Separar config de servidor y de cliente.** `lib/config.server.ts` lleva `import 'server-only'` y valida **de forma perezosa** (en el primer acceso, no al importar). Dos razones, ambas aprendidas rompiendo algo: si un Client Component importa las variables de servidor, en el navegador son `undefined` y la página revienta; y si la validación corre al importar, `next build` exige el entorno de producción en la máquina de build, lo que empuja a inventar valores de relleno en el Dockerfile. Con la validación perezosa el build no necesita ninguna variable de servidor.
 1. **Nada de `window.*` como estado.** Estado de servidor → TanStack Query. Estado de UI → `useState`/`useReducer`. Estado compartido → Context.
 2. **Un archivo por componente**, máximo ~300 líneas. Los actuales de 2000+ se parten en: página, tabla, filtros, modal-crear, modal-editar, hooks.
 3. **Sin `innerHTML`.** Todo render en JSX.

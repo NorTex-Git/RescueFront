@@ -1,0 +1,71 @@
+/* Scrollbar global para todas las vistas */
+:root {
+  --scrollbar-thumb: rgba(100, 116, 139, 0.45);
+  --scrollbar-thumb-hover: rgba(100, 116, 139, 0.7);
+  --scrollbar-track: rgba(15, 23, 42, 0.18);
+  --scrollbar-thumb-dark: rgba(255, 255, 255, 0.22);
+  --scrollbar-thumb-dark-hover: rgba(255, 255, 255, 0.35);
+  --scrollbar-track-dark: rgba(15, 23, 42, 0.35);
+}
+
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+@supports (scrollbar-gutter: stable) {
+  html,
+  body {
+    scrollbar-gutter: stable;
+  }
+}
+
+html,
+body,
+* {
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track) !important;
+}
+
+*::-webkit-scrollbar {
+  width: 6px !important;
+  height: 6px !important;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--scrollbar-track) !important;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb) !important;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover) !important;
+}
+
+.dark html,
+.dark body,
+.dark * {
+  scrollbar-color: var(--scrollbar-thumb-dark) var(--scrollbar-track-dark) !important;
+}
+
+.dark *::-webkit-scrollbar-track {
+  background: var(--scrollbar-track-dark) !important;
+}
+
+.dark *::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb-dark) !important;
+  background-clip: padding-box;
+}
+
+.dark *::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-dark-hover) !important;
+  background-clip: padding-box;
+}
