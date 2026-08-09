@@ -25,28 +25,28 @@ export default async function LoginPage(props: PageProps<'/login'>) {
       </div>
 
       <LoginReveal>
-        <div className="relative z-10 flex min-h-screen items-center justify-center px-4 pt-8 pb-8 sm:px-6 sm:pt-10 sm:pb-16 lg:px-8 lg:pt-16">
-          <div className="mx-auto w-full max-w-6xl">
-            <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-12">
-              <div className="fade-in-up order-2 flex flex-col items-center space-y-4 text-center lg:order-1 lg:items-start lg:space-y-6 lg:text-left">
-                <div className="max-w-lg space-y-4 lg:max-w-2xl">
-                  <h2 className="text-gradient text-3xl leading-tight font-bold lg:text-4xl xl:text-5xl">
+        <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-8 sm:px-6 md:px-8">
+          <div className="mx-auto w-full max-w-5xl">
+            <div className="grid grid-cols-1 items-center gap-10 md:grid-cols-2 md:gap-16">
+              <div className="fade-in-up order-2 flex flex-col items-center space-y-4 text-center md:order-1 md:items-start md:space-y-6 md:text-left">
+                <div className="max-w-lg space-y-4">
+                  <h2 className="text-gradient text-3xl leading-tight font-bold md:text-4xl xl:text-5xl">
                     Bienvenido a <span className="text-secondary-gradient">Rescue</span>
                   </h2>
-                  <p className="text-base leading-relaxed text-white/80 lg:text-lg xl:text-xl">
+                  <p className="text-base leading-relaxed text-white/70 md:text-lg">
                     Accede para gestionar de forma segura tus recursos y empresas con la máxima
                     confiabilidad.
                   </p>
                 </div>
               </div>
 
-              <div className="order-1 mx-auto w-full max-w-sm lg:order-2 lg:max-w-md">
-                <div className="glass-card fade-in-up rounded-xl p-4 sm:p-6 lg:rounded-2xl lg:p-7">
-                  <div className="mb-4 text-center sm:mb-6">
-                    <h1 className="text-gradient fade-in-up mb-1 text-xl font-bold sm:text-2xl">
-                      Bienvenido
+              <div className="order-1 mx-auto w-full max-w-sm md:order-2 md:max-w-md">
+                <div className="glass-card fade-in-up rounded-2xl p-6 sm:p-8">
+                  <div className="mb-6 text-center">
+                    <h1 className="text-gradient fade-in-up mb-1 text-2xl font-bold">
+                      Iniciar Sesión
                     </h1>
-                    <p className="fade-in-up text-xs text-white/80 sm:text-sm">
+                    <p className="fade-in-up text-sm text-white/60">
                       Accede a tu cuenta
                     </p>
                   </div>
@@ -57,10 +57,12 @@ export default async function LoginPage(props: PageProps<'/login'>) {
                   />
                 </div>
 
-                <div className="fade-in-up mt-4 text-center sm:mt-6">
-                  <p className="text-xs text-white/70">
+                <div className="fade-in-up mt-5 text-center">
+                  <p className="text-xs text-white/50">
                     ¿No tienes cuenta?{' '}
-                    <span className="font-semibold text-blue-300">Contacta al administrador</span>
+                    <span className="font-semibold text-indigo-300 transition-colors hover:text-indigo-200">
+                      Contacta al administrador
+                    </span>
                   </p>
                 </div>
               </div>

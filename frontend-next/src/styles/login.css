@@ -1,84 +1,5 @@
 /* ========== VARIABLES CSS ========== */
 
-/* Header específico para login - con efecto blur */
-.login-header {
-  /* Fondo semi-transparente con blur */
-  background: rgba(255, 255, 255, 0.05) !important;
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
-  /* Borde sutil */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-  /* Quitar efectos de mezcla problemáticos */
-  mix-blend-mode: normal !important;
-  /* Transición suave */
-  transition: all 0.3s ease !important;
-  /* Animación de entrada suave para el header */
-  animation: fadeInHeader 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-}
-
-/* Animación específica para el header */
-@keyframes fadeInHeader {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Animación suave para el logo completo */
-.login-header a {
-  animation: fadeInLogo 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s forwards;
-  opacity: 0;
-}
-
-@keyframes fadeInLogo {
-  from {
-    opacity: 0;
-    transform: translateX(-20px) scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-}
-
-/* Anula efectos de sticky */
-.login-header.sticky {
-  background-color: transparent !important;
-  backdrop-filter: none !important;
-  border-bottom: none !important;
-}
-
-.login-header * {
-  mix-blend-mode: normal !important;
-}
-
-/* Protección adicional: fuerza transparencia incluso si se aplica sticky */
-.login-header.sticky,
-.login-header:has(.sticky),
-.sticky.login-header {
-  background-color: transparent !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: none !important;
-  border-bottom: none !important;
-  box-shadow: none !important;
-}
-
-/* Protección contra efectos globales en elementos de login */
-.login-header,
-.login-header * {
-  /* Anular efectos de scroll-smoother o smooth-wrapper */
-  transform: none !important;
-  /* Anular cualquier filtro aplicado globalmente */
-  filter: none !important;
-  /* Anular efectos de backdrop */
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
 :root {
   --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
@@ -103,8 +24,6 @@ body {
 .login-background {
   background: linear-gradient(135deg, #0c0c0c 0%, #1a0933 50%, #0f0618 100%);
   position: relative;
-  /* Espacio para el header fijo */
-  padding-top: 80px;
 }
 
 .login-background::before {
@@ -226,30 +145,6 @@ body {
   z-index: -1;
   opacity: 0.3;
   filter: blur(8px);
-}
-
-/* ========== LOGO DE MARCA ========== */
-.brand-logo {
-  background: var(--button-gradient);
-  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.4);
-  position: relative;
-  transition: all 0.3s ease;
-}
-
-.brand-logo::after {
-  content: "";
-  position: absolute;
-  inset: -3px;
-  background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
-  border-radius: 18px;
-  z-index: -1;
-  opacity: 0.7;
-  filter: blur(12px);
-}
-
-.brand-logo:hover {
-  transform: scale(1.05);
-  box-shadow: 0 12px 40px rgba(102, 126, 234, 0.6);
 }
 
 /* ========== INPUTS DE VIDRIO ========== */
@@ -407,38 +302,6 @@ body {
   }
 }
 
-/* Animación específica para el formulario completo */
-#loginCard {
-  animation: fadeInCard 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s forwards;
-}
-
-@keyframes fadeInCard {
-  from {
-    opacity: 0;
-    transform: translateY(30px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* Animación específica para el panel de información */
-#loginInfo {
-  animation: fadeInInfo 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s forwards;
-}
-
-@keyframes fadeInInfo {
-  from {
-    opacity: 0;
-    transform: translateX(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
 /* ========== GRADIENTES DE TEXTO ========== */
 .text-gradient {
   background: linear-gradient(135deg, #ffffff, #e0e7ff);
@@ -452,51 +315,6 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-}
-
-/* ========== AVIÓN DE PAPEL ========== */
-.plane-wrapper {
-  position: relative;
-  width: 120px;
-  height: 40px;
-  margin: 0 auto 1rem;
-}
-
-#planeSvg {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-#planeSvg path {
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.3);
-  stroke-dasharray: 4 4;
-  stroke-width: 2;
-}
-
-.plane-icon {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  transform: translateY(-50%);
-  color: white;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 0.7; }
-  50% { opacity: 1; }
-}
-
-@media (min-width: 1024px) {
-  .plane-wrapper {
-    width: 140px;
-    height: 50px;
-    margin-bottom: 1.5rem;
-  }
 }
 
 /* ========== NOTIFICACIONES ========== */
@@ -537,132 +355,17 @@ body {
   opacity: 0.9;
 }
 
-/* ========== UTILIDADES ========== */
-.hidden {
-  display: none !important;
-}
-
-/* ========== FIXES PARA VISIBILIDAD DEL BOTÓN ========== */
-/* Asegurar que el contenedor principal tenga altura suficiente */
+/* ========== RESPONSIVE ========== */
 .login-background {
   min-height: 100vh;
-  min-height: 100dvh; /* Para soporte de altura dinámica en móviles */
+  min-height: 100dvh;
   position: fixed;
   inset: 0;
 }
 
-/* Asegurar que el formulario tenga espacio suficiente */
-#loginCard {
-  margin-bottom: 2rem;
-}
-
-/* Mejoras para el botón de submit */
-#submitBtn {
-  margin-top: 1.5rem !important;
-  margin-bottom: 1rem !important;
-  z-index: 100;
-  position: relative;
-}
-
-/* Asegurar que en pantallas pequeñas haya suficiente espacio */
 @media (max-height: 700px) {
   .login-background {
     position: relative;
     min-height: 100vh;
-  }
-  
-  #loginCard {
-    margin-bottom: 3rem;
-  }
-  
-  #submitBtn {
-    margin-top: 2rem !important;
-    margin-bottom: 1.5rem !important;
-  }
-}
-
-/* Para tablets y móviles */
-@media (max-width: 768px) {
-  .lg\:grid-cols-2 {
-    grid-template-columns: 1fr;
-  }
-
-  .glass-card {
-    margin-top: 0.5rem;
-    padding: 1.5rem;
-  }
-
-  .plane-wrapper {
-    width: 100px;
-    height: 32px;
-    margin-bottom: 1rem;
-  }
-
-  /* Mejoras para el header */
-  header {
-    padding: 0.5rem 0;
-  }
-
-  /* Ajustes de tamaños de texto para móvil */
-  .text-gradient {
-    font-size: 1.5rem;
-    line-height: 1.4;
-  }
-
-  /* Botón más grande en móvil */
-  #submitBtn {
-    padding: 0.875rem 1rem;
-    font-size: 0.9rem;
-    min-height: 48px;
-  }
-
-  /* Inputs más espaciosos */
-  .input-glass {
-    padding: 0.875rem 0.75rem 0.875rem 2.5rem;
-    font-size: 1rem;
-  }
-
-  /* Notificaciones más pequeñas */
-  .notification {
-    top: 1rem;
-    right: 1rem;
-    left: 1rem;
-    max-width: none;
-    font-size: 0.8rem;
-  }
-
-  /* Mejor posicionamiento en móvil */
-  .login-background {
-    padding: 0.5rem;
-    /* Más espacio en la parte superior para móviles */
-    padding-top: 100px;
-  }
-}
-
-/* Para móviles pequeños */
-@media (max-width: 480px) {
-  .glass-card {
-    padding: 1rem;
-    margin: 1rem 0.5rem;
-  }
-
-  .brand-logo {
-    width: 3rem;
-    height: 3rem;
-  }
-
-  .input-glass {
-    padding: 0.75rem 0.5rem 0.75rem 2.25rem;
-  }
-
-  #submitBtn {
-    padding: 0.75rem;
-    min-height: 44px;
-  }
-}
-
-@media (max-height: 600px) {
-  .login-background {
-    padding-bottom: 4rem;
   }
 }

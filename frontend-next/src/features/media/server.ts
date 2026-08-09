@@ -1,5 +1,7 @@
 import 'server-only'
 
+import { revalidateTag } from 'next/cache'
+
 import { serverEnv } from '@/lib/config.server'
 
 import {
@@ -23,12 +25,20 @@ import {
 /** Las consultas JSON son pequenas; transferir el binario necesita mas margen. */
 const CATALOG_TIMEOUT_MS = 6000
 const MEDIA_CONTENT_TIMEOUT_MS = 60_000
+const UPLOAD_TIMEOUT_MS = 60_000
+
+/**
+ * Etiqueta común de las lecturas cacheadas. Tras crear/eliminar/subir se invalida con
+ * `expire: 0` para que la siguiente lectura traiga el catálogo fresco de inmediato
+ * —el original devolvía las carpetas actualizadas en cada mutación—.
+ */
+const MEDIA_CACHE_TAG = 'media'
 
 async function get(path: string): Promise<unknown> {
   const response = await fetch(buildServiceUrl(serverEnv.IMAGES_SERVICE_BASE_URL, path), {
     signal: AbortSignal.timeout(CATALOG_TIMEOUT_MS),
     // El catálogo cambia poco y se precarga al entrar a la vista de tipos de alerta.
-    next: { revalidate: 300 },
+    next: { revalidate: 300, tags: [MEDIA_CACHE_TAG] },
   })
 
   if (!response.ok) throw new Error(`El servicio de imágenes respondió ${response.status}`)
@@ -84,4 +94,67 @@ export async function fetchMediaContent(
     cache: 'no-store',
     signal: AbortSignal.timeout(MEDIA_CONTENT_TIMEOUT_MS),
   })
+}
+
+/**
+ * Mutaciones de la biblioteca. Como las lecturas, pegan **directo** al servicio de
+ * imágenes (`IMAGES_SERVICE_BASE_URL`), no al backend principal —porta
+ * `utils/images_service.py` (`create_image_folder`, `delete_image_folder`,
+ * `upload_image_file`)—. Solo se llaman desde las rutas API `/api/media/*`, así que
+ * invalidar la caché aquí es seguro (`revalidateTag` no corre durante el render).
+ */
+
+/** Crea un directorio: `POST {base}/folders` con JSON `{ name }`. */
+export async function createMediaFolder(name: string): Promise<void> {
+  const response = await fetch(buildServiceUrl(serverEnv.IMAGES_SERVICE_BASE_URL, 'folders'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+    cache: 'no-store',
+    signal: AbortSignal.timeout(CATALOG_TIMEOUT_MS),
+  })
+
+  if (!response.ok) throw new Error('No fue posible crear el directorio, intenta nuevamente.')
+  revalidateTag(MEDIA_CACHE_TAG, { expire: 0 })
+}
+
+/** Elimina un directorio: `DELETE {base}/folders/{folder}`. */
+export async function deleteMediaFolder(folder: string): Promise<void> {
+  const response = await fetch(
+    buildServiceUrl(serverEnv.IMAGES_SERVICE_BASE_URL, `folders/${encodeURIComponent(folder)}`),
+    {
+      method: 'DELETE',
+      cache: 'no-store',
+      signal: AbortSignal.timeout(CATALOG_TIMEOUT_MS),
+    },
+  )
+
+  if (!response.ok) throw new Error('No fue posible eliminar el directorio, intenta nuevamente.')
+  revalidateTag(MEDIA_CACHE_TAG, { expire: 0 })
+}
+
+/**
+ * Sube un archivo: `POST {base}/upload` multipart con `file`, `folder` y `filename`,
+ * igual que `upload_image_file`. El nombre del `File` que llega del navegador conserva
+ * su extensión, que es lo que necesita el servicio para tipar el binario.
+ */
+export async function uploadMediaFile(
+  folder: string,
+  filename: string,
+  file: File,
+): Promise<void> {
+  const form = new FormData()
+  form.append('file', file, file.name)
+  form.append('folder', folder)
+  form.append('filename', filename)
+
+  const response = await fetch(buildServiceUrl(serverEnv.IMAGES_SERVICE_BASE_URL, 'upload'), {
+    method: 'POST',
+    body: form,
+    cache: 'no-store',
+    signal: AbortSignal.timeout(UPLOAD_TIMEOUT_MS),
+  })
+
+  if (!response.ok) throw new Error('No fue posible cargar el archivo, intenta nuevamente.')
+  revalidateTag(MEDIA_CACHE_TAG, { expire: 0 })
 }

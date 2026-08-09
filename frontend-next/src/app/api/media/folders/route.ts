@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 
-import { fetchMediaFolders } from '@/features/media/server'
+import { createMediaFolder, fetchMediaFolders } from '@/features/media/server'
+import { createFolderSchema } from '@/features/media/schema'
 import { requireSession } from '@/lib/auth/session'
 
 /**
@@ -20,6 +21,36 @@ export async function GET() {
   } catch {
     return NextResponse.json(
       { folders: [], error: 'No fue posible sincronizar las carpetas, intenta nuevamente.' },
+      { status: 502 },
+    )
+  }
+}
+
+/**
+ * Crea un directorio. Equivale a `admin_create_image_folder` (`app.py:1121`).
+ *
+ * Valida el nombre en el servidor —no solo en el formulario—: la ruta es alcanzable por
+ * sí sola y el servicio externo no debe recibir slugs con caracteres extraños.
+ */
+export async function POST(request: Request) {
+  await requireSession()
+
+  const parsed = createFolderSchema.safeParse(await request.json().catch(() => null))
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? 'El nombre del directorio no es válido.' },
+      { status: 400 },
+    )
+  }
+
+  try {
+    await createMediaFolder(parsed.data.name)
+    // Tras invalidar la caché, la lectura vuelve fresca: se devuelven las carpetas ya
+    // actualizadas, como hacía el original.
+    return NextResponse.json({ folders: await fetchMediaFolders() }, { status: 201 })
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'No fue posible crear el directorio.' },
       { status: 502 },
     )
   }

@@ -23,7 +23,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         {/* Aplica el tema antes del primer paint para evitar el flash. */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body className="flex min-h-full flex-col font-rescue">
+      {/* El script del `<head>` marca `dark` en el `<body>` antes de hidratar; sin
+          esto React avisa por el desajuste, igual que en `<html>`. */}
+      <body className="flex min-h-full flex-col font-rescue" suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
     </html>

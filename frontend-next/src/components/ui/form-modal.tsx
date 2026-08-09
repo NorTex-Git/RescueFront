@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect } from 'react'
 import {
   Controller,
+  FormProvider,
   useForm,
   type DefaultValues,
   type FieldValues,
@@ -72,6 +73,11 @@ export function FormModal<TValues extends FieldValues>({
    */
   size?: ModalSize
 }) {
+  const methods = useForm<TValues>({
+    resolver: zodResolver(schema) as Resolver<TValues>,
+    defaultValues,
+  })
+
   const {
     control,
     register,
@@ -79,15 +85,7 @@ export function FormModal<TValues extends FieldValues>({
     reset,
     setError,
     formState: { errors, isSubmitting },
-  } = useForm<TValues>({
-    /**
-     * `zodResolver` infiere `FieldValues` en vez del `TValues` del genérico, y
-     * TypeScript no puede probar que coinciden desde dentro de un componente
-     * genérico. El cast se queda acotado aquí; el schema ya garantiza la forma.
-     */
-    resolver: zodResolver(schema) as Resolver<TValues>,
-    defaultValues,
-  })
+  } = methods
 
   // Al abrir se recarga el formulario: si no, editar A y luego B mostraría los datos de A.
   useEffect(() => {
@@ -138,6 +136,7 @@ export function FormModal<TValues extends FieldValues>({
         </>
       }
     >
+      <FormProvider {...methods}>
       <form id="form-modal" onSubmit={submit} noValidate className="space-y-6">
         {rootError && (
           <p
@@ -238,7 +237,7 @@ export function FormModal<TValues extends FieldValues>({
                     type={field.type ?? 'text'}
                     placeholder={field.placeholder}
                     autoComplete={field.autoComplete}
-                    {...register(field.name)}
+                    {...register(field.name, field.type === 'number' ? { valueAsNumber: true } : undefined)}
                   />
                 )}
               </div>
@@ -246,6 +245,7 @@ export function FormModal<TValues extends FieldValues>({
           })}
         </div>
       </form>
+      </FormProvider>
     </Modal>
   )
 }
