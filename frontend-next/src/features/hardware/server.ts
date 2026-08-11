@@ -3,11 +3,11 @@ import { z } from 'zod'
 import type { FieldOption } from '@/components/ui/form-field'
 import { apiFetch } from '@/lib/api/server'
 
-import { hardwareListSchema, type Hardware } from './types'
+import { parseHardwareList, type Hardware } from './types'
 
 export async function fetchHardware(): Promise<Hardware[]> {
   const raw = await apiFetch<unknown>('/api/hardware/all-including-inactive')
-  return hardwareListSchema.parse(raw).data
+  return parseHardwareList(raw)
 }
 
 const hardwareTypesSchema = z.object({

@@ -2,7 +2,9 @@
 
 import { CrudView, type CrudResource } from '@/components/crud/crud-view'
 import { StatusBadge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import type { FieldOption } from '@/components/ui/form-field'
+import { PrimaryCell } from '@/components/ui/primary-cell'
 import type { Empresa } from '@/features/empresas/types'
 import { formatDate } from '@/features/stats/format'
 import { matchesText } from '@/hooks/use-filters'
@@ -31,11 +33,57 @@ function buildResource(tipos: FieldOption[], empresas: Empresa[]): CrudResource<
     labelOf: (item) => item.nombre,
     icon: 'fas fa-microchip',
     header: { icon: 'fas fa-microchip', title: 'Hardware', subtitle: 'Inventario y equipos registrados' },
+    headerStats: (items) => [
+      { label: 'Activos', value: items.filter((item) => item.activa).length, tone: 'success' },
+      {
+        label: 'Sin stock',
+        value: items.filter(
+          (item) => detailsOf(item).status === 'out_of_stock' || detailsOf(item).stock === 0,
+        ).length,
+        tone: 'warning',
+      },
+      {
+        label: 'Descontinuados',
+        value: items.filter((item) => detailsOf(item).status === 'discontinued').length,
+        tone: 'danger',
+      },
+    ],
+
     singular: 'equipo',
     plural: 'equipos',
     emptyMessage: 'Aún no hay equipos registrados. Crea el primero para iniciar el inventario.',
+    emptyState: ({ openCreate }) => (
+      <div className="flex flex-col items-center gap-4 py-8 text-center">
+        <span className="flex size-16 items-center justify-center rounded-2xl bg-[var(--shell-accent-soft)] text-2xl text-[var(--shell-accent)]">
+          <i className="fas fa-microchip" />
+        </span>
+        <div>
+          <p className="text-base font-semibold text-[var(--shell-text-strong)]">
+            Aún no hay hardware registrado
+          </p>
+          <p className="mt-1 text-sm text-[var(--shell-text-muted)]">
+            Registra el primer dispositivo para iniciar el inventario.
+          </p>
+        </div>
+        <Button onClick={openCreate}>
+          <i className="fas fa-plus" />
+          Nuevo Hardware
+        </Button>
+      </div>
+    ),
     columns: [
-      { key: 'nombre', header: 'Equipo', cell: (item) => item.nombre || '—' },
+      {
+        key: 'nombre',
+        header: 'Equipo',
+        cell: (item) => (
+          <PrimaryCell
+            icon="fas fa-microchip"
+            tone="purple"
+            title={item.nombre || '—'}
+            subtitle={item.empresa_nombre || undefined}
+          />
+        ),
+      },
       { key: 'tipo', header: 'Tipo', cell: (item) => item.tipo || '—' },
       { key: 'marca-modelo', header: 'Marca / modelo', cell: (item) => {
         const details = detailsOf(item)

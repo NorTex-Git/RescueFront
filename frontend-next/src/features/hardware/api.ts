@@ -1,7 +1,7 @@
 import { apiRequest } from '@/lib/api/client'
 
 import type { HardwareFormValues } from './schema'
-import { hardwareListSchema, type Hardware } from './types'
+import { parseHardwareList, type Hardware } from './types'
 
 const BASE = '/api/hardware'
 
@@ -22,7 +22,7 @@ function toPayload(values: HardwareFormValues) {
 
 export async function listHardware(): Promise<Hardware[]> {
   const raw = await apiRequest<unknown>(`${BASE}/all-including-inactive`)
-  return hardwareListSchema.parse(raw).data
+  return parseHardwareList(raw)
 }
 
 export async function createHardware(values: HardwareFormValues): Promise<void> {

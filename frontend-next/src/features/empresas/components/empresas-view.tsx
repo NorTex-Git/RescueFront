@@ -3,6 +3,7 @@
 import { CrudView, type CrudResource } from '@/components/crud/crud-view'
 import { StatusBadge } from '@/components/ui/badge'
 import type { FieldOption } from '@/components/ui/form-field'
+import { PrimaryCell } from '@/components/ui/primary-cell'
 import { formatDate } from '@/features/stats/format'
 import { matchesText } from '@/hooks/use-filters'
 
@@ -39,12 +40,33 @@ function buildResource(tipos: FieldOption[]): CrudResource<Empresa, EmpresaFormV
       subtitle: 'Alta y acceso de las empresas del sistema',
     },
 
+    headerStats: (items) => [
+      { label: 'Activas', value: items.filter((item) => item.activa).length, tone: 'success' },
+      { label: 'Inactivas', value: items.filter((item) => !item.activa).length },
+      {
+        label: 'Sedes totales',
+        value: items.reduce((sum, item) => sum + item.sedes.length, 0),
+        tone: 'info',
+      },
+    ],
+
     singular: 'empresa',
     plural: 'empresas',
     emptyMessage: 'Aún no hay empresas. Crea la primera para dar acceso al portal.',
 
     columns: [
-      { key: 'nombre', header: 'Nombre', cell: (row) => row.nombre || '—' },
+      {
+        key: 'nombre',
+        header: 'Nombre',
+        cell: (row) => (
+          <PrimaryCell
+            icon="fas fa-building"
+            tone="indigo"
+            title={row.nombre || '—'}
+            subtitle={row.email || row.ubicacion || undefined}
+          />
+        ),
+      },
       {
         key: 'tipo',
         header: 'Tipo',

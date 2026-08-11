@@ -2,6 +2,7 @@
 
 import { CrudView, type CrudResource } from '@/components/crud/crud-view'
 import { StatusBadge } from '@/components/ui/badge'
+import { PrimaryCell } from '@/components/ui/primary-cell'
 import { formatDate } from '@/features/stats/format'
 import { matchesText } from '@/hooks/use-filters'
 
@@ -33,12 +34,23 @@ const resource: CrudResource<CompanyType, CompanyTypeFormValues> = {
     subtitle: 'Categorías para clasificar las empresas',
   },
 
+  headerStats: (items) => [
+    { label: 'Activos', value: items.filter((item) => item.activo).length, tone: 'success' },
+    { label: 'Inactivos', value: items.filter((item) => !item.activo).length },
+  ],
+
   singular: 'tipo de empresa',
   plural: 'tipos de empresa',
   emptyMessage: 'Aún no hay tipos de empresa. Crea el primero para poder registrar empresas.',
 
   columns: [
-    { key: 'nombre', header: 'Nombre', cell: (row) => row.nombre || '—' },
+    {
+      key: 'nombre',
+      header: 'Nombre',
+      cell: (row) => (
+        <PrimaryCell icon="fas fa-layer-group" tone="indigo" title={row.nombre || '—'} />
+      ),
+    },
     { key: 'descripcion', header: 'Descripción', cell: (row) => row.descripcion || '—' },
     {
       key: 'caracteristicas',

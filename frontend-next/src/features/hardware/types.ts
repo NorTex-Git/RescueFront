@@ -2,7 +2,8 @@ import { z } from 'zod'
 
 /** Forma tolerante del recurso: el backend ha guardado datos antiguos en varias claves. */
 export const hardwareSchema = z.object({
-  _id: z.string(),
+  // `coerce`: algún registro trae el id como número/ObjectId serializado, no como string.
+  _id: z.coerce.string(),
   nombre: z.string().default(''),
   tipo: z.string().nullish(),
   empresa_id: z.string().nullish(),
@@ -10,7 +11,9 @@ export const hardwareSchema = z.object({
   sede: z.string().nullish(),
   direccion: z.string().nullish(),
   topic: z.string().nullish(),
-  activa: z.boolean().default(true),
+  // `catch`: si el backend manda `activa` como null/string en vez de boolean, no se
+  // descarta el registro entero — se asume activo.
+  activa: z.boolean().catch(true),
   fecha_creacion: z.string().nullish(),
   physical_status: z.string().nullish(),
   datos: z.unknown().optional(),
@@ -19,9 +22,27 @@ export const hardwareSchema = z.object({
 export type Hardware = z.infer<typeof hardwareSchema>
 
 export const hardwareListSchema = z.object({
-  success: z.boolean(),
-  data: z.array(hardwareSchema).default([]),
+  // `optional`: algunas respuestas del listado omiten el envoltorio `success`.
+  success: z.boolean().optional(),
+  data: z.array(z.unknown()).default([]),
 })
+
+/**
+ * Parseo **resiliente** del listado: valida ítem por ítem y descarta solo los que no
+ * calzan, en vez de tirar toda la tabla si un único registro trae una forma inesperada
+ * (que era justo lo que dejaba la lista vacía tras crear un equipo). Acepta tanto el
+ * envoltorio `{ success, data }` como un array plano.
+ */
+export function parseHardwareList(raw: unknown): Hardware[] {
+  const rows = Array.isArray(raw)
+    ? raw
+    : (hardwareListSchema.safeParse(raw).data?.data ?? [])
+
+  return rows.flatMap((row) => {
+    const parsed = hardwareSchema.safeParse(row)
+    return parsed.success ? [parsed.data] : []
+  })
+}
 
 export type HardwareDetails = {
   brand: string

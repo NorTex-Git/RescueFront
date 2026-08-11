@@ -39,25 +39,57 @@
   -webkit-backdrop-filter: blur(20px) saturate(1.5) !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
   border-radius: 12px !important;
-  padding: 1rem !important;
+  padding: 1.125rem 1rem 1rem !important;
   position: relative;
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
   cursor: pointer;
-  box-shadow: 
+  box-shadow:
     0 8px 25px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  
+
   /* Tamaño fijo para carousel */
   min-width: 180px;
   max-width: 220px;
   width: 200px;
   flex-shrink: 0;
-  
+
   /* SIEMPRE VISIBLE - SIN GSAP - RENDIMIENTO OPTIMIZADO */
   opacity: 1 !important;
   transform: translateY(0) !important;
   visibility: visible !important;
+}
+
+/*
+ * Barra de acento superior por tono: en vez de que el color solo viva en el icono, la
+ * tarjeta entera queda "firmada" con su tono desde el primer vistazo — se lee como un
+ * sistema de cuatro categorías, no cuatro cajas intercambiables. Un solo color por
+ * tarjeta funciona igual en claro y oscuro, así que no necesita variante `.dark`.
+ */
+.ios-stat-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--stat-tone-color, #8b5cf6);
+}
+
+.ios-stat-card[data-tone='blue'] {
+  --stat-tone-color: #3b82f6;
+}
+
+.ios-stat-card[data-tone='green'] {
+  --stat-tone-color: #10b981;
+}
+
+.ios-stat-card[data-tone='red'] {
+  --stat-tone-color: #ef4444;
+}
+
+.ios-stat-card[data-tone='purple'] {
+  --stat-tone-color: #8b5cf6;
 }
 
 /* TARJETAS DE ESTADÍSTICAS SIN GSAP - SIEMPRE VISIBLES */
@@ -84,38 +116,38 @@
 }
 
 .ios-stat-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: white;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.625rem;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
 }
 
 .ios-stat-icon-blue {
   background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.22);
 }
 
 .ios-stat-icon-green {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.22);
 }
 
 .ios-stat-icon-red {
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.22);
 }
 
 .ios-stat-icon-purple {
   background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 4px 10px rgba(139, 92, 246, 0.22);
 }
 
 .pagination-btn {
@@ -155,10 +187,11 @@
 }
 
 .ios-stat-value {
-  font-size: 1.4rem;
-  font-weight: 700;
+  font-size: 1.75rem;
+  font-weight: 800;
   color: rgba(255, 255, 255, 0.95);
   margin-bottom: 0.25rem;
+  line-height: 1.1;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 

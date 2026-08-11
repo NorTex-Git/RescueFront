@@ -25,3 +25,18 @@ export function formatTimestamp(value: string | null): string {
 export function formatDate(value: string | null | undefined): string {
   return value ? value.slice(0, 10) : 'Sin fecha'
 }
+
+/** "hace 4 min" / "hace 2 h" / "hace 3 d" — calculado a partir de la fecha real. */
+export function timeAgo(value: string | null | undefined): string {
+  if (!value) return ''
+  const then = new Date(value).getTime()
+  if (Number.isNaN(then)) return ''
+
+  const minutes = Math.round((Date.now() - then) / 60_000)
+  if (minutes < 1) return 'ahora'
+  if (minutes < 60) return `hace ${minutes} min`
+  const hours = Math.round(minutes / 60)
+  if (hours < 24) return `hace ${hours} h`
+  const days = Math.round(hours / 24)
+  return `hace ${days} d`
+}

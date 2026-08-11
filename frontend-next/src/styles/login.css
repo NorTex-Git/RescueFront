@@ -1,18 +1,56 @@
-/* ========== VARIABLES CSS ========== */
+/* Font Awesome viene de npm, no del CDN de cdnjs (regla 7 del plan; ver portal.css). */
+@import '@fortawesome/fontawesome-free/css/all.min.css';
+
+/*
+ * ========== VARIABLES CSS ==========
+ *
+ * El tema de la app es por clase, no por `prefers-color-scheme`
+ * (`src/components/theme-provider.tsx`), y por defecto es claro. Esta pantalla se
+ * construyó como pieza nueva (no es CSS heredado del Flask) y originalmente solo tenía
+ * los valores oscuros bajo `:root`, así que ignoraba el toggle de tema por completo.
+ * `:root` define ahora los tokens del modo claro y `.dark` los redefine — el toggle
+ * pone esa clase en `<html>` y `<body>` a la vez, y como coinciden en especificidad,
+ * gana el que aparece después en el archivo.
+ */
 
 :root {
   --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --secondary-gradient: linear-gradient(135deg, #db2777 0%, #dc2626 100%);
   --modern-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-border: rgba(15, 23, 42, 0.08);
+  --glass-highlight: rgba(15, 23, 42, 0.1);
+  --text-primary: #0f172a;
+  --text-secondary: rgba(15, 23, 42, 0.65);
+  --text-muted: rgba(15, 23, 42, 0.45);
+  --input-bg: rgba(255, 255, 255, 0.7);
+  --input-border: rgba(15, 23, 42, 0.12);
+  --shadow-glow: 0 25px 50px rgba(102, 126, 234, 0.15);
+  --button-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --button-hover: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+  --bg-base: linear-gradient(135deg, #f5f3ff 0%, #eef2ff 50%, #fdf2f8 100%);
+  --particle-color: rgba(102, 126, 234, 0.2);
+  --autofill-bg: rgba(255, 255, 255, 0.95);
+  --heading-gradient: linear-gradient(135deg, #312e81, #6d28d9);
+  --input-focus-bg: rgba(255, 255, 255, 0.9);
+}
+
+.dark {
+  --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
   --glass-bg: rgba(255, 255, 255, 0.08);
   --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-highlight: rgba(255, 255, 255, 0.4);
   --text-primary: #ffffff;
   --text-secondary: rgba(255, 255, 255, 0.9);
+  --text-muted: rgba(255, 255, 255, 0.5);
   --input-bg: rgba(255, 255, 255, 0.1);
   --input-border: rgba(255, 255, 255, 0.15);
   --shadow-glow: 0 25px 50px rgba(102, 126, 234, 0.25);
-  --button-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --button-hover: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+  --bg-base: linear-gradient(135deg, #0c0c0c 0%, #1a0933 50%, #0f0618 100%);
+  --particle-color: rgba(255, 255, 255, 0.1);
+  --autofill-bg: rgba(30, 23, 48, 0.95);
+  --heading-gradient: linear-gradient(135deg, #ffffff, #e0e7ff);
+  --input-focus-bg: rgba(255, 255, 255, 0.18);
 }
 
 /* ========== RESET Y BASE ========== */
@@ -22,7 +60,7 @@ body {
 
 /* ========== FONDO PRINCIPAL ========== */
 .login-background {
-  background: linear-gradient(135deg, #0c0c0c 0%, #1a0933 50%, #0f0618 100%);
+  background: var(--bg-base);
   position: relative;
 }
 
@@ -53,7 +91,7 @@ body {
 
 .particle {
   position: absolute;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--particle-color);
   border-radius: 50%;
   animation: float 6s ease-in-out infinite;
 }
@@ -130,7 +168,7 @@ body {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  background: linear-gradient(90deg, transparent, var(--glass-highlight), transparent);
 }
 
 .glass-card::after {
@@ -147,6 +185,21 @@ body {
   filter: blur(8px);
 }
 
+/* ========== BOTÓN DE TEMA ========== */
+.theme-toggle-btn {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+  background: var(--input-focus-bg);
+  transform: translateY(-1px);
+}
+
 /* ========== INPUTS DE VIDRIO ========== */
 .input-glass {
   background: var(--input-bg);
@@ -157,15 +210,34 @@ body {
 }
 
 .input-glass::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
 }
 
 .input-glass:focus {
   outline: none;
   border-color: #667eea;
-  background: rgba(255, 255, 255, 0.18);
+  background: var(--input-focus-bg);
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.25);
   transform: translateY(-1px);
+}
+
+/*
+ * Chrome pinta un fondo claro propio en campos con credenciales guardadas
+ * (`:-webkit-autofill`), con prioridad por encima de `background`. Sin esto el campo
+ * autocompletado se ve como una caja blanca en vez del vidrio oscuro, y el icono
+ * `text-white/40` queda ilegible por falta de contraste. El truco del inset shadow
+ * gigante es la única forma soportada de pintar encima; `transition` retrasa el
+ * primer repintado amarillo que Chrome hace antes de aplicar el `box-shadow`.
+ */
+.input-glass:-webkit-autofill,
+.input-glass:-webkit-autofill:hover,
+.input-glass:-webkit-autofill:focus,
+.input-glass:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--text-primary);
+  -webkit-box-shadow: 0 0 0 1000px var(--autofill-bg) inset;
+  box-shadow: 0 0 0 1000px var(--autofill-bg) inset;
+  caret-color: var(--text-primary);
+  transition: background-color 9999s ease-in-out 0s;
 }
 
 /* ========== BOTÓN CON GRADIENTE ========== */
@@ -250,61 +322,9 @@ body {
   100% { transform: rotate(360deg); }
 }
 
-/* ========== ANIMACIONES MEJORADAS ========== */
-.fade-in-up {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.fade-in-scale {
-  opacity: 0;
-  transform: scale(0.95);
-  transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-/* Animaciones automáticas con delay escalonado */
-.fade-in-up:nth-child(1) {
-  animation: fadeInUpSmooth 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s forwards;
-}
-
-.fade-in-up:nth-child(2) {
-  animation: fadeInUpSmooth 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s forwards;
-}
-
-.fade-in-up:nth-child(3) {
-  animation: fadeInUpSmooth 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s forwards;
-}
-
-.fade-in-up:nth-child(4) {
-  animation: fadeInUpSmooth 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.4s forwards;
-}
-
-@keyframes fadeInUpSmooth {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
 /* ========== GRADIENTES DE TEXTO ========== */
 .text-gradient {
-  background: linear-gradient(135deg, #ffffff, #e0e7ff);
+  background: var(--heading-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

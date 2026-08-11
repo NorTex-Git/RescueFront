@@ -83,6 +83,16 @@ export function unwrapList(payload: unknown, keys: string[]): unknown[] {
     const record = payload as Record<string, unknown>
     const key = keys.find((candidate) => Array.isArray(record[candidate]))
     if (key) return record[key] as unknown[]
+
+    // Un nivel de anidamiento: algunas respuestas envuelven la lista bajo `data`,
+    // `result` o `payload` como objeto (`{ data: { files: [...] } }`), no como array.
+    for (const wrapper of ['data', 'result', 'payload', 'body']) {
+      const inner = record[wrapper]
+      if (inner && typeof inner === 'object') {
+        const nested = unwrapList(inner, keys)
+        if (nested.length) return nested
+      }
+    }
   }
   return []
 }

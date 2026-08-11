@@ -1,6 +1,7 @@
 'use client'
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useEffect, useState, type ReactNode } from 'react'
 import type { DefaultValues, FieldValues, Path } from 'react-hook-form'
 import { toast } from 'sonner'
 import type { ZodType } from 'zod'
@@ -12,10 +13,13 @@ import { DetailModal, type DetailRow, type DetailSection } from '@/components/ui
 import { FilterBar } from '@/components/ui/filter-bar'
 import type { FormField } from '@/components/ui/form-field'
 import { FormModal } from '@/components/ui/form-modal'
+import { HeaderStatPill, type HeaderStatTone } from '@/components/ui/header-stat-pill'
 import type { ModalSize } from '@/components/ui/modal'
+import { Pagination } from '@/components/ui/pagination'
 import { Table, type Column } from '@/components/ui/table'
 import { useCrudModals } from '@/hooks/use-crud-modals'
 import { useFilters, type FilterDef } from '@/hooks/use-filters'
+import { cn } from '@/lib/utils'
 
 /**
  * Pantalla CRUD completa: barra con contador y botón de alta, tabla, y los modales
@@ -43,9 +47,25 @@ export type CrudResource<TItem, TValues extends FieldValues> = {
    */
   header: { icon: string; title: string; subtitle?: React.ReactNode }
 
+  /**
+   * Chips de contexto junto al contador y el botón "Nuevo" — p. ej. "Activas 9",
+   * "Sedes totales 27". Se derivan de los `items` ya cargados, sin pedir nada nuevo al
+   * backend: cada recurso decide qué le importa mostrar de un vistazo.
+   */
+  headerStats?: (items: TItem[]) => { label: string; value: React.ReactNode; tone?: HeaderStatTone }[]
+
   columns: Column<TItem>[]
   /** Opcional: sin filtros no se pinta la barra. */
   filters?: FilterDef<TItem>[]
+  /**
+   * Estado vacío enriquecido (icono + textos + acciones), como el de Hardware en el
+   * mockup. Render-prop para poder disparar el alta desde su botón.
+   */
+  emptyState?: (ctx: { openCreate: () => void }) => ReactNode
+  /** Badge de índice por fila. Por defecto activo (así lo muestra el mockup). */
+  showIndex?: boolean
+  /** Filas por página. Por defecto 8. */
+  pageSize?: number
   detailRows: DetailRow<TItem>[]
   /** Nombre y descripción destacados dentro del modal de detalle. */
   detailHeading?: {
@@ -142,6 +162,17 @@ export function CrudView<TItem, TValues extends FieldValues>({
   const invalidate = () => queryClient.invalidateQueries({ queryKey: resource.queryKey })
   const editing = modals.item
 
+  // Paginación en cliente: los datos ya están filtrados en memoria (`useFilters`).
+  const pageSize = resource.pageSize ?? 8
+  const [page, setPage] = useState(1)
+  const pageCount = Math.max(1, Math.ceil(filters.filtered.length / pageSize))
+  const safePage = Math.min(page, pageCount)
+  const pageRows = filters.filtered.slice((safePage - 1) * pageSize, safePage * pageSize)
+  // Al cambiar el conjunto filtrado (buscar, limpiar), volver a la primera página.
+  useEffect(() => {
+    setPage(1)
+  }, [filters.filtered.length])
+
   /**
    * Las acciones por fila se añaden aquí para que ningún recurso las repita.
    *
@@ -157,33 +188,23 @@ export function CrudView<TItem, TValues extends FieldValues>({
       className: 'text-right whitespace-nowrap',
       cell: (row) => (
         <div className="flex justify-end gap-1">
-          <Button size="sm" variant="ghost" onClick={() => modals.openDetail(row)}>
-            Ver
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => modals.openEdit(row)}>
-            Editar
-          </Button>
+          <RowActionButton icon="fas fa-eye" label="Ver" onClick={() => modals.openDetail(row)} />
+          <RowActionButton icon="fas fa-pen" label="Editar" onClick={() => modals.openEdit(row)} />
           {resource.toggle && (
-            <Button
-              size="sm"
-              variant="ghost"
-              className="text-amber-600 hover:bg-amber-500/10 dark:text-amber-400"
+            <RowActionButton
+              icon={resource.toggle.isActive(row) ? 'fas fa-ban' : 'fas fa-check'}
+              label={resource.toggle.isActive(row) ? 'Desactivar' : 'Activar'}
+              tone="warning"
               onClick={() => modals.openToggle(row)}
-            >
-              <i className={resource.toggle.isActive(row) ? 'fas fa-ban' : 'fas fa-check'} />
-              {resource.toggle.isActive(row) ? 'Desactivar' : 'Activar'}
-            </Button>
+            />
           )}
           {resource.remove && (
-            <Button
-              size="sm"
-              variant="ghost"
-              className="text-red-600 hover:bg-red-500/10 dark:text-red-400"
+            <RowActionButton
+              icon="fas fa-trash"
+              label="Eliminar"
+              tone="danger"
               onClick={() => modals.openDelete(row)}
-            >
-              <i className="fas fa-trash" />
-              Eliminar
-            </Button>
+            />
           )}
         </div>
       ),
@@ -191,22 +212,30 @@ export function CrudView<TItem, TValues extends FieldValues>({
   ]
 
   const isActive = editing && resource.toggle ? resource.toggle.isActive(editing) : false
+  const headerStats = resource.headerStats?.(items) ?? []
 
   return (
     <>
       <PageHeader
         icon={resource.header.icon}
+        iconGradient={resource.iconGradient}
         title={resource.header.title}
+        titleBadge={
+          // Con filtros puestos importa cuántos se ven, no cuántos hay.
+          filters.isDirty
+            ? `${filters.filtered.length} de ${items.length} ${resource.plural}`
+            : `${items.length} ${items.length === 1 ? resource.singular : resource.plural}`
+        }
         subtitle={resource.header.subtitle}
+        stats={
+          headerStats.length > 0 &&
+          headerStats.map((stat) => (
+            <HeaderStatPill key={stat.label} label={stat.label} value={stat.value} tone={stat.tone} />
+          ))
+        }
         actions={
           <>
-            <span className="text-sm opacity-70">
-              {/* Con filtros puestos importa cuántos se ven, no cuántos hay. */}
-              {filters.isDirty
-                ? `${filters.filtered.length} de ${items.length} ${resource.plural}`
-                : `${items.length} ${items.length === 1 ? resource.singular : resource.plural}`}
-              {isFetching && ' · actualizando…'}
-            </span>
+            {isFetching && <span className="text-xs opacity-60">Actualizando…</span>}
             <Button onClick={modals.openCreate}>
               <i className="fas fa-plus" />
               Nuevo
@@ -217,20 +246,34 @@ export function CrudView<TItem, TValues extends FieldValues>({
 
       <FilterBar filters={resource.filters ?? []} state={filters} leading={filterSlot} />
 
-      <div className="ios-filters-container ios-blur-bg">
+      <div className="overflow-hidden rounded-2xl border border-[var(--shell-border)] bg-[var(--shell-surface)]">
         <Table
           columns={columns}
-          rows={filters.filtered}
+          rows={pageRows}
           rowKey={resource.getId}
+          showIndex={resource.showIndex ?? true}
+          indexOffset={(safePage - 1) * pageSize}
+          // El estado vacío enriquecido solo en el vacío real; cargando y filtrado-sin-
+          // resultados usan un mensaje, para no confundir una carga con una tabla vacía.
+          emptyState={
+            !isPending && !filters.isDirty
+              ? resource.emptyState?.({ openCreate: modals.openCreate })
+              : undefined
+          }
           emptyMessage={
-            // Distinguir los tres casos: aún cargando, filtrado sin resultados, y
-            // vacío de verdad. Si no, una carga en curso parece una tabla vacía.
             isPending
               ? 'Cargando…'
               : filters.isDirty
                 ? 'Ningún registro coincide con los filtros.'
                 : resource.emptyMessage
           }
+        />
+        <Pagination
+          page={safePage}
+          pageCount={pageCount}
+          total={filters.filtered.length}
+          pageSize={pageSize}
+          onPageChange={setPage}
         />
       </div>
 
@@ -349,5 +392,39 @@ export function CrudView<TItem, TValues extends FieldValues>({
         </ConfirmDialog>
       )}
     </>
+  )
+}
+
+const ROW_ACTION_TONES = {
+  neutral: 'text-[var(--shell-text-muted)] hover:bg-[var(--shell-accent-tile)]',
+  warning: 'text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-500/10',
+  danger: 'text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10',
+} as const
+
+/** Botón circular de icono para las acciones de fila — con tooltip y `aria-label`. */
+function RowActionButton({
+  icon,
+  label,
+  tone = 'neutral',
+  onClick,
+}: {
+  icon: string
+  label: string
+  tone?: keyof typeof ROW_ACTION_TONES
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className={cn(
+        'flex size-8 items-center justify-center rounded-full transition-colors',
+        ROW_ACTION_TONES[tone],
+      )}
+    >
+      <i className={icon} />
+    </button>
   )
 }

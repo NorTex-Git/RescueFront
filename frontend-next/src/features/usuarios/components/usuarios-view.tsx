@@ -2,6 +2,7 @@
 
 import { CrudView, type CrudResource } from '@/components/crud/crud-view'
 import { StatusBadge } from '@/components/ui/badge'
+import { PrimaryCell } from '@/components/ui/primary-cell'
 import { matchesText } from '@/hooks/use-filters'
 
 import {
@@ -47,12 +48,38 @@ function buildResource(
     labelOf: (item) => item.nombre,
     icon: 'fas fa-users',
 
+    headerStats: (items) => [
+      { label: 'Activos', value: items.filter((item) => item.activo).length, tone: 'success' },
+      { label: 'Inactivos', value: items.filter((item) => !item.activo).length },
+      {
+        label: 'Roles',
+        value: new Set(items.map((item) => item.rol).filter(Boolean)).size,
+        tone: 'info',
+      },
+      {
+        label: 'Sedes',
+        value: new Set(items.map((item) => item.sede).filter(Boolean)).size,
+        tone: 'info',
+      },
+    ],
+
     singular: 'usuario',
     plural: 'usuarios',
     emptyMessage: 'Esta empresa aún no tiene usuarios.',
 
     columns: [
-      { key: 'nombre', header: 'Nombre', cell: (row) => row.nombre || '—' },
+      {
+        key: 'nombre',
+        header: 'Nombre',
+        cell: (row) => (
+          <PrimaryCell
+            icon="fas fa-user"
+            tone="blue"
+            title={row.nombre || '—'}
+            subtitle={row.email || undefined}
+          />
+        ),
+      },
       { key: 'cedula', header: 'Cédula', cell: (row) => row.cedula || '—' },
       { key: 'rol', header: 'Rol', cell: (row) => row.rol || '—' },
       { key: 'sede', header: 'Sede', cell: (row) => row.sede || '—' },

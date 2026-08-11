@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 import { PageHeader } from '@/components/shell/page-header'
@@ -30,6 +30,28 @@ const AUDIO_EXTENSIONS = ['mp3', 'wav', 'ogg', 'm4a']
 
 function hasExtension(name: string, extensions: string[]): boolean {
   return extensions.some((extension) => name.toLowerCase().endsWith(`.${extension}`))
+}
+
+/** Paleta de tiles por tarjeta, ciclada por índice (diseño `admin-shell-v2.pen`). */
+const CARD_TONES = [
+  'bg-violet-50 text-violet-600 dark:bg-violet-500/15 dark:text-violet-300',
+  'bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300',
+  'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300',
+  'bg-orange-50 text-orange-600 dark:bg-orange-500/15 dark:text-orange-300',
+  'bg-red-50 text-red-600 dark:bg-red-500/15 dark:text-red-300',
+  'bg-sky-50 text-sky-600 dark:bg-sky-500/15 dark:text-sky-300',
+]
+
+/** Icono según el nombre de la carpeta, para acercarse a las categorías del mockup. */
+function folderIcon(folder: string): string {
+  const f = folder.toLowerCase()
+  if (f.includes('siren')) return 'fas fa-tower-broadcast'
+  if (f.includes('camar') || f.includes('camera')) return 'fas fa-video'
+  if (f.includes('panic') || f.includes('boton')) return 'fas fa-bell'
+  if (f.includes('logo')) return 'fas fa-image'
+  if (f.includes('campan') || f.includes('campaign')) return 'fas fa-bullhorn'
+  if (f.includes('manual')) return 'fas fa-book'
+  return 'fas fa-folder'
 }
 
 /** Nombre legible de una carpeta, como `_format_folder_display` del Flask (`app.py:1076`). */
@@ -73,13 +95,11 @@ export function AdminMultimediaView({ initialFolders }: { initialFolders: string
       <PageHeader
         icon="fas fa-photo-video"
         title="Biblioteca Multimedia"
+        titleBadge={`${folders.length} ${folders.length === 1 ? 'carpeta' : 'carpetas'}`}
         subtitle="Carpetas y archivos sincronizados desde el servicio multimedia"
         actions={
           <>
-            <span className="text-sm opacity-70">
-              {folders.length} {folders.length === 1 ? 'carpeta' : 'carpetas'}
-              {isFetching && ' · actualizando…'}
-            </span>
+            {isFetching && <span className="text-xs opacity-60">Actualizando…</span>}
             <Button
               variant="secondary"
               onClick={() => setCreateOpen(true)}
@@ -97,23 +117,24 @@ export function AdminMultimediaView({ initialFolders }: { initialFolders: string
       />
 
       {folders.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-gray-300 bg-white/60 px-6 py-16 text-center dark:border-white/15 dark:bg-white/5">
-          <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-sky-500/15 text-2xl text-sky-600 dark:text-sky-300">
+        <div className="rounded-2xl border border-dashed border-[var(--shell-border)] bg-[var(--shell-surface)] px-6 py-16 text-center">
+          <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-[var(--shell-accent-soft)] text-2xl text-[var(--shell-accent)]">
             <i className="fas fa-folder-open" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <h3 className="text-lg font-semibold text-[var(--shell-text-strong)]">
             Sin carpetas disponibles
           </h3>
-          <p className="mt-1 text-sm text-gray-600 dark:text-white/60">
+          <p className="mt-1 text-sm text-[var(--shell-text-muted)]">
             Crea el primer directorio o confirma que el servicio esté en línea.
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {folders.map((folder) => (
+        <div className="grid grid-cols-1 gap-[18px] sm:grid-cols-2 lg:grid-cols-3">
+          {folders.map((folder, index) => (
             <FolderCard
               key={folder}
               folder={folder}
+              index={index}
               onView={() => setViewFolder(folder)}
               onDelete={() => setDeleteTarget(folder)}
             />
@@ -181,15 +202,17 @@ export function AdminMultimediaView({ initialFolders }: { initialFolders: string
 
 function FolderCard({
   folder,
+  index,
   onView,
   onDelete,
 }: {
   folder: string
+  index: number
   onView: () => void
   onDelete: () => void
 }) {
   return (
-    <div className="group relative flex flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-xs transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
+    <div className="group relative flex flex-col rounded-2xl border border-[var(--shell-border)] bg-[var(--shell-surface)] p-5 transition-colors hover:border-[var(--shell-accent)]/40">
       <button
         type="button"
         onClick={onDelete}
@@ -199,14 +222,22 @@ function FolderCard({
         <i className="fas fa-trash" />
       </button>
 
-      <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-indigo-500 text-xl text-white shadow-lg">
-        <i className="fas fa-folder" />
+      <div
+        className={cn(
+          'mb-4 flex size-12 items-center justify-center rounded-xl text-xl',
+          CARD_TONES[index % CARD_TONES.length],
+        )}
+      >
+        <i className={folderIcon(folder)} />
       </div>
 
-      <h3 className="truncate text-base font-semibold text-gray-900 dark:text-white" title={folder}>
+      <h3
+        className="truncate text-base font-semibold text-[var(--shell-text-strong)]"
+        title={folder}
+      >
         {folderDisplayName(folder)}
       </h3>
-      <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-white/50" title={folder}>
+      <p className="mt-0.5 truncate text-xs text-[var(--shell-text-muted)]" title={folder}>
         {folder}
       </p>
 
@@ -341,12 +372,26 @@ function UploadModal({
 }
 
 function ViewFolderModal({ folder, onClose }: { folder: string | null; onClose: () => void }) {
-  const { data: files = [], isPending } = useQuery({
+  const {
+    data: files = [],
+    isPending,
+    error,
+  } = useQuery({
     queryKey: ['media-files', folder],
     queryFn: () => fetchFiles(folder as string),
     // Solo se piden los archivos de la carpeta abierta.
     enabled: folder !== null,
   })
+
+  // Render progresivo: se pintan por lotes para no volcar cientos de nodos de una vez;
+  // las imágenes además usan `loading="lazy"`, así el navegador solo descarga las que
+  // entran en viewport. Entre las dos, la carpeta "va apareciendo" en vez de bloquearse.
+  const BATCH = 12
+  const [visible, setVisible] = useState(BATCH)
+  // Al cambiar de carpeta, volver a empezar por el primer lote.
+  useEffect(() => {
+    setVisible(BATCH)
+  }, [folder])
 
   return (
     <Modal
@@ -365,16 +410,42 @@ function ViewFolderModal({ folder, onClose }: { folder: string | null; onClose: 
     >
       {isPending ? (
         <p className="py-8 text-center text-sm text-gray-600 dark:text-white/60">Cargando…</p>
+      ) : error ? (
+        // Se muestra el mensaje real del servicio (la ruta lo propaga): una carpeta con
+        // contenido que sale vacía casi siempre es un fallo del microservicio, no que no
+        // tenga archivos, y así se puede diagnosticar en vez de adivinar.
+        <div className="py-8 text-center">
+          <p className="text-sm font-semibold text-red-600 dark:text-red-300">
+            No se pudieron cargar los archivos
+          </p>
+          <p className="mt-1 text-xs text-gray-600 dark:text-white/60">
+            {error instanceof Error ? error.message : 'Error desconocido del servicio multimedia.'}
+          </p>
+        </div>
       ) : files.length === 0 ? (
         <p className="py-8 text-center text-sm text-gray-600 dark:text-white/60">
           Esta carpeta no tiene archivos.
         </p>
       ) : (
-        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {files.map((mediaFile) => (
-            <FilePreview key={mediaFile.url} file={mediaFile} />
-          ))}
-        </ul>
+        <>
+          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {files.slice(0, visible).map((mediaFile) => (
+              <FilePreview key={mediaFile.url} file={mediaFile} />
+            ))}
+          </ul>
+          {visible < files.length && (
+            <div className="mt-5 flex justify-center">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setVisible((count) => count + BATCH)}
+              >
+                <i className="fas fa-arrow-down" />
+                Cargar más ({files.length - visible} restantes)
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </Modal>
   )
@@ -404,10 +475,14 @@ function FilePreview({ file }: { file: MediaFile }) {
 
       {isImage ? (
         // `img` y no `next/image`: el host es externo (ver nota en `asset-picker.tsx`).
+        // `loading="lazy"` + `decoding="async"`: el navegador solo descarga la imagen
+        // cuando entra en viewport, así una carpeta grande no baja todo de golpe.
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={file.url}
           alt={file.displayName}
+          loading="lazy"
+          decoding="async"
           className="h-40 w-full rounded-xl bg-slate-100/75 object-contain p-2 dark:bg-black/20"
         />
       ) : isAudio ? (

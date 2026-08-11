@@ -23,6 +23,7 @@ export function PortalShell({
   sidebarTitle,
   sidebarSubtitle,
   initials,
+  sidebarExtra,
   children,
 }: {
   items: NavItem[]
@@ -32,6 +33,8 @@ export function PortalShell({
   sidebarTitle: string
   sidebarSubtitle: string
   initials: string
+  /** Bloque opcional entre la navegación y "Cerrar Sesión" del sidebar. */
+  sidebarExtra?: ReactNode
   children: ReactNode
 }) {
   const router = useRouter()
@@ -62,7 +65,7 @@ export function PortalShell({
         onToggleMenu={() => setMenuOpen((value) => !value)}
       />
 
-      <div className="spa-shell min-h-screen">
+      <div className="flex min-h-screen bg-[var(--shell-bg)] pt-[68px]">
         <Sidebar
           items={items}
           title={sidebarTitle}
@@ -71,9 +74,10 @@ export function PortalShell({
           open={menuOpen}
           onClose={() => setMenuOpen(false)}
           onLogout={() => setConfirmLogout(true)}
+          extra={sidebarExtra}
         />
 
-        <main className="main-content">{children}</main>
+        <main className="min-w-0 flex-1">{children}</main>
       </div>
 
       <Modal

@@ -37,7 +37,9 @@ export function FilterBar<TItem>({
   if (filters.length === 0 && !leading) return null
 
   return (
-    <div className="ios-filters-container ios-blur-bg mb-6">
+    // Superficie sólida con borde sutil (tokens `--shell-*`), como el mockup — no el
+    // vidrio esmerilado heredado (`ios-blur-bg`).
+    <div className="mb-[18px] rounded-2xl border border-[var(--shell-border)] bg-[var(--shell-surface)] p-4">
       <div className="flex flex-wrap items-end gap-4">
         {leading && <div className="min-w-56 flex-1">{leading}</div>}
 

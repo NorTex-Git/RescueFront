@@ -3,6 +3,7 @@
 import { CrudView, type CrudResource } from '@/components/crud/crud-view'
 import { StatusBadge } from '@/components/ui/badge'
 import type { FieldOption } from '@/components/ui/form-field'
+import { PrimaryCell } from '@/components/ui/primary-cell'
 import { MediaAudioPlayer } from '@/features/media/components/media-audio-player'
 import type { MediaCatalog } from '@/features/media/normalize'
 import { formatDate } from '@/features/stats/format'
@@ -135,7 +136,7 @@ function buildResource(
     getId: (item) => item._id,
     labelOf: (item) => item.nombre,
     icon: 'fas fa-bell',
-    iconGradient: 'from-red-500 via-orange-500 to-yellow-400',
+    iconGradient: 'from-orange-500 to-amber-500',
     formDescription: 'Define los atributos, recursos y recomendaciones de la alerta',
 
     header: {
@@ -144,12 +145,38 @@ function buildResource(
       subtitle: 'Alarmas disponibles en el sistema',
     },
 
+    headerStats: (items) => [
+      { label: 'Activos', value: items.filter((item) => item.activo).length, tone: 'success' },
+      { label: 'Inactivos', value: items.filter((item) => !item.activo).length },
+      {
+        label: 'Críticas',
+        value: items.filter((item) => item.tipo_alerta === 'ROJO').length,
+        tone: 'danger',
+      },
+      {
+        label: 'Globales',
+        value: items.filter((item) => !item.empresa_id).length,
+        tone: 'info',
+      },
+    ],
+
     singular: 'tipo de alerta',
     plural: 'tipos de alerta',
     emptyMessage: 'Aún no hay tipos de alerta. Crea el primero para definir prioridades.',
 
     columns: [
-      { key: 'nombre', header: 'Nombre', cell: (row) => row.nombre || '—' },
+      {
+        key: 'nombre',
+        header: 'Nombre',
+        cell: (row) => (
+          <PrimaryCell
+            icon="fas fa-bell"
+            tone="orange"
+            title={row.nombre || '—'}
+            subtitle={nivelLabel.get(row.tipo_alerta) ?? undefined}
+          />
+        ),
+      },
       {
         key: 'tipo_alerta',
         header: 'Nivel',
@@ -192,7 +219,7 @@ function buildResource(
 
     detailTitle: 'Detalle de la alerta',
     detailIcon: 'fas fa-bell',
-    detailIconGradient: 'from-red-500 via-orange-500 to-yellow-400',
+    detailIconGradient: 'from-orange-500 to-amber-500',
     detailSize: 'xl',
     detailHeading: {
       title: (item) => item.nombre,

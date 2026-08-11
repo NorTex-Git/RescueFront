@@ -3,8 +3,11 @@ import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
 /**
- * Tabla genérica. Las columnas se declaran como datos para que cada vista sea
- * una lista de columnas y no 300 líneas de `innerHTML` como en el código Flask.
+ * Tabla genérica (diseño `admin-shell-v2.pen` → tablas de las vistas de gestión).
+ *
+ * Las columnas se declaran como datos para que cada vista sea una lista de columnas y
+ * no 300 líneas de `innerHTML` como en el Flask original. Estilo con tokens `--shell-*`:
+ * cabecera en versalitas tenues, filas con divisor suave y badge de índice opcional.
  */
 
 export type Column<T> = {
@@ -19,27 +22,40 @@ export function Table<T>({
   rows,
   rowKey,
   emptyMessage = 'No hay registros para mostrar.',
+  emptyState,
+  showIndex = false,
+  indexOffset = 0,
   className,
 }: {
   columns: Column<T>[]
   rows: T[]
   rowKey: (row: T) => string
   emptyMessage?: string
+  /** Estado vacío enriquecido (icono + textos + acciones). Gana a `emptyMessage`. */
+  emptyState?: ReactNode
+  /** Prepende un badge de índice por fila, como en el mockup. */
+  showIndex?: boolean
+  /** Desplazamiento del índice (para paginación). */
+  indexOffset?: number
   className?: string
 }) {
+  const totalCols = columns.length + (showIndex ? 1 : 0)
+
   return (
     // El scroll horizontal vive aquí dentro: la página nunca debe desbordarse.
-    // El color lo pone `global-text-theme.css` sobre el contenedor heredado:
-    // fijarlo aquí producía texto gris claro sobre tarjeta clara.
     <div className={cn('w-full overflow-x-auto', className)}>
       <table className="w-full border-collapse text-sm">
         <thead>
-          <tr className="border-b border-gray-200 dark:border-gray-700">
+          <tr className="border-b border-[var(--shell-border-soft)]">
+            {showIndex && <th scope="col" className="w-12 px-4 py-3" />}
             {columns.map((column) => (
               <th
                 key={column.key}
                 scope="col"
-                className={cn('px-4 py-3 text-left font-semibold opacity-70', column.className)}
+                className={cn(
+                  'px-4 py-3 text-left text-[11px] font-semibold tracking-wide text-[var(--shell-text-muted)] uppercase',
+                  column.className,
+                )}
               >
                 {column.header}
               </th>
@@ -49,18 +65,32 @@ export function Table<T>({
         <tbody>
           {rows.length === 0 ? (
             <tr>
-              <td colSpan={columns.length} className="px-4 py-10 text-center opacity-60">
-                {emptyMessage}
+              <td colSpan={totalCols} className="px-4 py-12">
+                {emptyState ?? (
+                  <p className="text-center text-sm text-[var(--shell-text-muted)]">
+                    {emptyMessage}
+                  </p>
+                )}
               </td>
             </tr>
           ) : (
-            rows.map((row) => (
+            rows.map((row, index) => (
               <tr
                 key={rowKey(row)}
-                className="border-b border-current/10 last:border-0 hover:bg-current/5"
+                className="border-b border-[var(--shell-border-soft)] transition-colors last:border-0 hover:bg-[var(--shell-bg)]"
               >
+                {showIndex && (
+                  <td className="px-4 py-3">
+                    <span className="flex size-7 items-center justify-center rounded-lg bg-[var(--shell-accent-soft)] text-xs font-semibold text-[var(--shell-accent)]">
+                      {String(indexOffset + index + 1).padStart(2, '0')}
+                    </span>
+                  </td>
+                )}
                 {columns.map((column) => (
-                  <td key={column.key} className={cn('px-4 py-3', column.className)}>
+                  <td
+                    key={column.key}
+                    className={cn('px-4 py-3 text-[var(--shell-text)]', column.className)}
+                  >
                     {column.cell(row)}
                   </td>
                 ))}
