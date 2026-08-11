@@ -47,11 +47,14 @@ function applyTheme(theme: Theme) {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   // El script de arriba ya dejó el DOM en el tema correcto; aquí solo lo leemos.
-  const [theme, setThemeState] = useState<Theme>('light')
+  const [theme, setThemeState] = useState<Theme>(() =>
+    typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
+      ? 'dark'
+      : 'light',
+  )
 
   useEffect(() => {
     const current = document.documentElement.classList.contains('dark') ? 'dark' : 'light'
-    setThemeState(current)
     // Reaplica por si el `<body>` aún no existía cuando corrió el script del head.
     applyTheme(current)
   }, [])

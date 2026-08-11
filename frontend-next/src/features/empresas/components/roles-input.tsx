@@ -1,5 +1,6 @@
 'use client'
 
+import { Icon } from '@/components/ui/icon'
 import { useId, useState, type KeyboardEvent } from 'react'
 
 import { Field, fieldClass } from '@/components/ui/input'
@@ -92,7 +93,7 @@ export function RolesInput({
             'disabled:cursor-not-allowed disabled:opacity-40',
           )}
         >
-          <i className="fas fa-plus" />
+          <Icon className="fas fa-plus" />
           <span className="sr-only sm:not-sr-only">Agregar</span>
         </button>
       </div>
@@ -132,7 +133,7 @@ export function RolesInput({
                   aria-label={`Quitar ${role.nombre}`}
                   className="flex size-8 items-center justify-center rounded-full text-sm text-gray-400 transition-colors hover:bg-red-500/15 hover:text-red-600 dark:text-white/40 dark:hover:text-red-300"
                 >
-                  <i className="fas fa-times" />
+                  <Icon className="fas fa-times" />
                 </button>
               </div>
             </li>
@@ -172,7 +173,7 @@ function FlagToggle({
         'disabled:cursor-not-allowed disabled:opacity-50',
       )}
     >
-      <i className={icon} />
+      <Icon className={icon} />
       {label}
     </button>
   )

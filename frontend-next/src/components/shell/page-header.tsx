@@ -1,3 +1,4 @@
+import { Icon } from '@/components/ui/icon'
 import type { ReactNode } from 'react'
 
 import { cn } from '@/lib/utils'
@@ -42,7 +43,7 @@ export function PageHeader({
             iconGradient,
           )}
         >
-          <i className={icon} />
+          <Icon className={icon} />
         </div>
         <div className="min-w-0">
           <h1 className="flex flex-wrap items-center gap-2 text-xl font-bold text-[var(--shell-text-strong)]">

@@ -26,11 +26,8 @@ export default async function EmpresaLayout({ children }: { children: ReactNode 
   return (
     <PortalShell
       items={NAV_ITEMS}
-      navbarTitle="Panel Empresa"
-      navbarSubtitle="Sistema de Gestión"
-      navbarIcon="fas fa-building"
-      sidebarTitle={nombre}
-      sidebarSubtitle="Panel de Control"
+      userName={nombre}
+      userRole="Empresa"
       initials={nombre.slice(0, 2).toUpperCase()}
     >
       {children}

@@ -21,6 +21,9 @@ function toPayload(values: HardwareFormValues) {
 }
 
 export async function listHardware(): Promise<Hardware[]> {
+  // El monitor externo actualiza `physical_status`; esta comprobación marca como
+  // inactivos los equipos cuyo último reporte venció antes de volver a listarlos.
+  await apiRequest(`${BASE}/physical-status/check`, { method: 'POST' })
   const raw = await apiRequest<unknown>(`${BASE}/all-including-inactive`)
   return parseHardwareList(raw)
 }

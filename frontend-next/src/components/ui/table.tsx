@@ -21,6 +21,7 @@ export function Table<T>({
   columns,
   rows,
   rowKey,
+  rowClassName,
   emptyMessage = 'No hay registros para mostrar.',
   emptyState,
   showIndex = false,
@@ -30,6 +31,8 @@ export function Table<T>({
   columns: Column<T>[]
   rows: T[]
   rowKey: (row: T) => string
+  /** Estilo contextual calculado por el recurso. */
+  rowClassName?: (row: T) => string | undefined
   emptyMessage?: string
   /** Estado vacío enriquecido (icono + textos + acciones). Gana a `emptyMessage`. */
   emptyState?: ReactNode
@@ -77,7 +80,10 @@ export function Table<T>({
             rows.map((row, index) => (
               <tr
                 key={rowKey(row)}
-                className="border-b border-[var(--shell-border-soft)] transition-colors last:border-0 hover:bg-[var(--shell-bg)]"
+                className={cn(
+                  'border-b border-[var(--shell-border-soft)] transition-colors last:border-0 hover:bg-[var(--shell-bg)]',
+                  rowClassName?.(row),
+                )}
               >
                 {showIndex && (
                   <td className="px-4 py-3">

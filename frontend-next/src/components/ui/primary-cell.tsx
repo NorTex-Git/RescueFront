@@ -1,3 +1,4 @@
+import { Icon } from '@/components/ui/icon'
 import type { ReactNode } from 'react'
 
 import { cn } from '@/lib/utils'
@@ -34,7 +35,7 @@ export function PrimaryCell({
           TILE_TONES[tone],
         )}
       >
-        <i className={icon} />
+        <Icon className={icon} />
       </span>
       <div className="min-w-0">
         <p className="truncate font-semibold text-[var(--shell-text-strong)]">{title}</p>

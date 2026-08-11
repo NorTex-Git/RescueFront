@@ -1,17 +1,19 @@
 'use client'
 
+import { Icon } from '@/components/ui/icon'
 import { CrudView, type CrudResource } from '@/components/crud/crud-view'
 import { StatusBadge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { FieldOption } from '@/components/ui/form-field'
 import { PrimaryCell } from '@/components/ui/primary-cell'
 import type { Empresa } from '@/features/empresas/types'
+import type { LoadResult } from '@/load-result'
 import { formatDate } from '@/features/stats/format'
 import { matchesText } from '@/hooks/use-filters'
 
 import { createHardware, listHardware, toggleHardwareStatus, updateHardware } from '../api'
 import { HARDWARE_DEFAULTS, hardwareFields, hardwareFormSchema, type HardwareFormValues } from '../schema'
-import { detailsOf, type Hardware } from '../types'
+import { detailsOf, physicalStatusOf, type Hardware } from '../types'
 
 function money(value: number) {
   return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(value)
@@ -25,11 +27,30 @@ function inventoryStatus(item: Hardware) {
   return 'Disponible'
 }
 
+function normalizedPhysicalStatus(item: Hardware) {
+  return physicalStatusOf(item).trim().toLowerCase()
+}
+
+function isPhysicalInactive(item: Hardware) {
+  return ['inactivo', 'inactive', 'desactivado', 'offline'].includes(normalizedPhysicalStatus(item))
+}
+
+function isPhysicalActive(item: Hardware) {
+  return ['activo', 'active', 'online'].includes(normalizedPhysicalStatus(item))
+}
+
 function buildResource(tipos: FieldOption[], empresas: Empresa[]): CrudResource<Hardware, HardwareFormValues> {
   return {
     queryKey: ['hardware'],
     queryFn: listHardware,
+    refetchInterval: 10_000,
     getId: (item) => item._id,
+    rowClassName: (item) =>
+      isPhysicalInactive(item)
+        ? 'bg-red-500/15 hover:!bg-red-500/20'
+        : isPhysicalActive(item)
+          ? 'bg-emerald-500/10 hover:!bg-emerald-500/15'
+          : undefined,
     labelOf: (item) => item.nombre,
     icon: 'fas fa-microchip',
     header: { icon: 'fas fa-microchip', title: 'Hardware', subtitle: 'Inventario y equipos registrados' },
@@ -55,7 +76,7 @@ function buildResource(tipos: FieldOption[], empresas: Empresa[]): CrudResource<
     emptyState: ({ openCreate }) => (
       <div className="flex flex-col items-center gap-4 py-8 text-center">
         <span className="flex size-16 items-center justify-center rounded-2xl bg-[var(--shell-accent-soft)] text-2xl text-[var(--shell-accent)]">
-          <i className="fas fa-microchip" />
+          <Icon className="fas fa-microchip" />
         </span>
         <div>
           <p className="text-base font-semibold text-[var(--shell-text-strong)]">
@@ -66,7 +87,7 @@ function buildResource(tipos: FieldOption[], empresas: Empresa[]): CrudResource<
           </p>
         </div>
         <Button onClick={openCreate}>
-          <i className="fas fa-plus" />
+          <Icon className="fas fa-plus" />
           Nuevo Hardware
         </Button>
       </div>
@@ -92,11 +113,11 @@ function buildResource(tipos: FieldOption[], empresas: Empresa[]): CrudResource<
       { key: 'sede', header: 'Sede', cell: (item) => item.sede || '—' },
       { key: 'stock', header: 'Stock', cell: (item) => detailsOf(item).stock },
       {
-        key: 'estado',
-        header: 'Estado',
+        key: 'estado-fisico',
+        header: 'Estado físico',
         cell: (item) => (
-          <span className={item.activa ? 'font-medium text-emerald-600 dark:text-emerald-300' : 'font-medium text-gray-500 dark:text-white/45'}>
-            {inventoryStatus(item)}
+          <span className={isPhysicalInactive(item) ? 'font-medium text-red-600 dark:text-red-300' : isPhysicalActive(item) ? 'font-medium text-emerald-600 dark:text-emerald-300' : 'font-medium text-gray-500 dark:text-white/45'}>
+            {physicalStatusOf(item) || 'Sin reporte'}
           </span>
         ),
       },
@@ -106,9 +127,12 @@ function buildResource(tipos: FieldOption[], empresas: Empresa[]): CrudResource<
         const details = detailsOf(item)
         return matchesText([item.nombre, item.tipo, item.sede, item.empresa_nombre, details.brand, details.model], value)
       } },
-      { key: 'estado', label: 'Estado', initial: 'all', options: [
+      { key: 'estado', label: 'Estado administrativo', initial: 'all', options: [
         { value: 'all', label: 'Todos' }, { value: 'active', label: 'Activos' }, { value: 'inactive', label: 'Inactivos' },
       ], match: (item, value) => value === 'active' ? item.activa : !item.activa },
+      { key: 'estado-fisico', label: 'Estado físico', initial: 'all', options: [
+        { value: 'all', label: 'Todos' }, { value: 'active', label: 'Activos' }, { value: 'inactive', label: 'Inactivos' }, { value: 'unknown', label: 'Sin reporte' },
+      ], match: (item, value) => value === 'active' ? isPhysicalActive(item) : value === 'inactive' ? isPhysicalInactive(item) : !physicalStatusOf(item) },
       { key: 'inventario', label: 'Inventario', initial: 'all', options: [
         { value: 'all', label: 'Todos' }, { value: 'available', label: 'Disponible' }, { value: 'out_of_stock', label: 'Sin stock' }, { value: 'discontinued', label: 'Descontinuado' },
       ], match: (item, value) => detailsOf(item).status === value },
@@ -123,6 +147,7 @@ function buildResource(tipos: FieldOption[], empresas: Empresa[]): CrudResource<
     } },
     detailRows: [
       { icon: 'fas fa-circle-check', label: 'Activo', value: (item) => <StatusBadge active={item.activa} /> },
+      { icon: 'fas fa-satellite-dish', label: 'Estado físico', value: (item) => physicalStatusOf(item) || 'Sin reporte' },
       { icon: 'fas fa-boxes-stacked', label: 'Inventario', value: (item) => inventoryStatus(item) },
       { icon: 'fas fa-tags', label: 'Tipo', value: (item) => item.tipo || '—' },
       { icon: 'fas fa-building', label: 'Empresa', value: (item) => item.empresa_nombre || item.empresa_id || '—' },
@@ -152,13 +177,22 @@ function buildResource(tipos: FieldOption[], empresas: Empresa[]): CrudResource<
 }
 
 export function AdminHardwareView({
-  initialData,
-  tipos,
-  empresas,
+  hardwareLoad,
+  tiposLoad,
+  empresasLoad,
 }: {
-  initialData: Hardware[]
-  tipos: FieldOption[]
-  empresas: Empresa[]
+  hardwareLoad: LoadResult<Hardware[]>
+  tiposLoad: LoadResult<FieldOption[]>
+  empresasLoad: LoadResult<Empresa[]>
 }) {
-  return <CrudView resource={buildResource(tipos, empresas)} initialData={initialData} />
+  const tipos = tiposLoad.ok ? tiposLoad.data : []
+  const empresas = empresasLoad.ok ? empresasLoad.data : []
+
+  return (
+    <CrudView
+      resource={buildResource(tipos, empresas)}
+      initialLoad={hardwareLoad}
+      dependencyLoads={[tiposLoad, empresasLoad]}
+    />
+  )
 }

@@ -5,6 +5,7 @@ import { StatusBadge } from '@/components/ui/badge'
 import { PrimaryCell } from '@/components/ui/primary-cell'
 import { formatDate } from '@/features/stats/format'
 import { matchesText } from '@/hooks/use-filters'
+import type { LoadResult } from '@/load-result'
 
 import {
   createCompanyType,
@@ -156,6 +157,6 @@ const resource: CrudResource<CompanyType, CompanyTypeFormValues> = {
   },
 }
 
-export function CompanyTypesView({ initialData }: { initialData: CompanyType[] }) {
-  return <CrudView resource={resource} initialData={initialData} />
+export function CompanyTypesView({ initialLoad }: { initialLoad: LoadResult<CompanyType[]> }) {
+  return <CrudView resource={resource} initialLoad={initialLoad} />
 }

@@ -1,3 +1,4 @@
+import { Icon } from '@/components/ui/icon'
 import type { Metadata } from 'next'
 
 import { PageHeader } from '@/components/shell/page-header'
@@ -152,7 +153,7 @@ export default async function StatsPage() {
 
       <div className="ios-filters-container ios-blur-bg">
         <h3 className="mb-4 text-xl font-bold text-black dark:text-white">
-          <i className="fas fa-clock mr-2 text-purple-600 dark:text-purple-400" />
+          <Icon className="fas fa-clock mr-2 text-purple-600 dark:text-purple-400" />
           Actividad Reciente
         </h3>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">

@@ -1,5 +1,6 @@
 'use client'
 
+import { Icon } from '@/components/ui/icon'
 import { cn } from '@/lib/utils'
 
 /**
@@ -53,7 +54,7 @@ export function Pagination({
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
         >
-          <i className="fas fa-chevron-left text-xs" />
+          <Icon className="fas fa-chevron-left text-xs" />
         </button>
         {pageWindow(page, pageCount).map((p, i) =>
           p === '…' ? (
@@ -84,7 +85,7 @@ export function Pagination({
           disabled={page >= pageCount}
           onClick={() => onPageChange(page + 1)}
         >
-          <i className="fas fa-chevron-right text-xs" />
+          <Icon className="fas fa-chevron-right text-xs" />
         </button>
       </div>
     </div>

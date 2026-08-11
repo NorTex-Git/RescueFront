@@ -1,5 +1,6 @@
 'use client'
 
+import { Icon } from '@/components/ui/icon'
 import { useId, useState, type KeyboardEvent } from 'react'
 
 import { cn } from '@/lib/utils'
@@ -103,7 +104,7 @@ export function TagsInput({
             'disabled:cursor-not-allowed disabled:opacity-40',
           )}
         >
-          <i className="fas fa-plus" />
+          <Icon className="fas fa-plus" />
           <span className="sr-only sm:not-sr-only">Agregar</span>
         </button>
       </div>
@@ -131,7 +132,7 @@ export function TagsInput({
                   'dark:text-blue-100/60 dark:hover:bg-blue-400/25 dark:hover:text-white',
                 )}
               >
-                <i className="fas fa-times" />
+                <Icon className="fas fa-times" />
               </button>
             </li>
           ))}

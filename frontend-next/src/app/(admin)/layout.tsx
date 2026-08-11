@@ -35,11 +35,8 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   return (
     <PortalShell
       items={NAV_ITEMS}
-      navbarTitle="Panel Admin"
-      navbarSubtitle="Control Operativo"
-      navbarIcon="fas fa-shield-alt"
-      sidebarTitle={session.displayName}
-      sidebarSubtitle="Super Administrador"
+      userName={session.displayName}
+      userRole="Super Administrador"
       initials={session.displayName.slice(0, 2).toUpperCase()}
       sidebarExtra={<SidebarActivity items={activityItems} />}
     >

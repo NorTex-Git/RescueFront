@@ -1,5 +1,6 @@
 'use client'
 
+import { Icon } from '@/components/ui/icon'
 import type { ReactNode } from 'react'
 
 import { Modal, ModalButton, type ModalSize } from './modal'
@@ -101,7 +102,7 @@ export function DetailModal<T>({
                   }`}
                 >
                   <dt className="flex items-center gap-2 text-sm text-gray-500 dark:text-white/50">
-                    {row.icon && <i className={`${row.icon} text-xs`} />}
+                    {row.icon && <Icon className={`${row.icon} text-xs`} />}
                     {row.label}
                   </dt>
                   <dd className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -119,7 +120,7 @@ export function DetailModal<T>({
             >
               <h4 className="mb-2 flex items-center gap-2 text-sm font-bold text-gray-900 dark:text-white">
                 {section.icon && (
-                  <i className={`${section.icon} text-gray-400 dark:text-white/40`} />
+                  <Icon className={`${section.icon} text-gray-400 dark:text-white/40`} />
                 )}
                 {section.title}
               </h4>

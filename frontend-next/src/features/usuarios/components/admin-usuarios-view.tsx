@@ -1,9 +1,16 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
+import { useRouter } from 'next/navigation'
 
 import type { FieldOption } from '@/components/ui/form-field'
+import { LoadErrorState } from '@/components/ui/load-error-state'
 import { EmpresaScope } from '@/features/empresas/components/empresa-scope'
+import {
+  initialDataOf,
+  toLoadError,
+  type LoadResult,
+} from '@/load-result'
 
 import { fetchEmpresaRolesClient } from '../api'
 import type { Usuario } from '../types'
@@ -16,19 +23,24 @@ import { UsuariosView } from './usuarios-view'
  * mientras que la empresa solo puede ver la suya.
  */
 export function AdminUsuariosView({
-  empresas,
+  empresasLoad,
   initialEmpresaId,
-  initialRoles,
-  initialData,
+  initialRolesLoad,
+  initialLoad,
 }: {
-  empresas: FieldOption[]
+  empresasLoad: LoadResult<FieldOption[]>
   initialEmpresaId: string
-  initialRoles: string[]
-  initialData: Usuario[]
+  initialRolesLoad: LoadResult<string[]>
+  initialLoad: LoadResult<Usuario[]>
 }) {
+  const router = useRouter()
+  if (!empresasLoad.ok) {
+    return <LoadErrorState error={empresasLoad.error} onRetry={() => router.refresh()} />
+  }
+
   return (
     <EmpresaScope
-      empresas={empresas}
+      empresas={empresasLoad.data}
       initialEmpresaId={initialEmpresaId}
       emptyMessage="No hay empresas todavía. Crea una en Empresas para poder darle usuarios."
     >
@@ -37,8 +49,8 @@ export function AdminUsuariosView({
           empresaId={empresaId}
           empresaNombre={empresaNombre}
           selector={selector}
-          initialRoles={isInitial ? initialRoles : undefined}
-          initialData={isInitial ? initialData : undefined}
+          initialRolesLoad={isInitial ? initialRolesLoad : undefined}
+          initialLoad={isInitial ? initialLoad : undefined}
         />
       )}
     </EmpresaScope>
@@ -54,21 +66,24 @@ function UsuariosBridge({
   empresaId,
   empresaNombre,
   selector,
-  initialRoles,
-  initialData,
+  initialRolesLoad,
+  initialLoad,
 }: {
   empresaId: string
   empresaNombre: string
   selector: React.ReactNode
-  initialRoles?: string[]
-  initialData?: Usuario[]
+  initialRolesLoad?: LoadResult<string[]>
+  initialLoad?: LoadResult<Usuario[]>
 }) {
-  const { data: roles = [] } = useQuery({
+  const rolesQuery = useQuery({
     queryKey: ['empresa-roles', empresaId],
     queryFn: () => fetchEmpresaRolesClient(empresaId),
     enabled: empresaId !== '',
-    initialData: initialRoles,
+    initialData: initialRolesLoad ? initialDataOf(initialRolesLoad) : undefined,
   })
+  const rolesLoad: LoadResult<string[]> = rolesQuery.isError
+    ? { ok: false, error: toLoadError(rolesQuery.error, 'roles de empresa') }
+    : { ok: true, data: rolesQuery.data ?? [] }
 
   return (
     <UsuariosView
@@ -77,8 +92,9 @@ function UsuariosBridge({
       key={empresaId}
       empresaId={empresaId}
       empresaNombre={empresaNombre}
-      roles={roles}
-      initialData={initialData}
+      rolesLoad={rolesLoad}
+      initialLoad={initialLoad}
+      onRetryRoles={() => void rolesQuery.refetch()}
       // Dentro de la barra de filtros, no en una franja propia.
       filterSlot={selector}
     />

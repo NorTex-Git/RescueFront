@@ -1,3 +1,4 @@
+import { Icon } from '@/components/ui/icon'
 import { PageHeader } from '@/components/shell/page-header'
 import { DonutChart } from '@/components/ui/donut-chart'
 import { HeaderStatPill } from '@/components/ui/header-stat-pill'
@@ -90,7 +91,7 @@ export default async function AdminDashboardPage() {
                     <span
                       className={`flex size-[34px] shrink-0 items-center justify-center rounded-[11px] text-sm ${activityTone(entry.icon)}`}
                     >
-                      <i className={entry.icon} />
+                      <Icon className={entry.icon} />
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[13px] font-semibold text-[var(--shell-text-strong)]">

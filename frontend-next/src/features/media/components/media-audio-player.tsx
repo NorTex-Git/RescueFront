@@ -1,5 +1,6 @@
 'use client'
 
+import { Icon } from '@/components/ui/icon'
 import { useEffect, useRef, useState } from 'react'
 
 import { cn } from '@/lib/utils'
@@ -76,7 +77,7 @@ function MediaAudioPlayerInstance({ src, onError }: MediaAudioPlayerProps) {
               : 'border-black/10 bg-white/60 text-gray-600 hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-white/70',
           )}
         >
-          <i className="fas fa-repeat" />
+          <Icon className="fas fa-repeat" />
         </button>
       </div>
 

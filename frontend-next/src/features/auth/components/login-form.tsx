@@ -1,5 +1,6 @@
 'use client'
 
+import { Icon } from '@/components/ui/icon'
 import { useActionState, useState } from 'react'
 
 import { login, type LoginState } from '../actions'
@@ -29,7 +30,7 @@ export function LoginForm({ next, initialError }: { next?: string; initialError?
           Usuario
         </label>
         <div className="relative">
-          <i className="fas fa-user pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-sm text-slate-400 dark:text-white/40" />
+          <Icon className="fas fa-user pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-sm text-slate-400 dark:text-white/40" />
           <input
             type="text"
             id="usuario"
@@ -50,7 +51,7 @@ export function LoginForm({ next, initialError }: { next?: string; initialError?
           Contraseña
         </label>
         <div className="relative">
-          <i className="fas fa-lock pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-sm text-slate-400 dark:text-white/40" />
+          <Icon className="fas fa-lock pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-sm text-slate-400 dark:text-white/40" />
           <input
             type={showPassword ? 'text' : 'password'}
             id="password"
@@ -66,7 +67,7 @@ export function LoginForm({ next, initialError }: { next?: string; initialError?
             aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
             className="absolute top-1/2 right-4 -translate-y-1/2 text-sm text-slate-400 transition-colors hover:text-slate-600 dark:text-white/40 dark:hover:text-white/70"
           >
-            <i className={showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'} />
+            <Icon className={showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'} />
           </button>
         </div>
       </div>

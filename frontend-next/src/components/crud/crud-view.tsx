@@ -1,7 +1,9 @@
 'use client'
 
+import { Icon } from '@/components/ui/icon'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useRouter } from 'next/navigation'
+import { useState, type ReactNode } from 'react'
 import type { DefaultValues, FieldValues, Path } from 'react-hook-form'
 import { toast } from 'sonner'
 import type { ZodType } from 'zod'
@@ -14,11 +16,13 @@ import { FilterBar } from '@/components/ui/filter-bar'
 import type { FormField } from '@/components/ui/form-field'
 import { FormModal } from '@/components/ui/form-modal'
 import { HeaderStatPill, type HeaderStatTone } from '@/components/ui/header-stat-pill'
+import { LoadErrorState } from '@/components/ui/load-error-state'
 import type { ModalSize } from '@/components/ui/modal'
 import { Pagination } from '@/components/ui/pagination'
 import { Table, type Column } from '@/components/ui/table'
 import { useCrudModals } from '@/hooks/use-crud-modals'
 import { useFilters, type FilterDef } from '@/hooks/use-filters'
+import { initialDataOf, toLoadError, type LoadResult } from '@/load-result'
 import { cn } from '@/lib/utils'
 
 /**
@@ -55,6 +59,9 @@ export type CrudResource<TItem, TValues extends FieldValues> = {
   headerStats?: (items: TItem[]) => { label: string; value: React.ReactNode; tone?: HeaderStatTone }[]
 
   columns: Column<TItem>[]
+  rowClassName?: (item: TItem) => string | undefined
+  /** Sincronización periódica para recursos actualizados por sistemas externos. */
+  refetchInterval?: number
   /** Opcional: sin filtros no se pinta la barra. */
   filters?: FilterDef<TItem>[]
   /**
@@ -128,7 +135,9 @@ export type CrudResource<TItem, TValues extends FieldValues> = {
 
 export function CrudView<TItem, TValues extends FieldValues>({
   resource,
-  initialData,
+  initialLoad,
+  dependencyLoads = [],
+  onRetryDependencies,
   filterSlot,
 }: {
   resource: CrudResource<TItem, TValues>
@@ -141,21 +150,33 @@ export function CrudView<TItem, TValues extends FieldValues>({
    * Datos del Server Component. Opcional: cuando el usuario cambia de fuente —el
    * selector de empresa del portal admin— no hay nada precargado y toca pedirlos.
    */
-  initialData?: TItem[]
+  initialLoad?: LoadResult<TItem[]>
+  /** Catálogos necesarios para crear o editar, sin confundir un fallo con cero opciones. */
+  dependencyLoads?: LoadResult<unknown>[]
+  onRetryDependencies?: () => void
 }) {
+  const router = useRouter()
   const queryClient = useQueryClient()
   const modals = useCrudModals<TItem>()
 
   const {
     data: items = [],
+    error,
+    isError,
     isFetching,
     isPending,
+    refetch,
   } = useQuery({
     queryKey: resource.queryKey,
     queryFn: resource.queryFn,
     // Si el Server Component ya los trajo, sin esto habría un doble fetch al montar.
-    initialData,
+    initialData: initialLoad ? initialDataOf(initialLoad) : undefined,
+    refetchInterval: resource.refetchInterval,
   })
+
+  const loadError = isError ? toLoadError(error, resource.plural) : null
+  const hardLoadError = loadError !== null && items.length === 0
+  const dependencyError = dependencyLoads.find((load) => !load.ok)?.error ?? null
 
   const filters = useFilters(items, resource.filters)
 
@@ -164,14 +185,11 @@ export function CrudView<TItem, TValues extends FieldValues>({
 
   // Paginación en cliente: los datos ya están filtrados en memoria (`useFilters`).
   const pageSize = resource.pageSize ?? 8
-  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState({ page: 1, resultCount: filters.filtered.length })
+  const page = pagination.resultCount === filters.filtered.length ? pagination.page : 1
   const pageCount = Math.max(1, Math.ceil(filters.filtered.length / pageSize))
   const safePage = Math.min(page, pageCount)
   const pageRows = filters.filtered.slice((safePage - 1) * pageSize, safePage * pageSize)
-  // Al cambiar el conjunto filtrado (buscar, limpiar), volver a la primera página.
-  useEffect(() => {
-    setPage(1)
-  }, [filters.filtered.length])
 
   /**
    * Las acciones por fila se añaden aquí para que ningún recurso las repita.
@@ -189,7 +207,12 @@ export function CrudView<TItem, TValues extends FieldValues>({
       cell: (row) => (
         <div className="flex justify-end gap-1">
           <RowActionButton icon="fas fa-eye" label="Ver" onClick={() => modals.openDetail(row)} />
-          <RowActionButton icon="fas fa-pen" label="Editar" onClick={() => modals.openEdit(row)} />
+          <RowActionButton
+            icon="fas fa-pen"
+            label="Editar"
+            disabled={dependencyError !== null}
+            onClick={() => modals.openEdit(row)}
+          />
           {resource.toggle && (
             <RowActionButton
               icon={resource.toggle.isActive(row) ? 'fas fa-ban' : 'fas fa-check'}
@@ -236,46 +259,64 @@ export function CrudView<TItem, TValues extends FieldValues>({
         actions={
           <>
             {isFetching && <span className="text-xs opacity-60">Actualizando…</span>}
-            <Button onClick={modals.openCreate}>
-              <i className="fas fa-plus" />
+            <Button onClick={modals.openCreate} disabled={hardLoadError || dependencyError !== null}>
+              <Icon className="fas fa-plus" />
               Nuevo
             </Button>
           </>
         }
       />
 
-      <FilterBar filters={resource.filters ?? []} state={filters} leading={filterSlot} />
+      {hardLoadError ? (
+        <LoadErrorState error={loadError} onRetry={() => void refetch()} />
+      ) : (
+        <>
+          {dependencyError && (
+            <LoadErrorState
+              compact
+              error={dependencyError}
+              message="No se pudieron cargar opciones necesarias para crear o editar. El listado sigue disponible."
+              onRetry={onRetryDependencies ?? (() => router.refresh())}
+            />
+          )}
+          {loadError && <LoadErrorState compact error={loadError} onRetry={() => void refetch()} />}
+          <FilterBar filters={resource.filters ?? []} state={filters} leading={filterSlot} />
 
-      <div className="overflow-hidden rounded-2xl border border-[var(--shell-border)] bg-[var(--shell-surface)]">
-        <Table
-          columns={columns}
-          rows={pageRows}
-          rowKey={resource.getId}
-          showIndex={resource.showIndex ?? true}
-          indexOffset={(safePage - 1) * pageSize}
-          // El estado vacío enriquecido solo en el vacío real; cargando y filtrado-sin-
-          // resultados usan un mensaje, para no confundir una carga con una tabla vacía.
-          emptyState={
-            !isPending && !filters.isDirty
-              ? resource.emptyState?.({ openCreate: modals.openCreate })
-              : undefined
-          }
-          emptyMessage={
-            isPending
-              ? 'Cargando…'
-              : filters.isDirty
-                ? 'Ningún registro coincide con los filtros.'
-                : resource.emptyMessage
-          }
-        />
-        <Pagination
-          page={safePage}
-          pageCount={pageCount}
-          total={filters.filtered.length}
-          pageSize={pageSize}
-          onPageChange={setPage}
-        />
-      </div>
+          <div className="overflow-hidden rounded-2xl border border-[var(--shell-border)] bg-[var(--shell-surface)]">
+            <Table
+              columns={columns}
+              rows={pageRows}
+              rowKey={resource.getId}
+              rowClassName={resource.rowClassName}
+              showIndex={resource.showIndex ?? true}
+              indexOffset={(safePage - 1) * pageSize}
+              // El estado vacío enriquecido solo en el vacío real; cargando y filtrado-sin-
+              // resultados usan un mensaje, para no confundir una carga con una tabla vacía.
+              emptyState={
+                !isPending && !filters.isDirty
+                  ? resource.emptyState?.({ openCreate: modals.openCreate })
+                  : undefined
+              }
+              emptyMessage={
+                isPending
+                  ? 'Cargando…'
+                  : filters.isDirty
+                    ? 'Ningún registro coincide con los filtros.'
+                    : resource.emptyMessage
+              }
+            />
+            <Pagination
+              page={safePage}
+              pageCount={pageCount}
+              total={filters.filtered.length}
+              pageSize={pageSize}
+              onPageChange={(nextPage) =>
+                setPagination({ page: nextPage, resultCount: filters.filtered.length })
+              }
+            />
+          </div>
+        </>
+      )}
 
       <FormModal
         open={modals.isOpen('create')}
@@ -407,24 +448,28 @@ function RowActionButton({
   label,
   tone = 'neutral',
   onClick,
+  disabled = false,
 }: {
   icon: string
   label: string
   tone?: keyof typeof ROW_ACTION_TONES
   onClick: () => void
+  disabled?: boolean
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       aria-label={label}
       title={label}
       className={cn(
         'flex size-8 items-center justify-center rounded-full transition-colors',
         ROW_ACTION_TONES[tone],
+        disabled && 'cursor-not-allowed opacity-40',
       )}
     >
-      <i className={icon} />
+      <Icon className={icon} />
     </button>
   )
 }

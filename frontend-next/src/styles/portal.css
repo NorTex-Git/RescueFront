@@ -8,7 +8,6 @@
  *
  * Font Awesome viene de npm, no del CDN de cdnjs (regla 7 del plan).
  */
-@import '@fortawesome/fontawesome-free/css/all.min.css';
 
 @import './spa/variables.css';
 @import './spa/spa-global.css';

@@ -1,5 +1,6 @@
 'use client'
 
+import { Icon } from '@/components/ui/icon'
 import { CrudView, type CrudResource } from '@/components/crud/crud-view'
 import { StatusBadge } from '@/components/ui/badge'
 import type { FieldOption } from '@/components/ui/form-field'
@@ -7,6 +8,7 @@ import { PrimaryCell } from '@/components/ui/primary-cell'
 import { MediaAudioPlayer } from '@/features/media/components/media-audio-player'
 import type { MediaCatalog } from '@/features/media/normalize'
 import { formatDate } from '@/features/stats/format'
+import type { LoadResult } from '@/load-result'
 
 import {
   createAlertType,
@@ -76,7 +78,7 @@ function AlertMediaDetails({ item }: { item: AlertType }) {
     <div className="grid gap-4 lg:grid-cols-2">
       <article className="overflow-hidden rounded-2xl border border-black/10 bg-white/55 p-3 dark:border-white/10 dark:bg-white/5">
         <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-          <i className="fas fa-image text-sky-500" />
+          <Icon className="fas fa-image text-sky-500" />
           Imagen de la alerta
         </div>
         {image ? (
@@ -100,7 +102,7 @@ function AlertMediaDetails({ item }: { item: AlertType }) {
 
       <article className="rounded-2xl border border-black/10 bg-white/55 p-3 dark:border-white/10 dark:bg-white/5">
         <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-          <i className="fas fa-volume-high text-indigo-500" />
+          <Icon className="fas fa-volume-high text-indigo-500" />
           Sonido de la alerta
         </div>
         {sound ? (
@@ -315,19 +317,28 @@ function buildResource(
 }
 
 export function AlertTypesView({
-  niveles,
-  empresas,
-  initialData,
-  mediaCatalog,
+  nivelesLoad,
+  empresasLoad,
+  initialLoad,
+  mediaCatalogLoad,
 }: {
   /** Valores de `TIPOS_ALERTA`, servidos por el backend. */
-  niveles: FieldOption[]
+  nivelesLoad: LoadResult<FieldOption[]>
   /** Para el select del formulario y para nombrar la empresa en la tabla. */
-  empresas: FieldOption[]
-  initialData: AlertType[]
-  mediaCatalog: MediaCatalog
+  empresasLoad: LoadResult<FieldOption[]>
+  initialLoad: LoadResult<AlertType[]>
+  mediaCatalogLoad: LoadResult<MediaCatalog>
 }) {
+  const niveles = nivelesLoad.ok ? nivelesLoad.data : []
+  const empresas = empresasLoad.ok ? empresasLoad.data : []
+  const mediaCatalog = mediaCatalogLoad.ok
+    ? mediaCatalogLoad.data
+    : { folders: [], filesByFolder: {} }
   return (
-    <CrudView resource={buildResource(niveles, empresas, mediaCatalog)} initialData={initialData} />
+    <CrudView
+      resource={buildResource(niveles, empresas, mediaCatalog)}
+      initialLoad={initialLoad}
+      dependencyLoads={[nivelesLoad, empresasLoad, mediaCatalogLoad]}
+    />
   )
 }

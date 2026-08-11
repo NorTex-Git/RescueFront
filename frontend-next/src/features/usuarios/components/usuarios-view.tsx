@@ -4,6 +4,7 @@ import { CrudView, type CrudResource } from '@/components/crud/crud-view'
 import { StatusBadge } from '@/components/ui/badge'
 import { PrimaryCell } from '@/components/ui/primary-cell'
 import { matchesText } from '@/hooks/use-filters'
+import type { LoadResult } from '@/load-result'
 
 import {
   createUsuario,
@@ -156,24 +157,29 @@ function buildResource(
 export function UsuariosView({
   empresaId,
   empresaNombre,
-  roles,
-  initialData,
+  rolesLoad,
+  initialLoad,
+  onRetryRoles,
   filterSlot,
 }: {
   empresaId: string
   /** Para el subtítulo de la cabecera; viene de la sesión, que es cosa del servidor. */
   empresaNombre: string
   /** Roles definidos en la empresa; alimentan el select del formulario. */
-  roles: string[]
+  rolesLoad: LoadResult<string[]>
   /** Ausente cuando el admin cambia de empresa: entonces los pide el cliente. */
-  initialData?: Usuario[]
+  initialLoad?: LoadResult<Usuario[]>
+  onRetryRoles?: () => void
   /** El portal admin mete aquí su selector de empresa; el de empresa no lo usa. */
   filterSlot?: React.ReactNode
 }) {
+  const roles = rolesLoad.ok ? rolesLoad.data : []
   return (
     <CrudView
       resource={buildResource(empresaId, roles, empresaNombre)}
-      initialData={initialData}
+      initialLoad={initialLoad}
+      dependencyLoads={[rolesLoad]}
+      onRetryDependencies={onRetryRoles}
       filterSlot={filterSlot}
     />
   )

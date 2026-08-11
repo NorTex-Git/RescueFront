@@ -1,5 +1,6 @@
 'use client'
 
+import { Icon } from '@/components/ui/icon'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
@@ -20,22 +21,16 @@ export type NavItem = { href: string; label: string; icon: string }
  */
 export function Sidebar({
   items,
-  title,
-  subtitle,
-  initials,
   open,
   onClose,
   onLogout,
   extra,
 }: {
   items: NavItem[]
-  title: string
-  subtitle: string
-  initials: string
   open: boolean
   onClose: () => void
   onLogout: () => void
-  /** Bloque opcional entre la navegación y "Cerrar Sesión" — solo lo usa el admin hoy. */
+  /** Bloque fijo sobre "Cerrar Sesión" — solo lo usa el admin hoy. */
   extra?: ReactNode
 }) {
   const pathname = usePathname()
@@ -49,22 +44,9 @@ export function Sidebar({
           open ? 'translate-x-0' : '-translate-x-full',
         )}
       >
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-          {/* Perfil */}
-          <div className="flex items-center gap-[11px] rounded-[14px] bg-[var(--shell-accent-soft)] p-2.5">
-            <div className="flex size-[38px] shrink-0 items-center justify-center rounded-full bg-[image:var(--shell-accent-grad)] text-[13px] font-bold tracking-[0.3px] text-white">
-              {initials}
-            </div>
-            <div className="min-w-0 leading-tight">
-              <p className="truncate text-[13.5px] font-semibold text-[var(--shell-text-strong)]">
-                {title}
-              </p>
-              <p className="truncate text-[11px] text-[var(--shell-role)]">{subtitle}</p>
-            </div>
-          </div>
-
-          {/* Navegación */}
-          <nav className="mt-[22px]">
+        {/* Solo la navegación puede crecer y desplazarse. */}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
+          <nav>
             <p className="px-2 text-[10px] font-semibold tracking-[1.4px] text-[var(--shell-text-muted)] uppercase">
               Navegación
             </p>
@@ -92,7 +74,7 @@ export function Sidebar({
                           : 'bg-[var(--shell-accent-tile)] text-[var(--shell-text-muted)]',
                       )}
                     >
-                      <i className={item.icon} />
+                      <Icon className={item.icon} />
                     </span>
                     <span
                       className={cn(
@@ -109,20 +91,21 @@ export function Sidebar({
               })}
             </div>
           </nav>
-
-          {extra && <div className="mt-auto pt-4">{extra}</div>}
         </div>
 
-        {/* Cerrar sesión */}
-        <div className="mt-4 border-t border-[var(--shell-border-soft)] pt-4">
-          <button
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--shell-danger-border)] bg-[var(--shell-danger-bg)] px-3 py-3 text-sm font-semibold text-[var(--shell-danger)] transition-colors hover:brightness-95"
-            onClick={onLogout}
-            aria-label="Cerrar sesión"
-          >
-            <i className="fas fa-sign-out-alt" />
-            <span>Cerrar Sesión</span>
-          </button>
+        {/* Actividad y sesión permanecen visibles aunque la navegación tenga scroll. */}
+        <div className="shrink-0 pt-4">
+          {extra}
+          <div className={cn('border-t border-[var(--shell-border-soft)] pt-4', extra && 'mt-4')}>
+            <button
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--shell-danger-border)] bg-[var(--shell-danger-bg)] px-3 py-3 text-sm font-semibold text-[var(--shell-danger)] transition-colors hover:brightness-95"
+              onClick={onLogout}
+              aria-label="Cerrar sesión"
+            >
+              <Icon className="fas fa-sign-out-alt" />
+              <span>Cerrar Sesión</span>
+            </button>
+          </div>
         </div>
       </aside>
 

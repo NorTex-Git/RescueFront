@@ -1,5 +1,6 @@
 'use client'
 
+import { Icon } from '@/components/ui/icon'
 import type { ReactNode } from 'react'
 
 import type { FilterDef, FiltersState } from '@/hooks/use-filters'
@@ -91,7 +92,7 @@ export function FilterBar<TItem>({
             disabled={!state.isDirty}
             className="shrink-0"
           >
-            <i className="fas fa-filter-circle-xmark" />
+            <Icon className="fas fa-filter-circle-xmark" />
             Limpiar
           </Button>
         )}

@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation'
 import { useState, type ReactNode } from 'react'
-import { toast } from 'sonner'
 
 import { Modal, ModalButton } from '@/components/ui/modal'
 import { API_PREFIX } from '@/lib/config'
@@ -17,23 +16,17 @@ import { Sidebar, type NavItem } from './sidebar'
  */
 export function PortalShell({
   items,
-  navbarTitle,
-  navbarSubtitle,
-  navbarIcon,
-  sidebarTitle,
-  sidebarSubtitle,
+  userName,
+  userRole,
   initials,
   sidebarExtra,
   children,
 }: {
   items: NavItem[]
-  navbarTitle: string
-  navbarSubtitle: string
-  navbarIcon: string
-  sidebarTitle: string
-  sidebarSubtitle: string
+  userName: string
+  userRole: string
   initials: string
-  /** Bloque opcional entre la navegación y "Cerrar Sesión" del sidebar. */
+  /** Bloque persistente sobre "Cerrar Sesión" del sidebar. */
   sidebarExtra?: ReactNode
   children: ReactNode
 }) {
@@ -58,9 +51,9 @@ export function PortalShell({
   return (
     <>
       <Navbar
-        title={navbarTitle}
-        subtitle={navbarSubtitle}
-        icon={navbarIcon}
+        title={userName}
+        subtitle={userRole}
+        initials={initials}
         menuOpen={menuOpen}
         onToggleMenu={() => setMenuOpen((value) => !value)}
       />
@@ -68,9 +61,6 @@ export function PortalShell({
       <div className="flex min-h-screen bg-[var(--shell-bg)] pt-[68px]">
         <Sidebar
           items={items}
-          title={sidebarTitle}
-          subtitle={sidebarSubtitle}
-          initials={initials}
           open={menuOpen}
           onClose={() => setMenuOpen(false)}
           onLogout={() => setConfirmLogout(true)}

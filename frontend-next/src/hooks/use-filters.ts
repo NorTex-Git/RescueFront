@@ -45,12 +45,15 @@ export function useFilters<TItem>(
   items: TItem[],
   filters: FilterDef<TItem>[] = [],
 ): FiltersState<TItem> {
+  const filterSignature = filters
+    .map((filter) => `${filter.key}:${filter.initial ?? ''}`)
+    .join('|')
   const initial = useMemo(
     () => Object.fromEntries(filters.map((filter) => [filter.key, filter.initial ?? ''])),
     // `filters` suele ser un literal recreado en cada render del padre; comparar por
     // claves y valores iniciales evita rehacer esto sin motivo.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [filters.map((filter) => `${filter.key}:${filter.initial ?? ''}`).join('|')],
+    [filterSignature],
   )
 
   const [values, setValues] = useState<Record<string, string>>(initial)

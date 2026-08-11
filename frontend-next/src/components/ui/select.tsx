@@ -1,5 +1,6 @@
 'use client'
 
+import { Icon } from '@/components/ui/icon'
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -213,7 +214,7 @@ export function Select({
           )}
         >
           <span className="truncate">{current?.label ?? placeholder}</span>
-          <i
+          <Icon
             className={cn(
               'fas fa-chevron-down shrink-0 text-xs transition-transform',
               open && 'rotate-180',
@@ -266,7 +267,7 @@ export function Select({
                   >
                     <span className="truncate">{item.label}</span>
                     {isSelected && item.value && (
-                      <i className="fas fa-check shrink-0 text-xs text-blue-600 dark:text-blue-300" />
+                      <Icon className="fas fa-check shrink-0 text-xs text-blue-600 dark:text-blue-300" />
                     )}
                   </li>
                 )

@@ -1,7 +1,8 @@
 'use client'
 
+import { Icon } from '@/components/ui/icon'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { PageHeader } from '@/components/shell/page-header'
@@ -10,9 +11,11 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { FormModal } from '@/components/ui/form-modal'
 import type { FormField } from '@/components/ui/form-field'
 import { Input } from '@/components/ui/input'
+import { LoadErrorState } from '@/components/ui/load-error-state'
 import { Modal, ModalButton } from '@/components/ui/modal'
 import { Select } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
+import { initialDataOf, toLoadError, type LoadResult } from '@/load-result'
 
 import { createFolder, deleteFolder, fetchFiles, fetchFolders, uploadFile } from '../api'
 import type { MediaFile } from '../normalize'
@@ -74,14 +77,23 @@ const createFolderFields: FormField<'name'>[] = [
   },
 ]
 
-export function AdminMultimediaView({ initialFolders }: { initialFolders: string[] }) {
+export function AdminMultimediaView({
+  initialFoldersLoad,
+}: {
+  initialFoldersLoad: LoadResult<string[]>
+}) {
   const queryClient = useQueryClient()
 
-  const { data: folders = [], isFetching } = useQuery({
+  const foldersQuery = useQuery({
     queryKey: FOLDERS_KEY,
     queryFn: fetchFolders,
-    initialData: initialFolders,
+    initialData: initialDataOf(initialFoldersLoad),
   })
+  const folders = foldersQuery.data ?? []
+  const loadError = foldersQuery.isError
+    ? toLoadError(foldersQuery.error, 'carpetas multimedia')
+    : null
+  const hardLoadError = loadError !== null && folders.length === 0
 
   const [createOpen, setCreateOpen] = useState(false)
   const [uploadOpen, setUploadOpen] = useState(false)
@@ -99,27 +111,29 @@ export function AdminMultimediaView({ initialFolders }: { initialFolders: string
         subtitle="Carpetas y archivos sincronizados desde el servicio multimedia"
         actions={
           <>
-            {isFetching && <span className="text-xs opacity-60">Actualizando…</span>}
+            {foldersQuery.isFetching && <span className="text-xs opacity-60">Actualizando…</span>}
             <Button
               variant="secondary"
               onClick={() => setCreateOpen(true)}
-              disabled={isFetching && folders.length === 0}
+              disabled={hardLoadError || (foldersQuery.isFetching && folders.length === 0)}
             >
-              <i className="fas fa-folder-plus" />
+              <Icon className="fas fa-folder-plus" />
               Crear directorio
             </Button>
-            <Button onClick={() => setUploadOpen(true)} disabled={folders.length === 0}>
-              <i className="fas fa-plus" />
+            <Button onClick={() => setUploadOpen(true)} disabled={hardLoadError || folders.length === 0}>
+              <Icon className="fas fa-plus" />
               Agregar archivo
             </Button>
           </>
         }
       />
 
-      {folders.length === 0 ? (
+      {hardLoadError ? (
+        <LoadErrorState error={loadError} onRetry={() => void foldersQuery.refetch()} />
+      ) : folders.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-[var(--shell-border)] bg-[var(--shell-surface)] px-6 py-16 text-center">
           <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-[var(--shell-accent-soft)] text-2xl text-[var(--shell-accent)]">
-            <i className="fas fa-folder-open" />
+            <Icon className="fas fa-folder-open" />
           </div>
           <h3 className="text-lg font-semibold text-[var(--shell-text-strong)]">
             Sin carpetas disponibles
@@ -129,17 +143,22 @@ export function AdminMultimediaView({ initialFolders }: { initialFolders: string
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-[18px] sm:grid-cols-2 lg:grid-cols-3">
-          {folders.map((folder, index) => (
-            <FolderCard
-              key={folder}
-              folder={folder}
-              index={index}
-              onView={() => setViewFolder(folder)}
-              onDelete={() => setDeleteTarget(folder)}
-            />
-          ))}
-        </div>
+        <>
+          {loadError && (
+            <LoadErrorState compact error={loadError} onRetry={() => void foldersQuery.refetch()} />
+          )}
+          <div className="grid grid-cols-1 gap-[18px] sm:grid-cols-2 lg:grid-cols-3">
+            {folders.map((folder, index) => (
+              <FolderCard
+                key={folder}
+                folder={folder}
+                index={index}
+                onView={() => setViewFolder(folder)}
+                onDelete={() => setDeleteTarget(folder)}
+              />
+            ))}
+          </div>
+        </>
       )}
 
       <FormModal<CreateFolderValues>
@@ -173,7 +192,11 @@ export function AdminMultimediaView({ initialFolders }: { initialFolders: string
         }}
       />
 
-      <ViewFolderModal folder={viewFolder} onClose={() => setViewFolder(null)} />
+      <ViewFolderModal
+        key={viewFolder ?? 'closed'}
+        folder={viewFolder}
+        onClose={() => setViewFolder(null)}
+      />
 
       <ConfirmDialog
         open={deleteTarget !== null}
@@ -219,7 +242,7 @@ function FolderCard({
         aria-label={`Eliminar ${folderDisplayName(folder)}`}
         className="absolute top-3 right-3 flex size-9 items-center justify-center rounded-full border border-red-500/20 bg-red-500/10 text-sm text-red-600 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-500/20 focus-visible:opacity-100 dark:text-red-300"
       >
-        <i className="fas fa-trash" />
+        <Icon className="fas fa-trash" />
       </button>
 
       <div
@@ -228,7 +251,7 @@ function FolderCard({
           CARD_TONES[index % CARD_TONES.length],
         )}
       >
-        <i className={folderIcon(folder)} />
+        <Icon className={folderIcon(folder)} />
       </div>
 
       <h3
@@ -243,7 +266,7 @@ function FolderCard({
 
       <div className="mt-4">
         <Button size="sm" variant="secondary" onClick={onView}>
-          <i className="fas fa-eye" />
+          <Icon className="fas fa-eye" />
           Ver archivos
         </Button>
       </div>
@@ -355,7 +378,7 @@ function UploadModal({
           />
           {file && (
             <p className="mt-2 truncate text-xs text-gray-600 dark:text-white/60" title={file.name}>
-              <i className="fas fa-paperclip mr-1.5" />
+              <Icon className="fas fa-paperclip mr-1.5" />
               {file.name}
             </p>
           )}
@@ -388,11 +411,6 @@ function ViewFolderModal({ folder, onClose }: { folder: string | null; onClose: 
   // entran en viewport. Entre las dos, la carpeta "va apareciendo" en vez de bloquearse.
   const BATCH = 12
   const [visible, setVisible] = useState(BATCH)
-  // Al cambiar de carpeta, volver a empezar por el primer lote.
-  useEffect(() => {
-    setVisible(BATCH)
-  }, [folder])
-
   return (
     <Modal
       open={folder !== null}
@@ -440,7 +458,7 @@ function ViewFolderModal({ folder, onClose }: { folder: string | null; onClose: 
                 size="sm"
                 onClick={() => setVisible((count) => count + BATCH)}
               >
-                <i className="fas fa-arrow-down" />
+                <Icon className="fas fa-arrow-down" />
                 Cargar más ({files.length - visible} restantes)
               </Button>
             </div>
@@ -458,7 +476,7 @@ function FilePreview({ file }: { file: MediaFile }) {
   return (
     <li className="flex flex-col gap-3 rounded-2xl border border-black/10 bg-white/50 p-3 dark:border-white/10 dark:bg-white/5">
       <div className="flex items-center gap-2">
-        <i
+        <Icon
           className={cn(
             'text-sm',
             isImage
@@ -494,7 +512,7 @@ function FilePreview({ file }: { file: MediaFile }) {
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:underline dark:text-blue-300"
         >
-          <i className="fas fa-external-link-alt" />
+          <Icon className="fas fa-external-link-alt" />
           Abrir archivo
         </a>
       )}

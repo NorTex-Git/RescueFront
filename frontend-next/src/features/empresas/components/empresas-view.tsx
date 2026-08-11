@@ -6,6 +6,7 @@ import type { FieldOption } from '@/components/ui/form-field'
 import { PrimaryCell } from '@/components/ui/primary-cell'
 import { formatDate } from '@/features/stats/format'
 import { matchesText } from '@/hooks/use-filters'
+import type { LoadResult } from '@/load-result'
 
 import { createEmpresa, listEmpresas, toggleEmpresaStatus, updateEmpresa } from '../api'
 import {
@@ -218,12 +219,19 @@ function buildResource(tipos: FieldOption[]): CrudResource<Empresa, EmpresaFormV
 }
 
 export function EmpresasView({
-  initialData,
-  tipos,
+  empresasLoad,
+  tiposLoad,
 }: {
-  initialData: Empresa[]
+  empresasLoad: LoadResult<Empresa[]>
   /** Tipos de empresa activos, para el select y la columna de tipo. */
-  tipos: FieldOption[]
+  tiposLoad: LoadResult<FieldOption[]>
 }) {
-  return <CrudView resource={buildResource(tipos)} initialData={initialData} />
+  const tipos = tiposLoad.ok ? tiposLoad.data : []
+  return (
+    <CrudView
+      resource={buildResource(tipos)}
+      initialLoad={empresasLoad}
+      dependencyLoads={[tiposLoad]}
+    />
+  )
 }

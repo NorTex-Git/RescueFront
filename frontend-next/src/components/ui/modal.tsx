@@ -1,5 +1,6 @@
 'use client'
 
+import { Icon } from '@/components/ui/icon'
 import { useEffect, useId, useRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -174,7 +175,7 @@ export function Modal({
                 iconGradient,
               )}
             >
-              <i className={cn(icon, 'text-xl text-white')} />
+              <Icon className={cn(icon, 'text-xl text-white')} />
             </div>
           )}
           <div className="min-w-0 flex-1">
@@ -200,7 +201,7 @@ export function Modal({
               'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400',
             )}
           >
-            <i className="fas fa-times text-lg" />
+            <Icon className="fas fa-times text-lg" />
           </button>
         </header>
 
@@ -259,7 +260,7 @@ export function ModalButton({
           className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent"
         />
       ) : (
-        icon && <i className={icon} />
+        icon && <Icon className={icon} />
       )}
       {children}
     </button>

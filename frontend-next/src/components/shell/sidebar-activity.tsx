@@ -6,7 +6,7 @@ const DOT_TONES = {
 
 /**
  * Bloque "ACTIVIDAD" del sidebar (diseño `admin-shell-v2.pen` → nodo "Mid Block"),
- * entre la navegación y "Cerrar Sesión". Solo métricas reales: cada `item` lo arma
+ * fijo sobre "Cerrar Sesión". Solo métricas reales: cada `item` lo arma
  * quien llama con datos ya verificados contra el backend (no se inventan cifras).
  */
 export function SidebarActivity({

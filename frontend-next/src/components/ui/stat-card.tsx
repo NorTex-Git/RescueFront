@@ -1,3 +1,4 @@
+import { Icon } from '@/components/ui/icon'
 import type { ReactNode } from 'react'
 
 import { cn } from '@/lib/utils'
@@ -64,7 +65,7 @@ export function MetricCard({
               t.tile,
             )}
           >
-            <i className={icon} />
+            <Icon className={icon} />
           </span>
         </div>
         <div className="flex items-end justify-between">
@@ -98,7 +99,7 @@ export function StatCard({
   return (
     <div className="ios-stat-card" data-tone={tone}>
       <div className={`ios-stat-icon ios-stat-icon-${tone}`}>
-        <i className={icon} />
+        <Icon className={icon} />
       </div>
       <div className="ios-stat-content">
         <div className="ios-stat-label">{label}</div>

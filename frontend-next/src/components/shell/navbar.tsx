@@ -1,5 +1,6 @@
 'use client'
 
+import { Icon } from '@/components/ui/icon'
 import { useTheme } from '@/components/theme-provider'
 
 /**
@@ -13,13 +14,13 @@ import { useTheme } from '@/components/theme-provider'
 export function Navbar({
   title,
   subtitle,
-  icon,
+  initials,
   menuOpen,
   onToggleMenu,
 }: {
   title: string
   subtitle: string
-  icon: string
+  initials: string
   menuOpen: boolean
   onToggleMenu: () => void
 }) {
@@ -35,12 +36,12 @@ export function Navbar({
             aria-expanded={menuOpen}
             onClick={onToggleMenu}
           >
-            <i className="fas fa-bars" />
+            <Icon className="fas fa-bars" />
           </button>
 
           <div className="flex items-center gap-3">
-            <div className="flex size-[38px] shrink-0 items-center justify-center rounded-[11px] bg-[image:var(--shell-accent-grad)] text-white shadow-sm">
-              <i className={`${icon} text-[18px]`} />
+            <div className="flex size-[38px] shrink-0 items-center justify-center rounded-full bg-[image:var(--shell-accent-grad)] text-[12px] font-bold tracking-[0.3px] text-white shadow-sm">
+              {initials}
             </div>
             <div className="leading-tight">
               <h1 className="text-base font-bold tracking-[-0.2px] text-[var(--shell-text-strong)]">
@@ -70,7 +71,7 @@ export function Navbar({
             title="Cambiar tema"
             onClick={toggleTheme}
           >
-            <i className={theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon'} />
+            <Icon className={theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon'} />
           </button>
         </div>
       </div>

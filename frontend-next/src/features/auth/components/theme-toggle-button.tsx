@@ -1,5 +1,6 @@
 'use client'
 
+import { Icon } from '@/components/ui/icon'
 import { useTheme } from '@/components/theme-provider'
 
 /**
@@ -18,7 +19,7 @@ export function ThemeToggleButton() {
       title="Cambiar tema"
       className="theme-toggle-btn fixed top-4 right-4 z-20 flex size-11 items-center justify-center rounded-full sm:top-6 sm:right-6"
     >
-      <i className={theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon'} />
+      <Icon className={theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon'} />
     </button>
   )
 }
