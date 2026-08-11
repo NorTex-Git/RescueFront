@@ -1,6 +1,13 @@
 'use client'
 
-import { createContext, use, useCallback, useEffect, useState, type ReactNode } from 'react'
+import {
+  createContext,
+  use,
+  useCallback,
+  useEffect,
+  useSyncExternalStore,
+  type ReactNode,
+} from 'react'
 
 /** Reemplaza `static/js/theme-toggle.js` y su estado en `window`. */
 
@@ -15,6 +22,24 @@ type ThemeContextValue = {
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
+const themeListeners = new Set<() => void>()
+
+function subscribeToTheme(listener: () => void) {
+  themeListeners.add(listener)
+  return () => themeListeners.delete(listener)
+}
+
+function getClientTheme(): Theme {
+  return document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+}
+
+function getServerTheme(): Theme {
+  return 'light'
+}
+
+function notifyThemeChange() {
+  themeListeners.forEach((listener) => listener())
+}
 
 /**
  * Se inyecta en `<head>` para aplicar la clase antes del primer paint y evitar el
@@ -47,26 +72,22 @@ function applyTheme(theme: Theme) {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   // El script de arriba ya dejó el DOM en el tema correcto; aquí solo lo leemos.
-  const [theme, setThemeState] = useState<Theme>(() =>
-    typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
-      ? 'dark'
-      : 'light',
-  )
+  const theme = useSyncExternalStore(subscribeToTheme, getClientTheme, getServerTheme)
 
   useEffect(() => {
-    const current = document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+    const current = getClientTheme()
     // Reaplica por si el `<body>` aún no existía cuando corrió el script del head.
     applyTheme(current)
   }, [])
 
   const setTheme = useCallback((next: Theme) => {
-    setThemeState(next)
     applyTheme(next)
     try {
       localStorage.setItem(STORAGE_KEY, next)
     } catch {
       // Modo privado / almacenamiento bloqueado: el tema simplemente no persiste.
     }
+    notifyThemeChange()
   }, [])
 
   const toggleTheme = useCallback(

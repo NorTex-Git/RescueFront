@@ -2,6 +2,7 @@
 
 import { Icon } from '@/components/ui/icon'
 import { useTheme } from '@/components/theme-provider'
+import { NotificationCenter } from './notification-center'
 
 /**
  * Barra superior del shell (diseño `admin-shell-v2.pen` → nodo "Navbar").
@@ -17,12 +18,14 @@ export function Navbar({
   initials,
   menuOpen,
   onToggleMenu,
+  alertsHref,
 }: {
   title: string
   subtitle: string
   initials: string
   menuOpen: boolean
   onToggleMenu: () => void
+  alertsHref?: string
 }) {
   const { theme, toggleTheme } = useTheme()
 
@@ -63,6 +66,8 @@ export function Navbar({
           </span>
 
           <span className="hidden h-6 w-px bg-[var(--shell-border)] sm:block" />
+
+          <NotificationCenter alertsHref={alertsHref} />
 
           <button
             className="flex size-[38px] items-center justify-center rounded-full border border-[var(--shell-border)] bg-[var(--shell-bg)] text-[var(--shell-text)] transition-colors hover:bg-[var(--shell-accent-tile)]"

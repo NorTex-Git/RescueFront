@@ -5,6 +5,7 @@ import { useState, type ReactNode } from 'react'
 
 import { Modal, ModalButton } from '@/components/ui/modal'
 import { API_PREFIX } from '@/lib/config'
+import { RealtimeProvider } from '@/features/realtime/realtime-provider'
 
 import { Navbar } from './navbar'
 import { Sidebar, type NavItem } from './sidebar'
@@ -49,13 +50,14 @@ export function PortalShell({
   }
 
   return (
-    <>
+    <RealtimeProvider>
       <Navbar
         title={userName}
         subtitle={userRole}
         initials={initials}
         menuOpen={menuOpen}
         onToggleMenu={() => setMenuOpen((value) => !value)}
+        alertsHref={userRole === 'Empresa' ? '/empresa/alertas' : undefined}
       />
 
       <div className="flex min-h-screen bg-[var(--shell-bg)] pt-[68px]">
@@ -97,6 +99,6 @@ export function PortalShell({
           Tu sesión actual se cerrará y volverás al inicio de sesión.
         </p>
       </Modal>
-    </>
+    </RealtimeProvider>
   )
 }
