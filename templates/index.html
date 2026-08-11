@@ -8,22 +8,24 @@
 {% endblock %}
 
 {% block content %}
-<!-- Clamp/Rescue Section -->
-<div id="clamp" class="rescue-section">
- {% include 'GSAP_Templates/clamp.html' %}
+<div class="min-h-screen bg-slate-950 text-slate-100">
+  <!-- Clamp/Rescue Section -->
+  <div id="clamp" class="rescue-section section-dark">
+   {% include 'GSAP_Templates/clamp.html' %}
+  </div>
+
+  {% include 'GSAP_Templates/hero.html' %}
+
+  <!-- Gradiente de transición entre Hero y Tunnel -->
+  <section id="tunnel" class="tunnel-section relative w-full h-screen overflow-hidden bg-slate-950/95 border-t border-white/10">
+   {% include 'GSAP_Templates/tunnel.html' %}
+  </section>
+
+  <!-- Contact Section -->
+  <section id="contact-us" class="relative section-dark border-t border-white/10">
+  {% include 'contact/contact-main.html' %}
+  </section>
 </div>
-
-{% include 'GSAP_Templates/hero.html' %}
-
-<!-- Gradiente de transición entre Hero y Tunnel -->
-<section id="tunnel" class="tunnel-section relative w-full h-screen overflow-hidden bg-black">
- {% include 'GSAP_Templates/tunnel.html' %}
-</section>
-
-<!-- Contact Section -->
-<section id="contact-us" class="relative bg-black">
-{% include 'contact/contact-main.html' %}
-</section>
 {% endblock %}
 
 {% block extra_js %}

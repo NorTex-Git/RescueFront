@@ -4,12 +4,25 @@
 
 /* Estilos personalizados para RESCUE */
 @layer base {
+  :root {
+    color-scheme: dark;
+  }
+
   html {
     scroll-behavior: smooth;
   }
-  
+
   body {
+    @apply min-h-screen bg-slate-950 text-slate-100 antialiased;
     font-family: 'Inter', sans-serif;
+    background-image:
+      radial-gradient(circle at top left, rgba(34, 211, 238, 0.12), transparent 30%),
+      radial-gradient(circle at 85% 15%, rgba(129, 140, 248, 0.16), transparent 25%),
+      linear-gradient(135deg, #020617 0%, #030712 55%, #020617 100%);
+  }
+
+  ::selection {
+    @apply bg-cyan-400/40 text-white;
   }
 }
 
@@ -17,21 +30,32 @@
   .btn-rescue {
     @apply px-4 py-2 bg-rescue-red text-white rounded-lg hover:bg-red-600 transition-colors;
   }
-  
+
   .card-rescue {
-    @apply bg-white rounded-lg shadow-lg p-6 border border-gray-200;
+    @apply rounded-2xl border border-white/10 bg-slate-900/80 shadow-[0_20px_60px_rgba(2,6,23,0.45)] p-6 backdrop-blur-xl;
+  }
+
+  .section-dark {
+    @apply relative overflow-hidden bg-slate-950/95 text-slate-100;
+  }
+
+  .section-panel {
+    @apply rounded-3xl border border-white/10 bg-slate-900/70 shadow-[0_20px_70px_rgba(2,6,23,0.45)] backdrop-blur-xl;
   }
 }
 
 @layer utilities {
   .text-rescue-gradient {
-    @apply bg-gradient-to-r from-rescue-red to-rescue-blue bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-rescue-red via-cyan-400 to-rescue-blue bg-clip-text text-transparent;
+  }
+
+  .text-muted {
+    @apply text-slate-400;
   }
 }
 
 /* CRITICAL FIX: Override Tailwind Forms plugin for select visibility in light mode */
 @layer utilities {
-  /* Force select text color in light mode - highest priority */
   html:not(.dark) select,
   body:not(.dark) select,
   :root:not(.dark) select {
@@ -39,8 +63,7 @@
     background-color: rgba(255, 255, 255, 0.95) !important;
     -webkit-text-fill-color: #1f2937 !important;
   }
-  
-  /* Force option text color in light mode */
+
   html:not(.dark) select option,
   body:not(.dark) select option,
   :root:not(.dark) select option {
@@ -48,8 +71,7 @@
     background-color: #ffffff !important;
     -webkit-text-fill-color: #1f2937 !important;
   }
-  
-  /* Specific override for ios-filter-input class */
+
   html:not(.dark) .ios-filter-input,
   body:not(.dark) .ios-filter-input,
   :root:not(.dark) .ios-filter-input {
@@ -57,8 +79,7 @@
     background-color: rgba(255, 255, 255, 0.9) !important;
     -webkit-text-fill-color: #1f2937 !important;
   }
-  
-  /* Chrome/WebKit specific fix */
+
   @supports (-webkit-appearance: none) {
     html:not(.dark) select,
     body:not(.dark) select,
@@ -67,7 +88,7 @@
       -webkit-text-fill-color: #1f2937 !important;
       -webkit-appearance: menulist !important;
     }
-    
+
     html:not(.dark) select option,
     body:not(.dark) select option,
     :root:not(.dark) select option {
