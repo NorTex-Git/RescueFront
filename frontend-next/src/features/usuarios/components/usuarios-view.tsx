@@ -15,6 +15,8 @@ import {
 } from '../api'
 import {
   USUARIO_FORM_DEFAULTS,
+  toInternationalPhoneValue,
+  toStoredPhoneValue,
   usuarioFields,
   usuarioFormSchema,
   type UsuarioFormOptions,
@@ -75,11 +77,7 @@ function buildResource(
         key: 'nombre',
         header: 'Nombre',
         cell: (row) => (
-          <PrimaryCell
-            icon="user"
-            title={row.nombre || '—'}
-            subtitle={row.email || undefined}
-          />
+          <PrimaryCell icon="user" title={row.nombre || '—'} subtitle={row.email || undefined} />
         ),
       },
       { key: 'cedula', header: 'Cédula', cell: (row) => row.cedula || '—' },
@@ -142,12 +140,17 @@ function buildResource(
       cedula: item.cedula,
       rol: item.rol,
       sede: item.sede ?? '',
-      telefono: item.telefono ?? '',
+      telefono: toInternationalPhoneValue(item.telefono),
       email: item.email ?? '',
     }),
 
-    create: (values) => createUsuario(empresaId, values),
-    update: (item, values) => updateUsuario(empresaId, item._id, values),
+    create: (values) =>
+      createUsuario(empresaId, { ...values, telefono: toStoredPhoneValue(values.telefono) }),
+    update: (item, values) =>
+      updateUsuario(empresaId, item._id, {
+        ...values,
+        telefono: toStoredPhoneValue(values.telefono),
+      }),
     remove: (item) => deleteUsuario(empresaId, item._id),
     toggle: {
       isActive: (item) => item.activo,

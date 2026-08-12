@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { isValidPhoneNumber } from 'react-phone-number-input'
 
 import type { FormField } from '@/components/ui/form-field'
 
@@ -23,7 +24,11 @@ export const usuarioFormSchema = z.object({
     .trim()
     .min(1, 'La sede es obligatoria')
     .max(100, 'La sede no puede exceder 100 caracteres'),
-  telefono: z.string().trim().optional(),
+  telefono: z
+    .string()
+    .trim()
+    .refine((value) => !value || isValidPhoneNumber(value), 'Ingresa un teléfono válido')
+    .optional(),
   email: z.union([z.literal(''), z.email('Correo inválido')]).optional(),
 })
 
@@ -37,6 +42,23 @@ export const USUARIO_FORM_DEFAULTS: UsuarioFormValues = {
   sede: '',
   telefono: '',
   email: '',
+}
+
+/** Lleva registros históricos al valor E.164 que espera el control internacional. */
+export function toInternationalPhoneValue(value?: string | null): string {
+  const raw = value?.trim()
+  if (!raw) return ''
+  if (raw.startsWith('+')) return raw
+
+  const digits = raw.replace(/\D/g, '')
+  if (!digits) return ''
+  if (digits.length === 10 && digits.startsWith('3')) return `+57${digits}`
+  return `+${digits}`
+}
+
+/** El backend y WhatsApp usan el E.164 sin el signo inicial. */
+export function toStoredPhoneValue(value?: string): string {
+  return value?.replace(/\D/g, '') ?? ''
 }
 
 /**
@@ -63,7 +85,12 @@ export function usuarioFields(
       placeholder: 'Selecciona una sede',
       options: sedes.map((sede) => ({ value: sede, label: sede })),
     },
-    { name: 'telefono', label: 'Teléfono', type: 'tel', placeholder: 'Contacto directo' },
+    {
+      name: 'telefono',
+      label: 'Teléfono',
+      type: 'phone',
+      hint: 'Selecciona el país; el prefijo internacional se agrega automáticamente.',
+    },
     {
       name: 'email',
       label: 'Correo',

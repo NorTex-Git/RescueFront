@@ -1,4 +1,5 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+@import 'react-phone-number-input/style.css';
 @plugin "@tailwindcss/forms";
 @plugin "@tailwindcss/typography";
 
@@ -110,7 +111,7 @@
    * Se restaura para no degradar la UI actual.
    */
   button:not(:disabled),
-  [role="button"]:not(:disabled) {
+  [role='button']:not(:disabled) {
     cursor: pointer;
   }
 }

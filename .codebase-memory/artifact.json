@@ -1,11 +1,11 @@
 {
     "schema_version": 2,
-    "commit": "0f08b7448331378a37d87c9e25647035c76a01c5",
-    "indexed_at": "2026-08-12T18:32:27Z",
+    "commit": "ff41c28a51342360807f3b83e3e55b7e8995065e",
+    "indexed_at": "2026-08-12T19:46:52Z",
     "project": "C-Users-User-Desktop-Arisma-RESCUE-RescueFront",
-    "nodes": 1402,
-    "edges": 2531,
-    "original_size": 5963776,
-    "compressed_size": 1035443,
+    "nodes": 1410,
+    "edges": 2567,
+    "original_size": 6029312,
+    "compressed_size": 1048984,
     "compression_level": 3
 }

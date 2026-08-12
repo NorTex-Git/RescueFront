@@ -21,6 +21,7 @@ import { ColorInput } from './color-input'
 import type { FormField } from './form-field'
 import { Input, Textarea } from './input'
 import { Modal, ModalButton, type ModalSize } from './modal'
+import { InternationalPhoneInput } from './phone-input'
 import { Select } from './select'
 import { TagsInput } from './tags-input'
 
@@ -205,6 +206,18 @@ export function FormModal<TValues extends FieldValues>({
                       name={field.name}
                       render={({ field: { value, onChange } }) => (
                         <ColorInput
+                          {...common}
+                          value={typeof value === 'string' ? value : ''}
+                          onChange={onChange}
+                        />
+                      )}
+                    />
+                  ) : field.type === 'phone' ? (
+                    <Controller
+                      control={control}
+                      name={field.name}
+                      render={({ field: { value, onChange } }) => (
+                        <InternationalPhoneInput
                           {...common}
                           value={typeof value === 'string' ? value : ''}
                           onChange={onChange}

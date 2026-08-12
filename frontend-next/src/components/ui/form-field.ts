@@ -11,6 +11,7 @@ export type FieldType =
   | 'text'
   | 'email'
   | 'tel'
+  | 'phone'
   | 'password'
   | 'number'
   | 'select'
