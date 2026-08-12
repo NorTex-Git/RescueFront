@@ -78,7 +78,6 @@ export function RealtimeProvider({
     let attempts = 0
     let connecting = false
     let generation = 0
-    let hiddenAt: number | null = null
 
     function clearReconnectTimer() {
       if (!reconnectTimer) return
@@ -251,28 +250,9 @@ export function RealtimeProvider({
       setStatus('disconnected')
       socket?.close()
     }
-    function handleVisibilityChange() {
-      if (document.visibilityState === 'hidden') {
-        hiddenAt = Date.now()
-        return
-      }
-
-      // Tras suspensión del equipo o una pestaña mucho tiempo oculta, el navegador
-      // puede conservar OPEN aunque el servidor haya sido redesplegado. Forzar un
-      // canal nuevo evita dejar las notificaciones congeladas silenciosamente.
-      if (hiddenAt && Date.now() - hiddenAt > 30_000 && socket) {
-        const staleSocket = socket
-        socket = null
-        staleSocket.close()
-      }
-      hiddenAt = null
-      reconnectNow()
-    }
-
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
     window.addEventListener('focus', reconnectNow)
-    document.addEventListener('visibilitychange', handleVisibilityChange)
     void connect()
     return () => {
       stopped = true
@@ -280,7 +260,6 @@ export function RealtimeProvider({
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
       window.removeEventListener('focus', reconnectNow)
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
       clearReconnectTimer()
       clearOpenTimer()
       socket?.close()
