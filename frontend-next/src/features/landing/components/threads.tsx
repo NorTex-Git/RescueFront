@@ -30,7 +30,9 @@ uniform vec2 uMouse;
 
 #define PI 3.1415926538
 
-const int u_line_count = 40;
+// 24 líneas conservan la densidad visual sin ejecutar 40 muestras de ruido
+// Perlin por cada píxel y por cada frame.
+const int u_line_count = 24;
 const float u_line_width = 7.0;
 const float u_line_blur = 10.0;
 
@@ -163,16 +165,21 @@ const Threads = ({ color = [1, 1, 1], amplitude = 1, distance = 0, enableMouseIn
 
     const mesh = new Mesh(gl, { geometry, program });
 
-    // The fragment shader is heavy (per-pixel Perlin noise across many lines), so
-    // its cost scales with the number of rendered pixels. Cap the internal render
-    // resolution to keep large / high-DPI screens smooth; the effect is soft
-    // enough that the downscale is imperceptible.
-    const MAX_RENDER_DIM = 1920;
+    // El shader hace ruido Perlin por píxel y por cada línea. Limitamos tanto el
+    // lado mayor como el total de píxeles; en este efecto suave el canvas escalado
+    // mantiene la apariencia, pero reduce drásticamente la carga de la GPU.
+    const coarsePointer = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+    const MAX_RENDER_DIM = coarsePointer ? 960 : 1280;
+    const MAX_RENDER_PIXELS = coarsePointer ? 500_000 : 900_000;
+    const TARGET_FPS = coarsePointer ? 24 : 30;
     function resize() {
       const { clientWidth, clientHeight } = container;
       const baseDpr = Math.min(window.devicePixelRatio || 1, 2);
       const longestSide = Math.max(clientWidth, clientHeight) * baseDpr;
-      const dpr = longestSide > MAX_RENDER_DIM ? (baseDpr * MAX_RENDER_DIM) / longestSide : baseDpr;
+      const dimensionDpr =
+        longestSide > MAX_RENDER_DIM ? (baseDpr * MAX_RENDER_DIM) / longestSide : baseDpr;
+      const pixelDpr = Math.sqrt(MAX_RENDER_PIXELS / Math.max(clientWidth * clientHeight, 1));
+      const dpr = Math.min(baseDpr, dimensionDpr, pixelDpr);
       renderer.dpr = dpr;
       renderer.setSize(clientWidth, clientHeight);
       program.uniforms.iResolution.value.r = gl.canvas.width;
@@ -189,6 +196,7 @@ const Threads = ({ color = [1, 1, 1], amplitude = 1, distance = 0, enableMouseIn
     let targetMouse = [0.5, 0.5];
 
     function handleMouseMove(e) {
+      if (coarsePointer || !propsRef.current.enableMouseInteraction) return;
       const rect = container.getBoundingClientRect();
       const x = (e.clientX - rect.left) / rect.width;
       const y = 1.0 - (e.clientY - rect.top) / rect.height;
@@ -200,20 +208,46 @@ const Threads = ({ color = [1, 1, 1], amplitude = 1, distance = 0, enableMouseIn
     container.addEventListener('mousemove', handleMouseMove);
     container.addEventListener('mouseleave', handleMouseLeave);
 
-    // Only animate while the canvas is on screen and the tab is visible, so the
-    // shader never burns GPU/CPU for something the user can't see.
-    let isVisible = true;
+    // El loop se detiene por completo fuera de pantalla o con la pestaña oculta.
+    // Dentro de pantalla se limita la frecuencia: el movimiento sigue siendo suave
+    // y deja tiempo de GPU para el scroll, el formulario y el resto de la interfaz.
+    let isVisible = false;
+    let lastRenderTime = 0;
+    const frameInterval = 1000 / TARGET_FPS;
+
+    function stopAnimation() {
+      if (!animationFrameId.current) return;
+      cancelAnimationFrame(animationFrameId.current);
+      animationFrameId.current = 0;
+    }
+
+    function startAnimation() {
+      if (animationFrameId.current || !isVisible || document.hidden) return;
+      animationFrameId.current = requestAnimationFrame(update);
+    }
+
     const intersectionObserver = new IntersectionObserver(
       entries => {
         isVisible = entries[0].isIntersecting;
+        if (isVisible) startAnimation();
+        else stopAnimation();
       },
       { threshold: 0 }
     );
     intersectionObserver.observe(container);
 
+    function handleVisibilityChange() {
+      if (document.hidden) stopAnimation();
+      else startAnimation();
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     function update(t) {
-      animationFrameId.current = requestAnimationFrame(update);
+      animationFrameId.current = 0;
       if (!isVisible || document.hidden) return;
+      animationFrameId.current = requestAnimationFrame(update);
+      if (t - lastRenderTime < frameInterval) return;
+      lastRenderTime = t;
 
       const { color, amplitude, distance, enableMouseInteraction } = propsRef.current;
 
@@ -235,12 +269,12 @@ const Threads = ({ color = [1, 1, 1], amplitude = 1, distance = 0, enableMouseIn
 
       renderer.render({ scene: mesh });
     }
-    animationFrameId.current = requestAnimationFrame(update);
 
     return () => {
-      if (animationFrameId.current) cancelAnimationFrame(animationFrameId.current);
+      stopAnimation();
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('resize', resize);
       container.removeEventListener('mousemove', handleMouseMove);
       container.removeEventListener('mouseleave', handleMouseLeave);
