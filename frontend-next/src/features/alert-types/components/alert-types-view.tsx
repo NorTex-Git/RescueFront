@@ -23,7 +23,7 @@ import {
   alertTypeFormSchema,
   type AlertTypeFormValues,
 } from '../schema'
-import type { AlertType } from '../types'
+import { isGlobalAlertType, type AlertType } from '../types'
 
 /** Lista de textos como burbujas; se repite en recomendaciones e implementos. */
 function chips(items: string[], vacio: string) {
@@ -40,6 +40,16 @@ function chips(items: string[], vacio: string) {
         </li>
       ))}
     </ul>
+  )
+}
+
+/** Distintivo azul suave para los tipos globales (sin empresa), para diferenciarlos. */
+function GlobalTag() {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-500/30 bg-sky-500/10 px-2.5 py-0.5 text-xs font-semibold text-sky-700 dark:border-sky-400/30 dark:bg-sky-400/15 dark:text-sky-200">
+      <span aria-hidden className="size-1.5 rounded-full bg-sky-500" />
+      Global
+    </span>
   )
 }
 
@@ -136,6 +146,8 @@ function buildResource(
     queryKey: ['alert-types'],
     queryFn: listAlertTypes,
     getId: (item) => item._id,
+    // Los tipos globales se tiñen de azul suave para distinguirlos de los de empresa.
+    rowClassName: (item) => (isGlobalAlertType(item) ? 'bg-sky-500/5 hover:!bg-sky-500/10' : undefined),
     labelOf: (item) => item.nombre,
     icon: 'bell',
     formDescription: 'Define los atributos, recursos y recomendaciones de la alerta',
@@ -187,11 +199,7 @@ function buildResource(
         header: 'Empresa',
         // Sin `empresa_id` es una alerta global, no un dato que falte.
         cell: (row) =>
-          row.empresa_id ? (
-            (empresaNombre.get(row.empresa_id) ?? '—')
-          ) : (
-            <span className="opacity-60">Global</span>
-          ),
+          row.empresa_id ? (empresaNombre.get(row.empresa_id) ?? '—') : <GlobalTag />,
       },
       {
         key: 'color_alerta',
@@ -243,7 +251,8 @@ function buildResource(
       {
         icon: 'building',
         label: 'Empresa',
-        value: (item) => (item.empresa_id ? (empresaNombre.get(item.empresa_id) ?? '—') : 'Global'),
+        value: (item) =>
+          item.empresa_id ? (empresaNombre.get(item.empresa_id) ?? '—') : <GlobalTag />,
       },
       {
         icon: 'palette',

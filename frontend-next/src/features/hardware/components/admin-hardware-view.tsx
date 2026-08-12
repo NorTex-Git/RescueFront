@@ -19,6 +19,7 @@ import {
   type HardwareFormValues,
 } from '../schema'
 import { detailsOf, physicalStatusOf, type Hardware } from '../types'
+import { HardwareLocationMap } from './hardware-location-map'
 
 function money(value: number) {
   return new Intl.NumberFormat('es-CO', {
@@ -264,6 +265,11 @@ function buildResource(
       },
     ],
     detailSections: [
+      {
+        icon: 'map-pin',
+        title: 'Ubicación en el mapa',
+        content: (item) => <HardwareLocationMap item={item} />,
+      },
       {
         icon: 'align-left',
         title: 'Descripción',

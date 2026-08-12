@@ -14,6 +14,9 @@ export const hardwareSchema = z.object({
   empresa_nombre: z.string().nullish(),
   sede: z.string().nullish(),
   direccion: z.string().nullish(),
+  // URLs de mapa que guarda el backend: Google Maps y el embed de OpenStreetMap.
+  direccion_url: z.string().nullish(),
+  direccion_open_maps: z.string().nullish(),
   topic: z.string().nullish(),
   // `catch`: si el backend manda `activa` como null/string en vez de boolean, no se
   // descarta el registro entero — se asume activo.
@@ -41,6 +44,34 @@ export function parseHardwareList(raw: unknown): Hardware[] {
   return Array.isArray(raw)
     ? z.array(hardwareSchema).parse(raw)
     : hardwareListSchema.parse(raw).data
+}
+
+export type HardwareCoords = { lat: number; lng: number; zoom: number }
+
+function parseMapUrl(url: string | null | undefined): HardwareCoords | null {
+  if (!url) return null
+  // OSM: .../#map=15/6.25/-75.56
+  let m = url.match(/#map=(\d+)\/(-?\d+\.?\d*)\/(-?\d+\.?\d*)/)
+  if (m) return { zoom: Number(m[1]), lat: Number(m[2]), lng: Number(m[3]) }
+  // Google Maps: /@6.25,-75.56,15z
+  m = url.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*),(\d+)z/)
+  if (m) return { lat: Number(m[1]), lng: Number(m[2]), zoom: Number(m[3]) }
+  // Google Maps: ?q=6.25,-75.56  ó  /search/6.25,-75.56
+  m = url.match(/(?:[?&]q=|search\/)(-?\d+\.?\d*),(-?\d+\.?\d*)/)
+  if (m) return { lat: Number(m[1]), lng: Number(m[2]), zoom: 15 }
+  // Último recurso: cualquier par lat,lng plausible.
+  m = url.match(/(-?\d+\.\d+),\s*(-?\d+\.\d+)/)
+  if (m) {
+    const lat = Number(m[1])
+    const lng = Number(m[2])
+    if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) return { lat, lng, zoom: 15 }
+  }
+  return null
+}
+
+/** Coordenadas del equipo, si el backend guardó alguna URL de mapa (OSM tiene prioridad). */
+export function hardwareCoords(item: Hardware): HardwareCoords | null {
+  return parseMapUrl(item.direccion_open_maps) ?? parseMapUrl(item.direccion_url)
 }
 
 export type HardwareDetails = {

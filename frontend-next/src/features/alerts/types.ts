@@ -56,3 +56,55 @@ export type CreateAlertInput = {
   descripcion: string
   prioridad: string
 }
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {}
+}
+
+function asText(value: unknown): string | null {
+  return typeof value === 'string' && value.trim() ? value : null
+}
+
+/** Contacto notificado, con su estado de "embarcado" (en camino) reportado por el móvil. */
+export type AlertContact = { nombre: string | null; numero: string | null; embarcado: boolean | null }
+
+export function alertContacts(alert: Alert): AlertContact[] {
+  return alert.numeros_telefonicos.map((raw) => {
+    const contact = asRecord(raw)
+    return {
+      nombre: asText(contact.nombre),
+      numero: asText(contact.numero) ?? asText(contact.telefono),
+      embarcado: typeof contact.embarcado === 'boolean' ? contact.embarcado : null,
+    }
+  })
+}
+
+/** Ubicación de la alerta: dirección + URLs de mapa (OSM y Google) que guarda el backend. */
+export type AlertLocation = {
+  direccion: string | null
+  osmUrl: string | null
+  googleUrl: string | null
+}
+
+export function alertLocation(alert: Alert): AlertLocation {
+  const ubicacion = alert.ubicacion
+  return {
+    direccion: asText(ubicacion.direccion),
+    osmUrl: asText(ubicacion.url_open_maps),
+    googleUrl: asText(ubicacion.url_maps),
+  }
+}
+
+/** Nombre/origen de quién o qué activó la alerta (usuario móvil, botonera, central). */
+export function alertOrigin(alert: Alert): string | null {
+  const activacion = alert.activacion_alerta
+  const botonera = asRecord(alert.data.botonera_ubicacion)
+  return (
+    asText(activacion.nombre) ||
+    asText(botonera.hardware_nombre) ||
+    asText(alert.hardware_nombre) ||
+    asText(alert.data.origen)
+  )
+}

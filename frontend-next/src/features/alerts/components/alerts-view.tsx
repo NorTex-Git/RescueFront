@@ -15,20 +15,25 @@ import { Modal, ModalButton } from '@/components/ui/modal'
 import { Pagination } from '@/components/ui/pagination'
 import { Select } from '@/components/ui/select'
 import { Table, type Column } from '@/components/ui/table'
-import type { AlertType } from '@/features/alert-types/types'
+import { isGlobalAlertType, type AlertType } from '@/features/alert-types/types'
 import { formatTimestamp, titleCase } from '@/features/stats/format'
 
+import { osmEmbedSrc, parseMapCoords } from '@/lib/maps'
+
 import { createEmpresaAlert, deactivateEmpresaAlert, listEmpresaAlerts } from '../api'
-import type { Alert, AlertsPage, AlertStatus, CreateAlertInput } from '../types'
+import {
+  alertContacts,
+  alertLocation,
+  alertOrigin,
+  type Alert,
+  type AlertsPage,
+  type AlertStatus,
+  type CreateAlertInput,
+} from '../types'
 
 const PAGE_SIZE = 8
 const PANEL =
   'overflow-hidden rounded-2xl border border-[var(--shell-border)] bg-[var(--shell-surface)]'
-
-function textFrom(record: Record<string, unknown>, key: string) {
-  const value = record[key]
-  return typeof value === 'string' && value.trim() ? value : null
-}
 
 function priorityTone(priority: string): 'danger' | 'warning' | 'info' | 'neutral' {
   const value = priority.toLowerCase()
@@ -38,6 +43,87 @@ function priorityTone(priority: string): 'danger' | 'warning' | 'info' | 'neutra
   return 'neutral'
 }
 
+/** Estado "embarcado" (en camino) de cada contacto notificado. */
+function EmbarkedBadge({ value }: { value: boolean | null }) {
+  if (value === true) return <Badge tone="success">En camino</Badge>
+  if (value === false) return <Badge tone="danger">No disponible</Badge>
+  return <Badge tone="neutral">Sin respuesta</Badge>
+}
+
+function AlertContactsList({ alert }: { alert: Alert }) {
+  const contacts = alertContacts(alert)
+  if (!contacts.length)
+    return <p className="text-[var(--shell-text-muted)]">Sin contactos notificados.</p>
+
+  return (
+    <ul className="grid gap-2">
+      {contacts.map((contact, index) => (
+        <li
+          key={contact.numero ?? index}
+          className="flex items-center justify-between gap-3 rounded-xl border border-[var(--shell-border)] px-3 py-2"
+        >
+          <div className="min-w-0">
+            <p className="truncate font-medium text-[var(--shell-text-strong)]">
+              {contact.nombre || 'Contacto'}
+            </p>
+            {contact.numero && (
+              <p className="text-xs text-[var(--shell-text-muted)]">{contact.numero}</p>
+            )}
+          </div>
+          <EmbarkedBadge value={contact.embarcado} />
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function AlertLocationMap({ alert }: { alert: Alert }) {
+  const location = alertLocation(alert)
+  const coords = parseMapCoords(location.osmUrl) ?? parseMapCoords(location.googleUrl)
+
+  if (!coords)
+    return (
+      <p className="text-[var(--shell-text-muted)]">
+        {location.direccion || 'Sin ubicación registrada.'}
+      </p>
+    )
+
+  const full =
+    location.googleUrl ||
+    location.osmUrl ||
+    `https://www.openstreetmap.org/?mlat=${coords.lat}&mlon=${coords.lng}#map=${coords.zoom}/${coords.lat}/${coords.lng}`
+
+  return (
+    <div className="space-y-2">
+      <div className="overflow-hidden rounded-xl border border-[var(--shell-border)]">
+        <iframe
+          title="Ubicación de la alerta"
+          src={osmEmbedSrc(coords)}
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          className="block h-64 w-full"
+        />
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        {location.direccion ? (
+          <p className="text-sm text-[var(--shell-text-muted)]">{location.direccion}</p>
+        ) : (
+          <span />
+        )}
+        <a
+          href={full}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--shell-accent)] hover:underline"
+        >
+          <Icon name="external-link-alt" className="text-xs" />
+          Abrir mapa
+        </a>
+      </div>
+    </div>
+  )
+}
+
 const detailRows: DetailRow<Alert>[] = [
   { label: 'Empresa', icon: 'building', value: (alert) => alert.empresa_nombre || '—' },
   { label: 'Sede', icon: 'location-dot', value: (alert) => alert.sede || '—' },
@@ -45,11 +131,7 @@ const detailRows: DetailRow<Alert>[] = [
   {
     label: 'Origen',
     icon: 'bolt',
-    value: (alert) =>
-      textFrom(alert.activacion_alerta, 'nombre') ||
-      textFrom(alert.data, 'origen') ||
-      alert.hardware_nombre ||
-      '—',
+    value: (alert) => alertOrigin(alert) ?? '—',
   },
   {
     label: 'Creada',
@@ -66,6 +148,16 @@ const detailRows: DetailRow<Alert>[] = [
 ]
 
 const detailSections: DetailSection<Alert>[] = [
+  {
+    title: 'Contactos notificados',
+    icon: 'phone',
+    content: (alert) => <AlertContactsList alert={alert} />,
+  },
+  {
+    title: 'Ubicación',
+    icon: 'map-pin',
+    content: (alert) => <AlertLocationMap alert={alert} />,
+  },
   {
     title: 'Descripción',
     icon: 'align-left',
@@ -115,7 +207,7 @@ export function AlertsView({
   const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
-  const [selected, setSelected] = useState<Alert | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
   const [deactivating, setDeactivating] = useState<Alert | null>(null)
   const [closingMessage, setClosingMessage] = useState('')
@@ -134,8 +226,19 @@ export function AlertsView({
     queryFn: () => listEmpresaAlerts(empresaId, status, page, PAGE_SIZE),
     initialData: page === 1 ? initialPage : undefined,
     staleTime: 20_000,
+    // El backend no emite eventos de "embarcado"; mientras el modal de una alerta
+    // activa está abierto, refrescamos esa página cada 12 s para ver los estados en
+    // vivo. Fuera de eso el WebSocket (created/deactivated) mantiene la lista al día.
+    refetchInterval: selectedId !== null && status === 'active' ? 12_000 : false,
   })
   const pageData = query.data ?? initialPage
+
+  // La alerta del modal se deriva de la query: al refrescar, sus contactos/estado se
+  // actualizan solos sin guardar una copia obsoleta.
+  const selected = useMemo(
+    () => pageData.data.find((alert) => String(alert._id) === selectedId) ?? null,
+    [pageData.data, selectedId],
+  )
 
   const rows = useMemo(() => {
     const needle = search.trim().toLowerCase()
@@ -218,10 +321,7 @@ export function AlertsView({
     {
       key: 'origin',
       header: 'Origen',
-      cell: (alert) =>
-        textFrom(alert.activacion_alerta, 'nombre') ||
-        alert.hardware_nombre ||
-        titleCase(textFrom(alert.data, 'origen') || 'manual'),
+      cell: (alert) => alertOrigin(alert) ?? 'Manual',
     },
     {
       key: 'priority',
@@ -252,7 +352,7 @@ export function AlertsView({
             size="sm"
             title="Ver detalle"
             aria-label="Ver detalle"
-            onClick={() => setSelected(alert)}
+            onClick={() => setSelectedId(alert._id)}
           >
             <Icon name="eye" />
           </Button>
@@ -345,8 +445,8 @@ export function AlertsView({
       </section>
 
       <DetailModal
-        open={selected !== null}
-        onClose={() => setSelected(null)}
+        open={selectedId !== null && selected !== null}
+        onClose={() => setSelectedId(null)}
         title="Detalle de la alerta"
         description="Información operativa completa"
         icon="triangle-exclamation"
@@ -392,7 +492,10 @@ export function AlertsView({
             label="Tipo de alerta"
             value={form.tipoAlertaId}
             onChange={(tipoAlertaId) => setForm((current) => ({ ...current, tipoAlertaId }))}
-            options={alertTypes.map((type) => ({ value: type._id, label: type.nombre }))}
+            options={alertTypes.map((type) => ({
+              value: type._id,
+              label: isGlobalAlertType(type) ? `${type.nombre} · Global` : type.nombre,
+            }))}
           />
           <Select
             label="Prioridad"

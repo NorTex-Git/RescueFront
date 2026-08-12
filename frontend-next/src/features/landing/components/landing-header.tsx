@@ -71,8 +71,6 @@ export function LandingHeader({
           )}
         </Link>
         <nav className="landing-nav" aria-label="Navegación principal">
-          <Link href="/#solucion">Solución</Link>
-          <Link href="/#contacto">Contacto</Link>
           {action}
           {loginPage ? (
             <Link className="landing-login" href="/">

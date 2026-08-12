@@ -23,6 +23,11 @@ export const alertTypeSchema = z.object({
 
 export type AlertType = z.infer<typeof alertTypeSchema>
 
+/** Global = sin empresa. El backend excluye estos con `?exclude_globales=`. */
+export function isGlobalAlertType(type: Pick<AlertType, 'empresa_id'>): boolean {
+  return !type.empresa_id
+}
+
 /**
  * El listado global responde `{ success, data, pagination }` y el de empresa
  * `{ success, data, count }`. Los dos campos son opcionales para cubrir ambos.

@@ -1,12 +1,16 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import dynamic from 'next/dynamic'
 import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Icon } from '@/components/ui/icon'
 import { gsap, useGSAP } from '@/lib/gsap/register'
 import { sendContactRequest } from '../api'
 import { contactSchema, type ContactFormValues } from '../schema'
+
+// Fondo WebGL aislado a esta sección: se carga solo en cliente.
+const Threads = dynamic(() => import('./threads'), { ssr: false })
 
 const defaults: ContactFormValues = {
   firstName: '',
@@ -25,6 +29,13 @@ function ErrorText({ message }: { message?: string }) {
 
 export function ContactSection() {
   const root = useRef<HTMLElement>(null)
+  // Se evalúa una sola vez al montar (sin efecto ni setState): con reduced-motion el
+  // fondo se deja estático.
+  const reducedMotion = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  )[0]
   const [feedback, setFeedback] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null)
   const {
     register,
@@ -70,10 +81,12 @@ export function ContactSection() {
 
   return (
     <section ref={root} id="contacto" className="contact-section" aria-labelledby="contact-title">
+      {!reducedMotion && (
+        <div className="contact-bg" aria-hidden="true">
+          <Threads amplitude={1} distance={0} enableMouseInteraction />
+        </div>
+      )}
       <div className="contact-heading">
-        <span className="contact-symbol">
-          <Icon name="triangle-exclamation" />
-        </span>
         <p className="landing-eyebrow">Hablemos de tu operación</p>
         <h2 id="contact-title">Solicita una demo RESCUE</h2>
         <p>
