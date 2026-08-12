@@ -26,11 +26,16 @@ export async function fetchRealtimeTicket(): Promise<string> {
     return fetch(`${API_PREFIX}/auth/realtime-ticket`, {
       credentials: 'same-origin',
       cache: 'no-store',
+      signal: AbortSignal.timeout(10_000),
     })
   }
   let response = await requestTicket()
   if (response.status === 401) {
-    await fetch(`${API_PREFIX}/auth/refresh`, { method: 'POST', credentials: 'same-origin' })
+    await fetch(`${API_PREFIX}/auth/refresh`, {
+      method: 'POST',
+      credentials: 'same-origin',
+      signal: AbortSignal.timeout(10_000),
+    })
     response = await requestTicket()
   }
   const payload = (await response.json().catch(() => null)) as { ticket?: unknown } | null

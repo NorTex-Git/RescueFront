@@ -74,7 +74,23 @@ export function RealtimeProvider({
     let stopped = false
     let socket: WebSocket | null = null
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null
+    let openTimer: ReturnType<typeof setTimeout> | null = null
     let attempts = 0
+    let connecting = false
+    let generation = 0
+    let hiddenAt: number | null = null
+
+    function clearReconnectTimer() {
+      if (!reconnectTimer) return
+      clearTimeout(reconnectTimer)
+      reconnectTimer = null
+    }
+
+    function clearOpenTimer() {
+      if (!openTimer) return
+      clearTimeout(openTimer)
+      openTimer = null
+    }
 
     function applyEvent(event: RealtimeEvent) {
       if (seenEvents.current.has(event.eventId)) return
@@ -145,21 +161,48 @@ export function RealtimeProvider({
     }
 
     async function connect() {
-      if (stopped || !navigator.onLine) {
-        setStatus('disconnected')
+      if (stopped || connecting) return
+      if (
+        socket &&
+        (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)
+      ) {
         return
       }
+      if (!navigator.onLine) {
+        setStatus('disconnected')
+        scheduleReconnect()
+        return
+      }
+
+      connecting = true
+      const currentGeneration = ++generation
       setStatus('connecting')
       try {
         const ticket = await fetchRealtimeTicket()
-        if (stopped) return
-        socket = new WebSocket(realtimeUrl(ticket))
-        socket.onopen = () => {
+        if (stopped || currentGeneration !== generation) return
+
+        const candidate = new WebSocket(realtimeUrl(ticket))
+        socket = candidate
+        openTimer = setTimeout(() => {
+          if (socket !== candidate || candidate.readyState === WebSocket.OPEN) return
+          socket = null
+          candidate.close()
+          setStatus('disconnected')
+          scheduleReconnect()
+        }, 12_000)
+
+        candidate.onopen = () => {
+          if (stopped || socket !== candidate) {
+            candidate.close()
+            return
+          }
+          clearOpenTimer()
+          clearReconnectTimer()
           attempts = 0
           setStatus('connected')
           void queryClient.invalidateQueries({ queryKey: notificationsKey })
         }
-        socket.onmessage = (message) => {
+        candidate.onmessage = (message) => {
           try {
             const event: unknown = JSON.parse(String(message.data))
             if (isRealtimeEvent(event)) applyEvent(event)
@@ -167,8 +210,10 @@ export function RealtimeProvider({
             // Un mensaje malformado no debe cerrar el canal completo.
           }
         }
-        socket.onerror = () => socket?.close()
-        socket.onclose = () => {
+        candidate.onerror = () => candidate.close()
+        candidate.onclose = () => {
+          if (socket !== candidate) return
+          clearOpenTimer()
           socket = null
           if (!stopped) {
             setStatus('disconnected')
@@ -176,28 +221,68 @@ export function RealtimeProvider({
           }
         }
       } catch {
-        setStatus('disconnected')
-        scheduleReconnect()
+        if (!stopped && currentGeneration === generation) {
+          setStatus('disconnected')
+          scheduleReconnect()
+        }
+      } finally {
+        if (currentGeneration === generation) connecting = false
       }
     }
 
-    function handleOnline() {
+    function reconnectNow() {
+      if (stopped || !navigator.onLine) return
+      if (
+        socket &&
+        (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)
+      ) {
+        return
+      }
+      socket = null
       attempts = 0
-      if (!socket) void connect()
+      clearReconnectTimer()
+      void connect()
+    }
+
+    function handleOnline() {
+      reconnectNow()
     }
     function handleOffline() {
       setStatus('disconnected')
       socket?.close()
     }
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'hidden') {
+        hiddenAt = Date.now()
+        return
+      }
+
+      // Tras suspensión del equipo o una pestaña mucho tiempo oculta, el navegador
+      // puede conservar OPEN aunque el servidor haya sido redesplegado. Forzar un
+      // canal nuevo evita dejar las notificaciones congeladas silenciosamente.
+      if (hiddenAt && Date.now() - hiddenAt > 30_000 && socket) {
+        const staleSocket = socket
+        socket = null
+        staleSocket.close()
+      }
+      hiddenAt = null
+      reconnectNow()
+    }
 
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
+    window.addEventListener('focus', reconnectNow)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
     void connect()
     return () => {
       stopped = true
+      generation += 1
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
-      if (reconnectTimer) clearTimeout(reconnectTimer)
+      window.removeEventListener('focus', reconnectNow)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      clearReconnectTimer()
+      clearOpenTimer()
       socket?.close()
     }
   }, [notificationsKey, queryClient])
