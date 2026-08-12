@@ -1,0 +1,116 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/typography";
+
+/**
+ * Dark mode por clase, no por `prefers-color-scheme`.
+ *
+ * Corrige el bug preexistente de Tailwind 3: el CSS heredado usa selectores
+ * `html:not(.dark)` (estrategia de clase) pero `tailwind.config.js` nunca declaró
+ * `darkMode`, así que Tailwind operaba en modo `media` y las dos estrategias
+ * se contradecían. Aquí queda explícito.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Equivale al `theme.extend` de tailwind.config.js */
+@theme {
+  --color-rescue-red: #ef4444;
+  --color-rescue-blue: #3b82f6;
+  --color-rescue-gray: #6b7280;
+  --font-rescue: Inter, sans-serif;
+}
+
+/**
+ * Tokens del shell admin (diseño `admin-shell-v2.pen`).
+ *
+ * Semánticos y con espejo en `.dark`, así un mismo `bg-[var(--shell-surface)]`
+ * sirve para ambos temas sin duplicar utilidades `dark:`. Los valores en claro
+ * salen tal cual del mockup; los de oscuro se inventan coherentes (el diseño solo
+ * cubre claro — ver memoria del tema oscuro no implementado).
+ *
+ * Namespace `--shell-*` para no chocar con las variables heredadas de
+ * `styles/spa/variables.css`.
+ */
+:root {
+  --shell-bg: #f4f5f9;
+  --shell-surface: #ffffff;
+  --shell-surface-2: #fafbfd;
+  --shell-border: #e8e9f2;
+  --shell-border-soft: #f0f1f7;
+  --shell-text-strong: #1e2235;
+  --shell-text: #5a6079;
+  --shell-text-muted: #8b90a6;
+  --shell-accent: #667eea;
+  --shell-accent-strong: #764ba2;
+  --shell-accent-grad: linear-gradient(55deg, #667eea 14%, #764ba2 86%);
+  --shell-accent-soft: #eef0fe;
+  --shell-accent-tile: #f0f1f7;
+  --shell-role: #6e6396;
+  --shell-ok: #10b981;
+  --shell-ok-bg: #f1f7f4;
+  --shell-ok-text: #0f7a5a;
+  --shell-danger: #e5484d;
+  --shell-danger-bg: #fdf0f0;
+  --shell-danger-border: #f7d7d8;
+}
+
+.dark {
+  --shell-bg: #0f1117;
+  --shell-surface: #171a24;
+  --shell-surface-2: #1c2030;
+  --shell-border: rgba(255, 255, 255, 0.08);
+  --shell-border-soft: rgba(255, 255, 255, 0.06);
+  --shell-text-strong: #f3f4f8;
+  --shell-text: rgba(255, 255, 255, 0.72);
+  --shell-text-muted: rgba(255, 255, 255, 0.45);
+  --shell-accent: #818cf8;
+  --shell-accent-strong: #a78bfa;
+  --shell-accent-grad: linear-gradient(55deg, #667eea 14%, #764ba2 86%);
+  --shell-accent-soft: rgba(102, 126, 234, 0.16);
+  --shell-accent-tile: rgba(255, 255, 255, 0.06);
+  --shell-role: #b5adde;
+  --shell-ok: #34d399;
+  --shell-ok-bg: rgba(16, 185, 129, 0.14);
+  --shell-ok-text: #6ee7b7;
+  --shell-danger: #f87171;
+  --shell-danger-bg: rgba(220, 38, 38, 0.12);
+  --shell-danger-border: rgba(220, 38, 38, 0.28);
+}
+
+/**
+ * Anchos del panel de modal.
+ *
+ * En CSS plano y no con utilidades `max-w-*`: al elegirse el ancho desde un objeto
+ * (`SIZES[size]` en `components/ui/modal.tsx`), Tailwind no siempre genera esas
+ * utilidades y el panel se quedaba sin `max-width`, ocupando toda la pantalla.
+ * `!important` para ganarle al CSS heredado, que abusa de él.
+ */
+.modal-panel {
+  width: 100%;
+}
+.modal-panel[data-size='xs'] {
+  max-width: 22rem !important;
+}
+.modal-panel[data-size='sm'] {
+  max-width: 28rem !important;
+}
+.modal-panel[data-size='md'] {
+  max-width: 34rem !important;
+}
+.modal-panel[data-size='lg'] {
+  max-width: 44rem !important;
+}
+.modal-panel[data-size='xl'] {
+  max-width: 64rem !important;
+}
+
+@layer base {
+  /**
+   * Preflight de Tailwind 4 cambió `button { cursor: default }` (en v3 era `pointer`).
+   * Se restaura para no degradar la UI actual.
+   */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}

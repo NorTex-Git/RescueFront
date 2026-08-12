@@ -1,0 +1,45 @@
+.dashboard-main-container .ios-hardware-card,
+.ios-hardware-grid .ios-hardware-card,
+.quick-access-card {
+  opacity: 1 !important;
+  transform: none !important;
+  visibility: visible !important;
+}
+
+.ios-hardware-card {
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+
+.ios-hardware-card:hover {
+  text-decoration: none;
+  color: inherit;
+}
+
+.chart-header p,
+.chart-loading-overlay p {
+  color: var(--text-primary) !important;
+}
+
+.chart-card {
+  min-width: 0;
+}
+
+.chart-canvas-wrap {
+  width: 100%;
+  min-height: 200px;
+  height: clamp(220px, 40vw, 320px);
+}
+
+.chart-canvas-wrap canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+@media (max-width: 640px) {
+  .chart-canvas-wrap {
+    height: 220px;
+  }
+}

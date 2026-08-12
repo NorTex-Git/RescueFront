@@ -1,0 +1,132 @@
+.root {
+  position: relative;
+  width: 100%;
+  background: #030405;
+}
+
+.scroller {
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.scroller::-webkit-scrollbar {
+  display: none;
+}
+
+.track {
+  position: relative;
+  width: 100%;
+}
+
+.stage {
+  --se-title-size: 4rem;
+  position: sticky;
+  top: 0;
+  width: 100%;
+  overflow: hidden;
+  background: #030405;
+}
+
+.frame {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(21% 29% round 24px);
+  will-change: clip-path;
+}
+
+.media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform-origin: center;
+  user-select: none;
+  will-change: transform;
+  -webkit-user-drag: none;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to top, rgb(0 0 0 / 88%), rgb(0 0 0 / 12%) 52%, rgb(0 0 0 / 48%));
+  opacity: 0;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: clamp(5rem, 8vw, 8rem) max(1.25rem, calc((100vw - 1160px) / 2));
+  opacity: 0;
+  will-change: opacity, transform;
+}
+
+.title {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0 6%;
+  color: #fff;
+  font-size: var(--se-title-size);
+  font-weight: 750;
+  line-height: 0.95;
+  letter-spacing: -0.055em;
+  text-align: center;
+  text-shadow: 0 2px 24px rgb(0 0 0 / 60%);
+  pointer-events: none;
+  will-change: opacity, transform;
+}
+
+.hint {
+  position: absolute;
+  right: 0;
+  bottom: 1.25rem;
+  left: 0;
+  color: rgb(255 255 255 / 62%);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-align: center;
+  text-transform: uppercase;
+  pointer-events: none;
+  will-change: opacity, transform;
+}
+
+@media (max-width: 700px) {
+  .overlay {
+    justify-content: center;
+    padding: 5rem 1rem 3.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frame {
+    clip-path: inset(0 round 0);
+  }
+
+  .media {
+    transform: none !important;
+  }
+
+  .title,
+  .hint {
+    display: none;
+  }
+
+  .scrim,
+  .overlay {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

@@ -1,0 +1,21 @@
+/**
+ * CSS heredado del portal, copiado tal cual de `static/css/`.
+ * El orden replica el de `templates/empresa/dashboard.html`.
+ *
+ * Se listan explícitamente en vez de confiar en los `@import` internos de
+ * `spa-global.css`: allí van después de reglas CSS, así que al inlinarlos Turbopack
+ * lo trata como error de parseo.
+ */
+
+@import './spa/variables.css';
+@import './spa/spa-global.css';
+@import './spa/forms.css';
+@import './spa/ios-buttons.css';
+@import './spa/ios-filters.css';
+@import './spa/modals-core.css';
+@import './spa/modals.css';
+@import './global-text-theme.css';
+@import './scrollbar-global.css';
+@import './portal-empresa/spa/shell-spa.css';
+@import './portal-empresa/spa/navbar-spa.css';
+@import './portal-empresa/spa/sidebar-spa.css';

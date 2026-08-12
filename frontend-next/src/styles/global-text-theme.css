@@ -1,0 +1,178 @@
+/* ===== GLOBAL TEXT THEME STYLES ===== */
+/* 
+ * Reglas globales para colores de texto en elementos <p> y <span>
+ * Compatible con clases Tailwind y sistema de temas dark/light
+ */
+
+/* ===== LIGHT THEME (DEFAULT) ===== */
+/* Forzar colores de span para tema claro */
+span.text-gray-600 {
+  color: #4b5563 !important;
+}
+
+span.text-black {
+  color: #000000 !important;
+}
+
+span.text-green-600 {
+  color: #16a34a !important;
+}
+
+span.text-red-600 {
+  color: #dc2626 !important;
+}
+
+span.text-gray-500 {
+  color: #6b7280 !important;
+}
+
+/* Forzar colores de p para tema claro */
+p.text-gray-600 {
+  color: #4b5563 !important;
+}
+
+p.text-black {
+  color: #000000 !important;
+}
+
+p.text-green-600 {
+  color: #16a34a !important;
+}
+
+p.text-red-600 {
+  color: #dc2626 !important;
+}
+
+p.text-gray-500 {
+  color: #6b7280 !important;
+}
+
+/* ===== DARK THEME ===== */
+/* Dark theme spans */
+.dark span.text-gray-600,
+.dark span[class*="dark:text-white/70"] {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.dark span.text-black,
+.dark span[class*="dark:text-white"] {
+  color: #ffffff !important;
+}
+
+.dark span.text-green-600,
+.dark span[class*="dark:text-green-400"] {
+  color: #4ade80 !important;
+}
+
+.dark span.text-red-600,
+.dark span[class*="dark:text-red-400"] {
+  color: #f87171 !important;
+}
+
+.dark span.text-gray-500,
+.dark span[class*="dark:text-white/60"] {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Dark theme paragraphs */
+.dark p.text-gray-600,
+.dark p[class*="dark:text-white/70"],
+.dark p[class*="dark:text-white/80"] {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.dark p.text-black,
+.dark p[class*="dark:text-white"] {
+  color: #ffffff !important;
+}
+
+.dark p.text-green-600,
+.dark p[class*="dark:text-green-400"] {
+  color: #4ade80 !important;
+}
+
+.dark p.text-red-600,
+.dark p[class*="dark:text-red-400"] {
+  color: #f87171 !important;
+}
+
+.dark p.text-gray-500,
+.dark p[class*="dark:text-white/60"] {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* ===== EXTENDED COLOR VARIANTS ===== */
+/* Colores adicionales comunes */
+
+/* Blue variants */
+span.text-blue-600,
+p.text-blue-600 {
+  color: #2563eb !important;
+}
+
+.dark span.text-blue-600,
+.dark span[class*="dark:text-blue-400"],
+.dark p.text-blue-600,
+.dark p[class*="dark:text-blue-400"] {
+  color: #60a5fa !important;
+}
+
+/* Purple variants */
+span.text-purple-600,
+p.text-purple-600 {
+  color: #7c3aed !important;
+}
+
+.dark span.text-purple-600,
+.dark span[class*="dark:text-purple-400"],
+.dark p.text-purple-600,
+.dark p[class*="dark:text-purple-400"] {
+  color: #a78bfa !important;
+}
+
+/* Orange variants */
+span.text-orange-600,
+p.text-orange-600 {
+  color: #ea580c !important;
+}
+
+.dark span.text-orange-600,
+.dark span[class*="dark:text-orange-400"],
+.dark p.text-orange-600,
+.dark p[class*="dark:text-orange-400"] {
+  color: #fb923c !important;
+}
+
+/* Yellow variants */
+span.text-yellow-600,
+p.text-yellow-600 {
+  color: #ca8a04 !important;
+}
+
+.dark span.text-yellow-600,
+.dark span[class*="dark:text-yellow-400"],
+.dark p.text-yellow-600,
+.dark p[class*="dark:text-yellow-400"] {
+  color: #facc15 !important;
+}
+
+/* ===== HEADINGS SUPPORT ===== */
+/* También aplicar a headings que usen estas clases */
+h1.text-black, h2.text-black, h3.text-black, 
+h4.text-black, h5.text-black, h6.text-black {
+  color: #000000 !important;
+}
+
+.dark h1.text-black, .dark h2.text-black, .dark h3.text-black,
+.dark h4.text-black, .dark h5.text-black, .dark h6.text-black,
+.dark h1[class*="dark:text-white"], .dark h2[class*="dark:text-white"], 
+.dark h3[class*="dark:text-white"], .dark h4[class*="dark:text-white"],
+.dark h5[class*="dark:text-white"], .dark h6[class*="dark:text-white"] {
+  color: #ffffff !important;
+}
+
+/* ===== TRANSITIONS ===== */
+/* Transiciones suaves para cambios de tema */
+span, p, h1, h2, h3, h4, h5, h6 {
+  transition: color 0.3s ease;
+}

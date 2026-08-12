@@ -1,0 +1,141 @@
+/* ===== iOS FILTERS STYLES ===== */
+
+/* iOS Filters Styles */
+.ios-filters-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.ios-blur-bg {
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(20px) saturate(1.5) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 20px !important;
+  padding: 1.5rem !important;
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.dark .ios-blur-bg {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.ios-filters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+  align-items: end;
+}
+
+.ios-filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ios-filter-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ios-filter-input {
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 10px !important;
+  padding: 0.75rem 0.875rem !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 0.85rem !important;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1) !important;
+  width: 100%;
+}
+
+select.ios-filter-input {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 2.75rem !important;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.85) 50%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.85) 50%, transparent 50%);
+  background-position:
+    calc(100% - 20px) 50%,
+    calc(100% - 14px) 50%;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+}
+
+/* Fix for light mode - ensure text is visible in Chrome */
+:root:not(.dark) .ios-filter-input,
+body:not(.dark) .ios-filter-input,
+html:not(.dark) .ios-filter-input {
+  color: rgba(30, 41, 59, 0.9) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid rgba(59, 130, 246, 0.3) !important;
+}
+
+/* Fix for select options in light mode */
+:root:not(.dark) .ios-filter-input option,
+body:not(.dark) .ios-filter-input option,
+html:not(.dark) .ios-filter-input option {
+  color: rgba(30, 41, 59, 0.9) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Chrome specific fix for select dropdown */
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  :root:not(.dark) select.ios-filter-input,
+  body:not(.dark) select.ios-filter-input,
+  html:not(.dark) select.ios-filter-input {
+    color: rgba(30, 41, 59, 0.9) !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+  }
+  
+  :root:not(.dark) select.ios-filter-input option,
+  body:not(.dark) select.ios-filter-input option,
+  html:not(.dark) select.ios-filter-input option {
+    color: rgba(30, 41, 59, 0.9) !important;
+    background: rgba(255, 255, 255, 1) !important;
+  }
+}
+
+.ios-filter-input::placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.ios-filter-input:focus {
+  outline: none !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 
+    0 0 0 3px rgba(59, 130, 246, 0.2),
+    0 8px 25px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-1px) !important;
+}
+
+.dark .ios-filter-input {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .ios-filter-input:focus {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Responsive Design for Filters */
+@media (max-width: 768px) {
+  .ios-filters-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
