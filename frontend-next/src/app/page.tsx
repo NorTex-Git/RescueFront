@@ -1,12 +1,14 @@
-/**
- * Placeholder. La landing real (GSAP + ScrollSmoother + tunnel/Three.js) se migra
- * en la Fase 5; hasta entonces `/` la sigue sirviendo Flask.
- */
+import type { Metadata } from 'next'
+
+import { LandingPage } from '@/features/landing/components/landing-page'
+import '@/features/landing/landing.css'
+
+export const metadata: Metadata = {
+  // Carácter invisible: la pestaña muestra únicamente el favicon, sin texto ni URL.
+  title: '\u200B',
+  description: 'Plataforma para conectar alertas, equipos y canales de respuesta en tiempo real.',
+}
+
 export default function Home() {
-  return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-2 p-8">
-      <h1 className="text-2xl font-semibold">RESCUE</h1>
-      <p className="text-rescue-gray text-sm">Migración a Next.js en curso — Fase 1.</p>
-    </main>
-  )
+  return <LandingPage year={new Date().getUTCFullYear()} />
 }

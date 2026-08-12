@@ -1,0 +1,122 @@
+.icon {
+  --glass-icon-size: 3rem;
+  position: relative;
+  display: inline-grid;
+  width: var(--glass-icon-size);
+  height: var(--glass-icon-size);
+  flex: none;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--shell-text-strong);
+  perspective: 24em;
+  transform-style: preserve-3d;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.small {
+  --glass-icon-size: 2.25rem;
+}
+.medium {
+  --glass-icon-size: 3rem;
+}
+.large {
+  --glass-icon-size: 3.25rem;
+}
+
+.back,
+.front {
+  position: absolute;
+  inset: 0;
+  border-radius: 28%;
+  transform-origin: 80% 70%;
+  transition: transform 0.3s cubic-bezier(0.83, 0, 0.17, 1);
+}
+
+.back {
+  background: linear-gradient(145deg, #d9dde6, #bec5d0);
+  box-shadow: 0.35em -0.35em 0.7em rgb(31 35 48 / 13%);
+  transform: rotate(13deg);
+}
+
+.front {
+  display: grid;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 58%);
+  background: rgb(255 255 255 / 40%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 70%),
+    inset 0 -1px 0 rgb(70 75 88 / 8%);
+  backdrop-filter: blur(0.75em) saturate(1.15);
+  -webkit-backdrop-filter: blur(0.75em) saturate(1.15);
+}
+
+.glyph {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 42%;
+  height: 42%;
+  place-items: center;
+  color: var(--shell-text-strong);
+}
+.glyph > svg {
+  width: 100%;
+  height: 100%;
+}
+
+.icon:hover .back,
+.icon:focus-visible .back,
+.interactive:hover .back,
+.interactive:focus-visible .back {
+  transform: rotate(23deg) translate3d(-0.22em, -0.22em, 0.3em);
+}
+.icon:hover .front,
+.icon:focus-visible .front,
+.interactive:hover .front,
+.interactive:focus-visible .front {
+  transform: translate3d(0, 0, 1.1em);
+}
+.interactive {
+  cursor: pointer;
+}
+.interactive:focus-visible {
+  outline: 2px solid var(--shell-accent);
+  outline-offset: 3px;
+}
+
+:global(.dark) .back {
+  background: linear-gradient(145deg, #343946, #20242e);
+  box-shadow: 0.4em -0.4em 0.8em rgb(0 0 0 / 32%);
+}
+:global(.dark) .front {
+  border-color: rgb(255 255 255 / 16%);
+  background: rgb(255 255 255 / 8%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 18%),
+    inset 0 -1px 0 rgb(0 0 0 / 20%);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(5rem, 1fr));
+  gap: 1.5rem;
+}
+.item {
+  display: grid;
+  justify-items: center;
+  gap: 0.55rem;
+}
+.label {
+  color: var(--shell-text-muted);
+  font-size: 0.72rem;
+  font-weight: 650;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .back,
+  .front {
+    transition: none;
+  }
+}

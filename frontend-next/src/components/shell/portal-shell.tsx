@@ -79,17 +79,17 @@ export function PortalShell({
         open={confirmLogout}
         onClose={() => setConfirmLogout(false)}
         title="Cerrar sesión"
-        icon="fas fa-sign-out-alt"
+        icon="sign-out-alt"
         description="¿Seguro que quieres salir?"
         size="sm"
         footer={
           <>
-            <ModalButton icon="fas fa-times" onClick={() => setConfirmLogout(false)}>
+            <ModalButton icon="times" onClick={() => setConfirmLogout(false)}>
               Cancelar
             </ModalButton>
             <ModalButton
               variant="primary"
-              icon="fas fa-sign-out-alt"
+              icon="sign-out-alt"
               loading={loggingOut}
               onClick={handleLogout}
             >

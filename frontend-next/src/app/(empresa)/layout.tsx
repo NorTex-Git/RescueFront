@@ -7,15 +7,15 @@ import { empresaIdFrom, requireSession } from '@/lib/auth/session'
 import '@/styles/portal.css'
 
 const NAV_ITEMS: NavItem[] = [
-  { href: '/empresa', label: 'Dashboard', icon: 'fas fa-tachometer-alt' },
-  { href: '/empresa/usuarios', label: 'Usuarios', icon: 'fas fa-users' },
-  { href: '/empresa/hardware', label: 'Hardware', icon: 'fas fa-microchip' },
-  { href: '/empresa/stats', label: 'Estadísticas', icon: 'fas fa-chart-line' },
-  { href: '/empresa/alertas', label: 'Alertas', icon: 'fas fa-exclamation-triangle' },
+  { href: '/empresa', label: 'Dashboard', icon: 'tachometer-alt' },
+  { href: '/empresa/usuarios', label: 'Usuarios', icon: 'users' },
+  { href: '/empresa/hardware', label: 'Hardware', icon: 'microchip' },
+  { href: '/empresa/stats', label: 'Estadísticas', icon: 'chart-line' },
+  { href: '/empresa/alertas', label: 'Alertas', icon: 'exclamation-triangle' },
   {
     href: '/empresa/alertas-inactivas',
     label: 'Alertas Inactivas',
-    icon: 'fas fa-bell-slash',
+    icon: 'bell-slash',
   },
 ]
 

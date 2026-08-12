@@ -51,7 +51,7 @@ export async function fetchRecentActivity(limit = 6): Promise<ActivityEntry[]> {
   const empresaEntries: ActivityEntry[] = empresas
     .filter((empresa) => empresa.fecha_creacion)
     .map((empresa) => ({
-      icon: 'fas fa-building',
+      icon: 'building',
       title: 'Nueva empresa registrada',
       subtitle: empresa.nombre,
       date: empresa.fecha_creacion,
@@ -60,7 +60,7 @@ export async function fetchRecentActivity(limit = 6): Promise<ActivityEntry[]> {
   const hardwareEntries: ActivityEntry[] = hardware
     .filter((item) => item.fecha_creacion)
     .map((item) => ({
-      icon: 'fas fa-microchip',
+      icon: 'microchip',
       title: 'Dispositivo vinculado',
       subtitle: item.empresa_nombre ? `${item.nombre} · ${item.empresa_nombre}` : item.nombre,
       date: item.fecha_creacion,

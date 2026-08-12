@@ -1,57 +1,6 @@
-/*
- * MIGRACIÓN: los @import de este bloque se comentaron. Al inlinar los archivos,
- * quedaban después de reglas CSS y eso es un error de parseo en Turbopack/Lightning.
- * src/styles/portal.css los importa explícitamente en el mismo orden.
- */
 /* ===== HARDWARE MAIN STYLES ===== */
 
 /* Hardware container styles removed - using Tailwind classes directly */
-
-/* 
- * Este archivo importa todos los módulos CSS específicos para el hardware
- * para mantener una arquitectura modular y organizada.
- * 
- * ===== SISTEMA UNIFICADO DE TARJETAS ===== 
- * - Nuevo: ios-cards-unified.css (sistema unificado para todas las tarjetas)
- * - Compatible: con el sistema global de optimización de base.html
- * - Mantiene compatibilidad con empresas, usuarios y alertas
- * 
- * Orden de importación:
- * 1. Base styles (elementos básicos)
- * 2. Sistema de diseño iOS modular (headers, stats, filters, buttons)
- * 3. Sistema unificado de tarjetas (hardware, empresas, usuarios, alertas)
- * 4. Tema claro
- * 5. Modales específicos
- * 6. Optimizaciones de rendimiento
- */
-
-/* 1. Estilos base (solo elementos necesarios) */
-/* @import url('./forms.css'); */
-
-/* 2. Sistema de diseño iOS - MODULAR (evita duplicación) */
-/* @import url('./ios-header.css'); */
-/* @import url('./ios-buttons.css'); */
-/* @import url('./ios-stats.css'); */
-/* @import url('./ios-filters.css'); */
-
-/* 3. Sistema unificado de tarjetas - NUEVO SISTEMA */
-/* @import url('./ios-cards-unified.css'); */
-
-/* 4. Tema claro */
-/* @import url('./light-theme.css'); */
-
-/* 5. Modales específicos - SISTEMA UNIFICADO COMPLETO */
-/* @import url('./modals-core.css'); */ /* Modales iOS completos con blur effects */
-/* @import url('./modals.css'); */ /* Hardware specific overrides */
-
-/* 6. Optimizaciones de rendimiento */
-/* @import url('./performance.css'); */
-
-/* ===== ARCHIVOS REMOVIDOS/COMENTADOS ===== */
-/* - hardware-ios-design.css: Removido por duplicación */
-/* - hardware-base.css: Comentados estilos no utilizados */
-/* - hardware-cards.css: Comentados estilos duplicados, ios-cards.css es suficiente */
-/* - forms.css: Comentados estilos no utilizados */
 
 /* ===== HARDWARE SPECIFIC OVERRIDES ===== */
 
@@ -219,7 +168,6 @@ body.ios-modal-open {
 
 /* Print styles for hardware */
 @media print {
-  .ios-header-actions,
   .ios-card-actions,
   .ios-filters-container,
   .enhanced-notification {

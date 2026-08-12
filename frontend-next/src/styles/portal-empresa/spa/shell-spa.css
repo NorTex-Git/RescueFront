@@ -63,10 +63,6 @@
   }
 }
 
-.spa-shell .ios-header-container {
-  position: static;
-}
-
 .spa-sidebar {
   min-height: calc(100vh - var(--navbar-height));
   padding-top: 0;

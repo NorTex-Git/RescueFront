@@ -38,7 +38,7 @@ function buildResource(
 ): CrudResource<Usuario, UsuarioFormValues> {
   return {
     header: {
-      icon: 'fas fa-users',
+      icon: 'users',
       title: 'Usuarios',
       subtitle: `Gestión del personal de ${empresaNombre}`,
     },
@@ -49,7 +49,7 @@ function buildResource(
     queryFn: () => listUsuarios(empresaId, true),
     getId: (item) => item._id,
     labelOf: (item) => item.nombre,
-    icon: 'fas fa-users',
+    icon: 'users',
 
     headerStats: (items) => [
       { label: 'Activos', value: items.filter((item) => item.activo).length, tone: 'success' },
@@ -76,8 +76,7 @@ function buildResource(
         header: 'Nombre',
         cell: (row) => (
           <PrimaryCell
-            icon="fas fa-user"
-            tone="blue"
+            icon="user"
             title={row.nombre || '—'}
             subtitle={row.email || undefined}
           />

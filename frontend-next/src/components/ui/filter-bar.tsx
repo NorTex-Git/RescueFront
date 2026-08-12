@@ -92,7 +92,7 @@ export function FilterBar<TItem>({
             disabled={!state.isDirty}
             className="shrink-0"
           >
-            <Icon className="fas fa-filter-circle-xmark" />
+            <Icon name="filter-circle-xmark" />
             Limpiar
           </Button>
         )}

@@ -54,7 +54,7 @@ export default async function StatsPage() {
     return (
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className={`${PANEL} p-8 text-center`}>
-          <Icon className="fas fa-circle-exclamation mb-3 text-3xl text-red-500" />
+          <Icon name="circle-exclamation" className="mb-3 text-3xl text-red-500" />
           <h1 className="font-semibold text-[var(--shell-text-strong)]">
             No se pudieron cargar las estadísticas
           </h1>
@@ -68,8 +68,7 @@ export default async function StatsPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <PageHeader
-        icon="fas fa-chart-line"
-        iconGradient="from-violet-500 to-indigo-600"
+        icon="chart-line"
         title="Estadísticas"
         subtitle={`Análisis detallado de ${stats.empresa.nombre}`}
         stats={
@@ -84,29 +83,25 @@ export default async function StatsPage() {
 
       <div className="mb-[22px] grid grid-cols-1 gap-[18px] sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
-          icon="fas fa-users"
-          tone="blue"
+          icon="users"
           label="Usuarios"
           value={stats.usuarios.total}
           meta={`${stats.usuarios.activos} activos`}
         />
         <MetricCard
-          icon="fas fa-microchip"
-          tone="green"
+          icon="microchip"
           label="Hardware"
           value={stats.hardware.total}
           meta={`${stats.hardware.activos} activos`}
         />
         <MetricCard
-          icon="fas fa-bell"
-          tone="red"
+          icon="bell"
           label="Alertas"
           value={stats.alertas.total}
           meta={`${stats.alertas.activas} activas`}
         />
         <MetricCard
-          icon="fas fa-wave-square"
-          tone="purple"
+          icon="wave-square"
           label="Actividad 30 días"
           value={stats.actividadReciente.logsUltimos30Dias}
           meta="registros"

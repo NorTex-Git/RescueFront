@@ -152,7 +152,7 @@ function AssetPreview({
     >
       <div className="flex w-full items-center gap-3 pr-10">
         <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-sky-500/15 text-sky-600 dark:text-sky-300">
-          <Icon className={kind === 'image' ? 'fas fa-image' : 'fas fa-volume-high'} />
+          <Icon name={kind === 'image' ? 'image' : 'volume-high'} />
         </span>
         <div className="min-w-0">
           <p className="text-xs text-gray-500 dark:text-white/50">Vista previa</p>
@@ -188,7 +188,7 @@ function AssetPreview({
         aria-label="Quitar selección"
         className="absolute top-3 right-3 flex size-9 shrink-0 items-center justify-center rounded-full border border-red-500/20 bg-red-500/10 text-sm text-red-600 transition-colors hover:bg-red-500/20 dark:text-red-300"
       >
-        <Icon className="fas fa-times" />
+        <Icon name="times" />
       </button>
     </div>
   )

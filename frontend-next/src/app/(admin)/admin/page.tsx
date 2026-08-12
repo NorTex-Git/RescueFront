@@ -2,6 +2,7 @@ import { Icon } from '@/components/ui/icon'
 import { PageHeader } from '@/components/shell/page-header'
 import { DonutChart } from '@/components/ui/donut-chart'
 import { HeaderStatPill } from '@/components/ui/header-stat-pill'
+import { GlassIcon } from '@/components/ui/glass-icons'
 import { RefreshButton } from '@/components/ui/refresh-button'
 import { MetricCard } from '@/components/ui/stat-card'
 import {
@@ -22,15 +23,6 @@ import { requireSession } from '@/lib/auth/session'
  * desglose (ver nota en `server.ts`): se muestra el total real sin inventar proporciones.
  */
 const BAR_COLORS = ['#8b5cf6', '#3b82f6', '#10b981', '#ef4444', '#f59e0b', '#06b6d4']
-
-/** Tinte del tile de cada fila de actividad según su icono. */
-function activityTone(icon: string) {
-  if (icon.includes('building'))
-    return 'bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300'
-  if (icon.includes('microchip') || icon.includes('cpu'))
-    return 'bg-violet-50 text-violet-600 dark:bg-violet-500/15 dark:text-violet-300'
-  return 'bg-red-50 text-red-600 dark:bg-red-500/15 dark:text-red-300'
-}
 
 const PANEL = 'rounded-2xl border border-[var(--shell-border)] bg-[var(--shell-surface)]'
 const PANEL_HEAD = 'border-b border-[var(--shell-border-soft)] px-5 py-[18px]'
@@ -53,7 +45,7 @@ export default async function AdminDashboardPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <PageHeader
-        icon="fas fa-tachometer-alt"
+        icon="tachometer-alt"
         title="Dashboard"
         subtitle={<>Resumen general de la operación · sesión de {session.displayName}</>}
         stats={
@@ -63,10 +55,30 @@ export default async function AdminDashboardPage() {
       />
 
       <div className="mb-[22px] grid grid-cols-1 gap-[18px] sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard icon="fas fa-building" tone="blue" label="Empresas" value={stats.total_empresas ?? 0} meta="registradas" />
-        <MetricCard icon="fas fa-users" tone="green" label="Usuarios" value={stats.total_usuarios ?? 0} meta="activos" />
-        <MetricCard icon="fas fa-microchip" tone="purple" label="Hardware" value={stats.total_hardware ?? 0} meta="dispositivos" />
-        <MetricCard icon="fas fa-bell" tone="red" label="Alertas" value={totalAlertas} meta="este mes" />
+        <MetricCard
+          icon="building"
+          label="Empresas"
+          value={stats.total_empresas ?? 0}
+          meta="registradas"
+        />
+        <MetricCard
+          icon="users"
+          label="Usuarios"
+          value={stats.total_usuarios ?? 0}
+          meta="activos"
+        />
+        <MetricCard
+          icon="microchip"
+          label="Hardware"
+          value={stats.total_hardware ?? 0}
+          meta="dispositivos"
+        />
+        <MetricCard
+          icon="bell"
+          label="Alertas"
+          value={totalAlertas}
+          meta="este mes"
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-[18px] lg:grid-cols-3">
@@ -88,11 +100,9 @@ export default async function AdminDashboardPage() {
                     key={index}
                     className="flex items-center gap-[13px] rounded-xl px-2.5 py-[13px]"
                   >
-                    <span
-                      className={`flex size-[34px] shrink-0 items-center justify-center rounded-[11px] text-sm ${activityTone(entry.icon)}`}
-                    >
-                      <Icon className={entry.icon} />
-                    </span>
+                    <GlassIcon size="sm">
+                      <Icon name={entry.icon} />
+                    </GlassIcon>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[13px] font-semibold text-[var(--shell-text-strong)]">
                         {entry.title}
@@ -172,8 +182,8 @@ export default async function AdminDashboardPage() {
                * se inventan proporciones — se muestra solo el total real.
                */}
               <p className="flex-1 text-[12px] text-[var(--shell-text-muted)]">
-                El desglose por severidad estará disponible al conectar el endpoint de
-                distribución de alertas.
+                El desglose por severidad estará disponible al conectar el endpoint de distribución
+                de alertas.
               </p>
             </div>
           </div>

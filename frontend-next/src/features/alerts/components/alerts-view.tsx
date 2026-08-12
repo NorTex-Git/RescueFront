@@ -39,12 +39,12 @@ function priorityTone(priority: string): 'danger' | 'warning' | 'info' | 'neutra
 }
 
 const detailRows: DetailRow<Alert>[] = [
-  { label: 'Empresa', icon: 'fas fa-building', value: (alert) => alert.empresa_nombre || '—' },
-  { label: 'Sede', icon: 'fas fa-location-dot', value: (alert) => alert.sede || '—' },
-  { label: 'Prioridad', icon: 'fas fa-signal', value: (alert) => titleCase(alert.prioridad) },
+  { label: 'Empresa', icon: 'building', value: (alert) => alert.empresa_nombre || '—' },
+  { label: 'Sede', icon: 'location-dot', value: (alert) => alert.sede || '—' },
+  { label: 'Prioridad', icon: 'signal', value: (alert) => titleCase(alert.prioridad) },
   {
     label: 'Origen',
-    icon: 'fas fa-bolt',
+    icon: 'bolt',
     value: (alert) =>
       textFrom(alert.activacion_alerta, 'nombre') ||
       textFrom(alert.data, 'origen') ||
@@ -53,13 +53,13 @@ const detailRows: DetailRow<Alert>[] = [
   },
   {
     label: 'Creada',
-    icon: 'fas fa-calendar',
+    icon: 'calendar',
     value: (alert) => formatTimestamp(alert.fecha_creacion ?? null),
     full: true,
   },
   {
     label: 'Desactivada',
-    icon: 'fas fa-circle-check',
+    icon: 'circle-check',
     value: (alert) => formatTimestamp(alert.fecha_desactivacion ?? null),
     full: true,
   },
@@ -68,12 +68,12 @@ const detailRows: DetailRow<Alert>[] = [
 const detailSections: DetailSection<Alert>[] = [
   {
     title: 'Descripción',
-    icon: 'fas fa-align-left',
+    icon: 'align-left',
     content: (alert) => alert.descripcion || 'Sin descripción.',
   },
   {
     title: 'Instrucciones',
-    icon: 'fas fa-list-check',
+    icon: 'list-check',
     content: (alert) =>
       alert.instrucciones.length ? (
         <ul className="list-disc space-y-1 pl-5">
@@ -87,12 +87,12 @@ const detailSections: DetailSection<Alert>[] = [
   },
   {
     title: 'Elementos necesarios',
-    icon: 'fas fa-toolbox',
+    icon: 'toolbox',
     content: (alert) => alert.elementos_necesarios.join(', ') || 'Sin elementos registrados.',
   },
   {
     title: 'Cierre',
-    icon: 'fas fa-message',
+    icon: 'message',
     content: (alert) => alert.mensaje_desactivacion || 'Sin mensaje de cierre.',
   },
 ]
@@ -201,7 +201,7 @@ export function AlertsView({
       cell: (alert) => (
         <div className="flex min-w-52 items-center gap-3">
           <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-red-500/10 text-red-600 dark:text-red-300">
-            <Icon className="fas fa-triangle-exclamation" />
+            <Icon name="triangle-exclamation" />
           </span>
           <div className="min-w-0">
             <p className="font-semibold text-[var(--shell-text-strong)]">
@@ -254,7 +254,7 @@ export function AlertsView({
             aria-label="Ver detalle"
             onClick={() => setSelected(alert)}
           >
-            <Icon className="fas fa-eye" />
+            <Icon name="eye" />
           </Button>
           {status === 'active' && (
             <Button
@@ -264,7 +264,7 @@ export function AlertsView({
               aria-label="Desactivar"
               onClick={() => setDeactivating(alert)}
             >
-              <Icon className="fas fa-circle-check" />
+              <Icon name="circle-check" />
             </Button>
           )}
         </div>
@@ -276,10 +276,7 @@ export function AlertsView({
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <PageHeader
-        icon={status === 'active' ? 'fas fa-bell' : 'fas fa-clock-rotate-left'}
-        iconGradient={
-          status === 'active' ? 'from-red-500 to-rose-600' : 'from-slate-500 to-slate-700'
-        }
+        icon={status === 'active' ? 'bell' : 'clock-rotate-left'}
         title={status === 'active' ? 'Alertas activas' : 'Historial de alertas'}
         subtitle={`${empresaNombre} · actualización automática en tiempo real`}
         stats={
@@ -296,12 +293,12 @@ export function AlertsView({
               onClick={() => void query.refetch()}
               disabled={query.isFetching}
             >
-              <Icon className={query.isFetching ? 'fas fa-rotate animate-spin' : 'fas fa-rotate'} />
+              <Icon name="rotate" className={query.isFetching ? 'animate-spin' : undefined} />
               Actualizar
             </Button>
             {status === 'active' && (
               <Button onClick={() => setCreateOpen(true)}>
-                <Icon className="fas fa-plus" />
+                <Icon name="plus" />
                 Nueva alerta
               </Button>
             )}
@@ -327,7 +324,7 @@ export function AlertsView({
           indexOffset={(page - 1) * PAGE_SIZE}
           emptyState={
             <div className="text-center">
-              <Icon className="fas fa-circle-check mb-3 text-4xl text-emerald-500" />
+              <Icon name="circle-check" className="mb-3 text-4xl text-emerald-500" />
               <p className="font-semibold text-[var(--shell-text-strong)]">
                 {search
                   ? 'No hay coincidencias'
@@ -352,8 +349,7 @@ export function AlertsView({
         onClose={() => setSelected(null)}
         title="Detalle de la alerta"
         description="Información operativa completa"
-        icon="fas fa-triangle-exclamation"
-        iconGradient="from-red-500 to-rose-600"
+        icon="triangle-exclamation"
         item={selected}
         heading={{
           title: (alert) => alert.nombre_alerta || alert.tipo_alerta || 'Alerta',
@@ -369,15 +365,14 @@ export function AlertsView({
         onClose={() => setCreateOpen(false)}
         title="Crear alerta"
         description="Notifica al personal de la sede seleccionada"
-        icon="fas fa-bell"
-        iconGradient="from-red-500 to-rose-600"
+        icon="bell"
         size="lg"
         footer={
           <>
             <ModalButton onClick={() => setCreateOpen(false)}>Cancelar</ModalButton>
             <ModalButton
               variant="primary"
-              icon="fas fa-paper-plane"
+              icon="paper-plane"
               loading={submitting}
               onClick={() => void submitCreate()}
             >
@@ -440,8 +435,7 @@ export function AlertsView({
         onClose={() => setDeactivating(null)}
         title="Desactivar alerta"
         description={deactivating?.nombre_alerta || deactivating?.tipo_alerta || 'Alerta activa'}
-        icon="fas fa-circle-check"
-        iconGradient="from-emerald-500 to-teal-600"
+        icon="circle-check"
         size="sm"
         footer={
           <>

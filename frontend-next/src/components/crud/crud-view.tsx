@@ -127,14 +127,10 @@ export type CrudResource<TItem, TValues extends FieldValues> = {
   /** Etiqueta para las filas en modales y avisos, p. ej. el nombre. */
   labelOf: (item: TItem) => string
 
-  /** Icono Font Awesome del encabezado de los modales, como en cada template. */
+  /** Nombre semántico del icono Flowbite de encabezados y modales. */
   icon?: string
-  /** Degradado del recuadro del icono en formularios y confirmaciones. */
-  iconGradient?: string
   /** Icono propio del modal de detalle; si falta se usa `icon`. */
   detailIcon?: string
-  /** Degradado propio del modal de detalle; si falta se usa `iconGradient`. */
-  detailIconGradient?: string
 }
 
 export function CrudView<TItem, TValues extends FieldValues>({
@@ -210,10 +206,10 @@ export function CrudView<TItem, TValues extends FieldValues>({
       className: 'text-right whitespace-nowrap',
       cell: (row) => (
         <div className="flex justify-end gap-1">
-          <RowActionButton icon="fas fa-eye" label="Ver" onClick={() => modals.openDetail(row)} />
+          <RowActionButton icon="eye" label="Ver" onClick={() => modals.openDetail(row)} />
           {!resource.readOnly && (
             <RowActionButton
-              icon="fas fa-pen"
+              icon="pen"
               label="Editar"
               disabled={dependencyError !== null}
               onClick={() => modals.openEdit(row)}
@@ -221,7 +217,7 @@ export function CrudView<TItem, TValues extends FieldValues>({
           )}
           {!resource.readOnly && resource.toggle && (
             <RowActionButton
-              icon={resource.toggle.isActive(row) ? 'fas fa-ban' : 'fas fa-check'}
+              icon={resource.toggle.isActive(row) ? 'ban' : 'check'}
               label={resource.toggle.isActive(row) ? 'Desactivar' : 'Activar'}
               tone="warning"
               onClick={() => modals.openToggle(row)}
@@ -229,7 +225,7 @@ export function CrudView<TItem, TValues extends FieldValues>({
           )}
           {!resource.readOnly && resource.remove && (
             <RowActionButton
-              icon="fas fa-trash"
+              icon="trash"
               label="Eliminar"
               tone="danger"
               onClick={() => modals.openDelete(row)}
@@ -247,7 +243,6 @@ export function CrudView<TItem, TValues extends FieldValues>({
     <>
       <PageHeader
         icon={resource.header.icon}
-        iconGradient={resource.iconGradient}
         title={resource.header.title}
         titleBadge={
           // Con filtros puestos importa cuántos se ven, no cuántos hay.
@@ -275,7 +270,7 @@ export function CrudView<TItem, TValues extends FieldValues>({
                 onClick={modals.openCreate}
                 disabled={hardLoadError || dependencyError !== null}
               >
-                <Icon className="fas fa-plus" />
+                <Icon name="plus" />
                 Nuevo
               </Button>
             )}
@@ -341,7 +336,6 @@ export function CrudView<TItem, TValues extends FieldValues>({
           title={`Nuevo ${resource.singular}`}
           description={resource.formDescription}
           icon={resource.icon}
-          iconGradient={resource.iconGradient}
           fields={resource.fields}
           schema={resource.createSchema ?? resource.schema}
           defaultValues={resource.emptyValues}
@@ -361,7 +355,6 @@ export function CrudView<TItem, TValues extends FieldValues>({
           onClose={modals.close}
           title={`Editar ${resource.singular}`}
           icon={resource.icon}
-          iconGradient={resource.iconGradient}
           description={
             editing
               ? `${resource.labelOf(editing)}${resource.formDescription ? ` · ${resource.formDescription}` : ''}`
@@ -386,7 +379,6 @@ export function CrudView<TItem, TValues extends FieldValues>({
         title={resource.detailTitle ?? `Detalle · ${resource.singular}`}
         description={resource.detailDescription}
         icon={resource.detailIcon ?? resource.icon}
-        iconGradient={resource.detailIconGradient ?? resource.iconGradient}
         item={modals.isOpen('detail') ? editing : null}
         heading={resource.detailHeading}
         rows={resource.detailRows}
@@ -399,9 +391,8 @@ export function CrudView<TItem, TValues extends FieldValues>({
           open={modals.isOpen('toggle')}
           onClose={modals.close}
           title={isActive ? `Desactivar ${resource.singular}` : `Activar ${resource.singular}`}
-          icon={isActive ? 'fas fa-ban' : 'fas fa-check'}
-          headerIcon={isActive ? 'fas fa-ban' : 'fas fa-check'}
-          iconGradient={isActive ? 'from-amber-500 to-orange-600' : 'from-emerald-500 to-green-600'}
+          icon={isActive ? 'ban' : 'check'}
+          headerIcon={isActive ? 'ban' : 'check'}
           size={resource.confirmSize}
           confirmLabel={isActive ? 'Desactivar' : 'Activar'}
           onConfirm={async () => {
@@ -425,9 +416,8 @@ export function CrudView<TItem, TValues extends FieldValues>({
           title={`Eliminar ${resource.singular}`}
           confirmLabel="Eliminar"
           confirmVariant="danger"
-          icon="fas fa-trash"
-          headerIcon="fas fa-triangle-exclamation"
-          iconGradient="from-red-500 to-rose-700"
+          icon="trash"
+          headerIcon="triangle-exclamation"
           size={resource.confirmSize}
           onConfirm={async () => {
             if (!editing || !resource.remove) return
@@ -489,7 +479,7 @@ function RowActionButton({
         disabled && 'cursor-not-allowed opacity-40',
       )}
     >
-      <Icon className={icon} />
+      <Icon name={icon} />
     </button>
   )
 }

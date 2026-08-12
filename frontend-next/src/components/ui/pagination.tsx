@@ -54,7 +54,7 @@ export function Pagination({
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
         >
-          <Icon className="fas fa-chevron-left text-xs" />
+          <Icon name="chevron-left" className="text-xs" />
         </button>
         {pageWindow(page, pageCount).map((p, i) =>
           p === '…' ? (
@@ -85,7 +85,7 @@ export function Pagination({
           disabled={page >= pageCount}
           onClick={() => onPageChange(page + 1)}
         >
-          <Icon className="fas fa-chevron-right text-xs" />
+          <Icon name="chevron-right" className="text-xs" />
         </button>
       </div>
     </div>

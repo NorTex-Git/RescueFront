@@ -77,7 +77,7 @@ function MediaAudioPlayerInstance({ src, onError }: MediaAudioPlayerProps) {
               : 'border-black/10 bg-white/60 text-gray-600 hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-white/70',
           )}
         >
-          <Icon className="fas fa-repeat" />
+          <Icon name="repeat" />
         </button>
       </div>
 

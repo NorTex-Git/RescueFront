@@ -18,9 +18,8 @@ export function ConfirmDialog({
   description,
   confirmLabel = 'Confirmar',
   confirmVariant = 'primary',
-  icon = 'fas fa-check',
+  icon = 'check',
   headerIcon,
-  iconGradient,
   size = 'xs',
   children,
 }: {
@@ -37,8 +36,6 @@ export function ConfirmDialog({
   icon?: string
   /** Icono del encabezado. */
   headerIcon?: string
-  /** Degradado del recuadro del icono del encabezado. */
-  iconGradient?: string
   size?: ModalSize
   children?: ReactNode
 }) {
@@ -73,10 +70,9 @@ export function ConfirmDialog({
       description={description}
       size={size}
       icon={headerIcon}
-      iconGradient={iconGradient}
       footer={
         <>
-          <ModalButton icon="fas fa-times" onClick={close} disabled={pending}>
+          <ModalButton icon="times" onClick={close} disabled={pending}>
             Cancelar
           </ModalButton>
           <ModalButton variant={confirmVariant} icon={icon} loading={pending} onClick={confirm}>

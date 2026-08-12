@@ -93,7 +93,7 @@ export function RolesInput({
             'disabled:cursor-not-allowed disabled:opacity-40',
           )}
         >
-          <Icon className="fas fa-plus" />
+          <Icon name="plus" />
           <span className="sr-only sm:not-sr-only">Agregar</span>
         </button>
       </div>
@@ -116,14 +116,14 @@ export function RolesInput({
                   active={role.is_creator}
                   onClick={() => toggleFlag(index, 'is_creator')}
                   disabled={disabled}
-                  icon="fas fa-pen-to-square"
+                  icon="pen-to-square"
                   label="Crea alertas"
                 />
                 <FlagToggle
                   active={role.is_alert_manager}
                   onClick={() => toggleFlag(index, 'is_alert_manager')}
                   disabled={disabled}
-                  icon="fas fa-bell"
+                  icon="bell"
                   label="Gestiona alertas"
                 />
                 <button
@@ -133,7 +133,7 @@ export function RolesInput({
                   aria-label={`Quitar ${role.nombre}`}
                   className="flex size-8 items-center justify-center rounded-full text-sm text-gray-400 transition-colors hover:bg-red-500/15 hover:text-red-600 dark:text-white/40 dark:hover:text-red-300"
                 >
-                  <Icon className="fas fa-times" />
+                  <Icon name="times" />
                 </button>
               </div>
             </li>
@@ -173,7 +173,7 @@ function FlagToggle({
         'disabled:cursor-not-allowed disabled:opacity-50',
       )}
     >
-      <Icon className={icon} />
+      <Icon name={icon} />
       {label}
     </button>
   )

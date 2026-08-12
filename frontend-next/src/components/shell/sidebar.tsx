@@ -1,6 +1,7 @@
 'use client'
 
 import { Icon } from '@/components/ui/icon'
+import { GlassIcon } from '@/components/ui/glass-icons'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
@@ -66,16 +67,9 @@ export function Sidebar({
                         : 'hover:bg-[var(--shell-accent-tile)]',
                     )}
                   >
-                    <span
-                      className={cn(
-                        'flex size-8 shrink-0 items-center justify-center rounded-[10px] text-[15px] transition-colors',
-                        active
-                          ? 'bg-[image:var(--shell-accent-grad)] text-white'
-                          : 'bg-[var(--shell-accent-tile)] text-[var(--shell-text-muted)]',
-                      )}
-                    >
-                      <Icon className={item.icon} />
-                    </span>
+                    <GlassIcon size="sm">
+                      <Icon name={item.icon} />
+                    </GlassIcon>
                     <span
                       className={cn(
                         'truncate text-sm',
@@ -102,7 +96,7 @@ export function Sidebar({
               onClick={onLogout}
               aria-label="Cerrar sesión"
             >
-              <Icon className="fas fa-sign-out-alt" />
+              <Icon name="sign-out-alt" />
               <span>Cerrar Sesión</span>
             </button>
           </div>

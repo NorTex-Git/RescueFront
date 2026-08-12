@@ -2,6 +2,7 @@
   "name": "frontend-next",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@11.13.1",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -28,6 +29,7 @@
     "server-only": "^0.0.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0",
+    "three": "^0.185.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -37,6 +39,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/three": "^0.185.4",
     "eslint": "^9",
     "eslint-config-next": "16.2.12",
     "prettier": "^3.9.6",

@@ -1,85 +1,98 @@
 import type { Metadata } from 'next'
 
+import { GlassSurface } from '@/components/ui/glass-surface'
+import { Icon } from '@/components/ui/icon'
 import { LoginForm } from '@/features/auth/components/login-form'
 import { ThemeToggleButton } from '@/features/auth/components/theme-toggle-button'
+import { LandingHeader } from '@/features/landing/components/landing-header'
 
+import '@/features/landing/landing.css'
 import '@/styles/login.css'
 
 export const metadata: Metadata = {
-  title: 'Iniciar Sesión — RESCUE',
+  // Mantiene la continuidad visual con la landing: solo se ve el favicon en la pestaña.
+  title: '\u200B',
+  description: 'Acceso seguro a la plataforma RESCUE.',
 }
 
-/**
- * Paridad visual con `templates/login.html`: se reutilizan tal cual las clases de
- * `static/css/login.css` (glass-card, input-glass, btn-gradient, particles…).
- *
- * Sin animación de entrada: el reveal por GSAP (`LoginReveal`) tardaba varios segundos
- * en producirse en desarrollo —doble invocación de efectos de React más un tween hacia
- * `.fade-in-scale`, una clase que ningún elemento tenía— y el login se veía roto en vez
- * de animado.
- *
- * Los colores de texto llevan `dark:` explícito: el resto de utilidades de esta vista
- * viene de `login.css` (vía variables que sí distinguen `.dark`), pero las clases
- * `text-white/*` de Tailwind no tienen contraparte automática y quedaban fijas en
- * blanco sin importar el tema.
- */
 export default async function LoginPage(props: PageProps<'/login'>) {
   const { next, error } = await props.searchParams
 
   return (
-    <div className="login-background fixed inset-0 min-h-screen w-full overflow-hidden">
-      <div className="particles">
-        {Array.from({ length: 6 }, (_, index) => (
-          <div key={index} className="particle" />
-        ))}
+    <main className="rescue-login">
+      <div className="login-grid" aria-hidden="true" />
+      <div className="login-orbit login-orbit-one" aria-hidden="true" />
+      <div className="login-orbit login-orbit-two" aria-hidden="true" />
+      <div className="login-signal" aria-hidden="true">
+        <span />
+        <span />
+        <span />
       </div>
 
-      <ThemeToggleButton />
+      <LandingHeader loginPage action={<ThemeToggleButton embedded />} />
 
-      <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-8 sm:px-6 md:px-8">
-        <div className="mx-auto w-full max-w-5xl">
-          <div className="grid grid-cols-1 items-center gap-10 md:grid-cols-2 md:gap-16">
-            <div className="order-2 flex flex-col items-center space-y-5 text-center md:order-1 md:items-start md:space-y-7 md:text-left">
-              <div className="flex items-center gap-2.5 text-xs font-semibold tracking-[0.2em] text-slate-600 uppercase dark:text-white/60">
-                <span className="h-px w-8 bg-gradient-to-r from-transparent to-[#667eea]" />
-                Acceso seguro
-              </div>
-              <div className="max-w-lg space-y-5">
-                <h2 className="text-gradient text-4xl leading-[1.05] font-bold tracking-tight md:text-5xl xl:text-6xl">
-                  Bienvenido a <span className="text-secondary-gradient">Rescue</span>
-                </h2>
-                <p className="text-base leading-relaxed text-slate-600 md:text-lg dark:text-white/70">
-                  Accede para gestionar de forma segura tus recursos y empresas con la máxima
-                  confiabilidad.
-                </p>
-              </div>
-            </div>
-
-            <div className="order-1 mx-auto w-full max-w-sm md:order-2 md:max-w-md">
-              <div className="glass-card rounded-3xl p-7 sm:p-9">
-                <div className="mb-7 text-center">
-                  <h1 className="text-gradient mb-1.5 text-3xl font-bold">Iniciar Sesión</h1>
-                  <p className="text-sm text-slate-600 dark:text-white/60">Accede a tu cuenta</p>
-                </div>
-
-                <LoginForm
-                  next={typeof next === 'string' ? next : undefined}
-                  initialError={typeof error === 'string' ? error : undefined}
-                />
-              </div>
-
-              <div className="mt-5 text-center">
-                <p className="text-xs text-slate-500 dark:text-white/50">
-                  ¿No tienes cuenta?{' '}
-                  <span className="font-semibold text-indigo-600 transition-colors hover:text-indigo-500 dark:text-indigo-300 dark:hover:text-indigo-200">
-                    Contacta al administrador
-                  </span>
-                </p>
-              </div>
-            </div>
+      <section className="login-stage" aria-labelledby="login-title">
+        <div className="login-intro">
+          <h1>
+            Coordina.
+            <br />
+            <em>Responde.</em>
+            <br />
+            Protege.
+          </h1>
+          <p>
+            Accede al centro de control que conecta alertas, equipos y canales de respuesta en
+            tiempo real.
+          </p>
+          <div className="login-capabilities" aria-label="Capacidades de la plataforma">
+            <span>
+              <Icon name="tower-broadcast" /> Alertas en vivo
+            </span>
+            <span>
+              <Icon name="users" /> Equipos coordinados
+            </span>
           </div>
         </div>
-      </div>
-    </div>
+
+        <GlassSurface
+          width="100%"
+          height="auto"
+          borderRadius={28}
+          displace={0.35}
+          distortionScale={-120}
+          redOffset={0}
+          greenOffset={7}
+          blueOffset={14}
+          brightness={44}
+          opacity={0.9}
+          backgroundOpacity={0.08}
+          saturation={1.3}
+          mixBlendMode="screen"
+          className="login-surface"
+        >
+          <div className="login-card-content">
+            <div className="login-card-heading">
+              <span className="login-card-icon">
+                <Icon name="fingerprint" />
+              </span>
+              <div>
+                <p>Acceso seguro</p>
+                <h2 id="login-title">Iniciar sesión</h2>
+              </div>
+            </div>
+            <p className="login-card-description">
+              Ingresa tus credenciales para continuar al centro de control.
+            </p>
+            <LoginForm
+              next={typeof next === 'string' ? next : undefined}
+              initialError={typeof error === 'string' ? error : undefined}
+            />
+            <p className="login-help">
+              ¿No tienes acceso? <span>Contacta al administrador de tu organización.</span>
+            </p>
+          </div>
+        </GlassSurface>
+      </section>
+    </main>
   )
 }

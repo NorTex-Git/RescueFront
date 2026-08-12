@@ -46,7 +46,6 @@ export function FormModal<TValues extends FieldValues>({
   submitLabel = 'Guardar',
   onSubmit,
   icon,
-  iconGradient,
   size = 'lg',
 }: {
   open: boolean
@@ -65,8 +64,6 @@ export function FormModal<TValues extends FieldValues>({
   onSubmit: (values: TValues) => Promise<void>
   /** Icono del encabezado, como en cada template Jinja. */
   icon?: string
-  /** Degradado del recuadro del icono. */
-  iconGradient?: string
   /**
    * Por defecto `lg` (44rem): con la rejilla de dos columnas cada campo queda en
    * ~20rem, que es de sobra. Sube a `xl` si el formulario tiene muchos campos.
@@ -117,18 +114,17 @@ export function FormModal<TValues extends FieldValues>({
       title={title}
       description={description}
       icon={icon}
-      iconGradient={iconGradient}
       size={size}
       footer={
         <>
-          <ModalButton type="button" icon="fas fa-times" onClick={onClose} disabled={isSubmitting}>
+          <ModalButton type="button" icon="times" onClick={onClose} disabled={isSubmitting}>
             Cancelar
           </ModalButton>
           <ModalButton
             type="submit"
             form="form-modal"
             variant="primary"
-            icon="fas fa-save"
+            icon="save"
             loading={isSubmitting}
           >
             {submitLabel}

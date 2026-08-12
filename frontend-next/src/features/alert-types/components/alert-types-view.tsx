@@ -78,7 +78,7 @@ function AlertMediaDetails({ item }: { item: AlertType }) {
     <div className="grid gap-4 lg:grid-cols-2">
       <article className="overflow-hidden rounded-2xl border border-black/10 bg-white/55 p-3 dark:border-white/10 dark:bg-white/5">
         <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-          <Icon className="fas fa-image text-sky-500" />
+          <Icon name="image" className="text-sky-500" />
           Imagen de la alerta
         </div>
         {image ? (
@@ -102,7 +102,7 @@ function AlertMediaDetails({ item }: { item: AlertType }) {
 
       <article className="rounded-2xl border border-black/10 bg-white/55 p-3 dark:border-white/10 dark:bg-white/5">
         <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-          <Icon className="fas fa-volume-high text-indigo-500" />
+          <Icon name="volume-high" className="text-indigo-500" />
           Sonido de la alerta
         </div>
         {sound ? (
@@ -137,12 +137,11 @@ function buildResource(
     queryFn: listAlertTypes,
     getId: (item) => item._id,
     labelOf: (item) => item.nombre,
-    icon: 'fas fa-bell',
-    iconGradient: 'from-orange-500 to-amber-500',
+    icon: 'bell',
     formDescription: 'Define los atributos, recursos y recomendaciones de la alerta',
 
     header: {
-      icon: 'fas fa-bell',
+      icon: 'bell',
       title: 'Tipos de Alerta',
       subtitle: 'Alarmas disponibles en el sistema',
     },
@@ -172,8 +171,7 @@ function buildResource(
         header: 'Nombre',
         cell: (row) => (
           <PrimaryCell
-            icon="fas fa-bell"
-            tone="orange"
+            icon="bell"
             title={row.nombre || '—'}
             subtitle={nivelLabel.get(row.tipo_alerta) ?? undefined}
           />
@@ -220,8 +218,7 @@ function buildResource(
     ],
 
     detailTitle: 'Detalle de la alerta',
-    detailIcon: 'fas fa-bell',
-    detailIconGradient: 'from-orange-500 to-amber-500',
+    detailIcon: 'bell',
     detailSize: 'xl',
     detailHeading: {
       title: (item) => item.nombre,
@@ -229,39 +226,39 @@ function buildResource(
     },
     detailRows: [
       {
-        icon: 'fas fa-fingerprint',
+        icon: 'fingerprint',
         label: 'Identificador',
         value: (item) => <span className="font-mono text-xs break-all">{item._id}</span>,
       },
       {
-        icon: 'fas fa-circle-check',
+        icon: 'circle-check',
         label: 'Estado',
         value: (item) => <StatusBadge active={item.activo} />,
       },
       {
-        icon: 'fas fa-layer-group',
+        icon: 'layer-group',
         label: 'Nivel',
         value: (item) => nivelLabel.get(item.tipo_alerta) ?? item.tipo_alerta ?? '—',
       },
       {
-        icon: 'fas fa-building',
+        icon: 'building',
         label: 'Empresa',
         value: (item) => (item.empresa_id ? (empresaNombre.get(item.empresa_id) ?? '—') : 'Global'),
       },
       {
-        icon: 'fas fa-palette',
+        icon: 'palette',
         label: 'Color',
         value: (item) => <ColorSwatch color={item.color_alerta} />,
       },
       {
-        icon: 'fas fa-calendar',
+        icon: 'calendar',
         label: 'Creación',
         value: (item) => formatDate(item.fecha_creacion),
       },
     ],
     detailSections: [
       {
-        icon: 'fas fa-align-left',
+        icon: 'align-left',
         title: 'Descripcion',
         content: (item) => (
           <p className="leading-relaxed whitespace-pre-wrap text-gray-700 dark:text-white/75">
@@ -270,17 +267,17 @@ function buildResource(
         ),
       },
       {
-        icon: 'fas fa-photo-film',
+        icon: 'photo-film',
         title: 'Recursos multimedia',
         content: (item) => <AlertMediaDetails item={item} />,
       },
       {
-        icon: 'fas fa-list-check',
+        icon: 'list-check',
         title: 'Recomendaciones',
         content: (item) => chips(item.recomendaciones, 'Sin recomendaciones'),
       },
       {
-        icon: 'fas fa-toolbox',
+        icon: 'toolbox',
         title: 'Implementos necesarios',
         content: (item) => chips(item.implementos_necesarios, 'Sin implementos'),
       },

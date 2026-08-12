@@ -54,7 +54,7 @@ export function NotificationCenter({ alertsHref }: { alertsHref?: string }) {
         aria-haspopup="dialog"
         onClick={() => setOpen((value) => !value)}
       >
-        <Icon className="fas fa-bell text-lg" />
+        <Icon name="bell" className="text-lg" />
         {total > 0 && (
           <span className="absolute -right-1 -top-1 min-w-4 rounded-full bg-red-600 px-1 text-center text-[10px] font-bold leading-4 text-white">
             {total > 99 ? '99+' : total}
@@ -82,14 +82,14 @@ export function NotificationCenter({ alertsHref }: { alertsHref?: string }) {
               aria-label="Actualizar notificaciones"
               onClick={() => void refresh()}
             >
-              <Icon className="fas fa-rotate" />
+              <Icon name="rotate" />
             </button>
           </header>
 
           <div className="max-h-[26rem] overflow-y-auto">
             {notifications.length === 0 ? (
               <div className="px-6 py-10 text-center">
-                <Icon className="fas fa-bell mb-3 text-3xl text-[var(--shell-text-muted)]" />
+                <Icon name="bell" className="mb-3 text-3xl text-[var(--shell-text-muted)]" />
                 <p className="text-sm font-medium text-[var(--shell-text-strong)]">Sin alertas activas</p>
                 <p className="mt-1 text-xs text-[var(--shell-text-muted)]">Los cambios aparecerán aquí automáticamente.</p>
               </div>

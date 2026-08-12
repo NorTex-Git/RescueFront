@@ -215,8 +215,9 @@ export function Select({
         >
           <span className="truncate">{current?.label ?? placeholder}</span>
           <Icon
+            name="chevron-down"
             className={cn(
-              'fas fa-chevron-down shrink-0 text-xs transition-transform',
+              'shrink-0 text-xs transition-transform',
               open && 'rotate-180',
             )}
           />
@@ -267,7 +268,10 @@ export function Select({
                   >
                     <span className="truncate">{item.label}</span>
                     {isSelected && item.value && (
-                      <Icon className="fas fa-check shrink-0 text-xs text-blue-600 dark:text-blue-300" />
+                      <Icon
+                        name="check"
+                        className="shrink-0 text-xs text-blue-600 dark:text-blue-300"
+                      />
                     )}
                   </li>
                 )

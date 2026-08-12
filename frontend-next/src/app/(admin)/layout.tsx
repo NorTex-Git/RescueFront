@@ -10,13 +10,13 @@ import '@/styles/portal.css'
 
 /** Mismo orden y mismos iconos que `templates/admin/spa/parts/sidebar.html`. */
 const NAV_ITEMS: NavItem[] = [
-  { href: '/admin', label: 'Dashboard', icon: 'fas fa-tachometer-alt' },
-  { href: '/admin/empresas', label: 'Empresas', icon: 'fas fa-building' },
-  { href: '/admin/usuarios', label: 'Usuarios', icon: 'fas fa-users' },
-  { href: '/admin/hardware', label: 'Hardware', icon: 'fas fa-microchip' },
-  { href: '/admin/alert-types', label: 'Tipos Alertas', icon: 'fas fa-bell' },
-  { href: '/admin/company-types', label: 'Tipos Empresa', icon: 'fas fa-layer-group' },
-  { href: '/admin/multimedia', label: 'Multimedia', icon: 'fas fa-photo-video' },
+  { href: '/admin', label: 'Dashboard', icon: 'tachometer-alt' },
+  { href: '/admin/empresas', label: 'Empresas', icon: 'building' },
+  { href: '/admin/usuarios', label: 'Usuarios', icon: 'users' },
+  { href: '/admin/hardware', label: 'Hardware', icon: 'microchip' },
+  { href: '/admin/alert-types', label: 'Tipos Alertas', icon: 'bell' },
+  { href: '/admin/company-types', label: 'Tipos Empresa', icon: 'layer-group' },
+  { href: '/admin/multimedia', label: 'Multimedia', icon: 'photo-video' },
 ]
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {

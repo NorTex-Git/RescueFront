@@ -66,9 +66,9 @@ function buildResource(
           ? 'bg-emerald-500/10 hover:!bg-emerald-500/15'
           : undefined,
     labelOf: (item) => item.nombre,
-    icon: 'fas fa-microchip',
+    icon: 'microchip',
     header: {
-      icon: 'fas fa-microchip',
+      icon: 'microchip',
       title: 'Hardware',
       subtitle: scope
         ? `Equipos y estado físico de ${scope.empresaNombre}`
@@ -98,7 +98,7 @@ function buildResource(
       : ({ openCreate }) => (
           <div className="flex flex-col items-center gap-4 py-8 text-center">
             <span className="flex size-16 items-center justify-center rounded-2xl bg-[var(--shell-accent-soft)] text-2xl text-[var(--shell-accent)]">
-              <Icon className="fas fa-microchip" />
+              <Icon name="microchip" />
             </span>
             <div>
               <p className="text-base font-semibold text-[var(--shell-text-strong)]">
@@ -109,7 +109,7 @@ function buildResource(
               </p>
             </div>
             <Button onClick={openCreate}>
-              <Icon className="fas fa-plus" />
+              <Icon name="plus" />
               Nuevo Hardware
             </Button>
           </div>
@@ -120,8 +120,7 @@ function buildResource(
         header: 'Equipo',
         cell: (item) => (
           <PrimaryCell
-            icon="fas fa-microchip"
-            tone="purple"
+            icon="microchip"
             title={item.nombre || '—'}
             subtitle={item.empresa_nombre || undefined}
           />
@@ -212,7 +211,7 @@ function buildResource(
     ],
     detailTitle: 'Detalle del equipo',
     detailDescription: 'Configuración, ubicación e inventario',
-    detailIcon: 'fas fa-microchip',
+    detailIcon: 'microchip',
     detailSize: 'lg',
     detailHeading: {
       title: (item) => item.nombre,
@@ -223,50 +222,50 @@ function buildResource(
     },
     detailRows: [
       {
-        icon: 'fas fa-circle-check',
+        icon: 'circle-check',
         label: 'Activo',
         value: (item) => <StatusBadge active={item.activa} />,
       },
       {
-        icon: 'fas fa-satellite-dish',
+        icon: 'satellite-dish',
         label: 'Estado físico',
         value: (item) => physicalStatusOf(item) || 'Sin reporte',
       },
-      { icon: 'fas fa-boxes-stacked', label: 'Inventario', value: (item) => inventoryStatus(item) },
-      { icon: 'fas fa-tags', label: 'Tipo', value: (item) => item.tipo || '—' },
+      { icon: 'boxes-stacked', label: 'Inventario', value: (item) => inventoryStatus(item) },
+      { icon: 'tags', label: 'Tipo', value: (item) => item.tipo || '—' },
       {
-        icon: 'fas fa-building',
+        icon: 'building',
         label: 'Empresa',
         value: (item) => item.empresa_nombre || item.empresa_id || '—',
       },
-      { icon: 'fas fa-location-dot', label: 'Sede', value: (item) => item.sede || '—' },
-      { icon: 'fas fa-map-pin', label: 'Ubicación', value: (item) => item.direccion || '—' },
-      { icon: 'fas fa-copyright', label: 'Marca', value: (item) => detailsOf(item).brand || '—' },
-      { icon: 'fas fa-barcode', label: 'Modelo', value: (item) => detailsOf(item).model || '—' },
+      { icon: 'location-dot', label: 'Sede', value: (item) => item.sede || '—' },
+      { icon: 'map-pin', label: 'Ubicación', value: (item) => item.direccion || '—' },
+      { icon: 'copyright', label: 'Marca', value: (item) => detailsOf(item).brand || '—' },
+      { icon: 'barcode', label: 'Modelo', value: (item) => detailsOf(item).model || '—' },
       {
-        icon: 'fas fa-dollar-sign',
+        icon: 'dollar-sign',
         label: 'Precio',
         value: (item) => money(detailsOf(item).price),
       },
       {
-        icon: 'fas fa-cubes',
+        icon: 'cubes',
         label: 'Stock',
         value: (item) => `${detailsOf(item).stock} unidades`,
       },
       {
-        icon: 'fas fa-shield-halved',
+        icon: 'shield-halved',
         label: 'Garantía',
         value: (item) => `${detailsOf(item).warranty} meses`,
       },
       {
-        icon: 'fas fa-calendar',
+        icon: 'calendar',
         label: 'Creación',
         value: (item) => formatDate(item.fecha_creacion),
       },
     ],
     detailSections: [
       {
-        icon: 'fas fa-align-left',
+        icon: 'align-left',
         title: 'Descripción',
         content: (item) => <p>{detailsOf(item).description || 'Sin descripción.'}</p>,
       },

@@ -29,7 +29,7 @@ export default async function EmpresaDashboardPage() {
     return (
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className={`${PANEL} p-8 text-center`}>
-          <Icon className="fas fa-circle-exclamation mb-3 text-3xl text-red-500" />
+          <Icon name="circle-exclamation" className="mb-3 text-3xl text-red-500" />
           <h1 className="font-semibold text-[var(--shell-text-strong)]">
             No se pudo cargar el dashboard
           </h1>
@@ -46,7 +46,7 @@ export default async function EmpresaDashboardPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <PageHeader
-        icon="fas fa-gauge-high"
+        icon="gauge-high"
         title="Dashboard"
         subtitle={`Resumen operativo de ${empresa.nombre}`}
         stats={<HeaderStatPill label="Sedes" value={empresa.sedes.length} tone="info" />}
@@ -55,29 +55,25 @@ export default async function EmpresaDashboardPage() {
 
       <div className="mb-[22px] grid grid-cols-1 gap-[18px] sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
-          icon="fas fa-users"
-          tone="blue"
+          icon="users"
           label="Usuarios"
           value={stats.usuarios.total}
           meta={`${stats.usuarios.activos} activos`}
         />
         <MetricCard
-          icon="fas fa-microchip"
-          tone="green"
+          icon="microchip"
           label="Hardware"
           value={stats.hardware.total}
           meta={`${stats.hardware.activos} conectados`}
         />
         <MetricCard
-          icon="fas fa-bell"
-          tone="red"
+          icon="bell"
           label="Alertas activas"
           value={stats.alertas.activas}
           meta="requieren atención"
         />
         <MetricCard
-          icon="fas fa-circle-check"
-          tone="purple"
+          icon="circle-check"
           label="Resueltas"
           value={stats.alertas.resueltas}
           meta="histórico"
@@ -104,7 +100,7 @@ export default async function EmpresaDashboardPage() {
           </div>
           {alerts.data.length === 0 ? (
             <div className="px-5 py-14 text-center">
-              <Icon className="fas fa-circle-check mb-3 text-4xl text-emerald-500" />
+              <Icon name="circle-check" className="mb-3 text-4xl text-emerald-500" />
               <p className="font-semibold text-[var(--shell-text-strong)]">
                 La operación está al día
               </p>
@@ -118,7 +114,7 @@ export default async function EmpresaDashboardPage() {
                   className="flex items-center gap-3 rounded-xl px-2.5 py-3 hover:bg-[var(--shell-bg)]"
                 >
                   <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-red-500/10 text-red-600 dark:text-red-300">
-                    <Icon className="fas fa-triangle-exclamation" />
+                    <Icon name="triangle-exclamation" />
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[13px] font-semibold text-[var(--shell-text-strong)]">
@@ -152,7 +148,7 @@ export default async function EmpresaDashboardPage() {
               aria-label="Ver hardware"
               className="text-[var(--shell-accent)]"
             >
-              <Icon className="fas fa-arrow-right" />
+              <Icon name="arrow-right" />
             </Link>
           </div>
           <div className="p-5">

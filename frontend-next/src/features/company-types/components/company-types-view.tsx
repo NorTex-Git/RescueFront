@@ -27,10 +27,10 @@ const resource: CrudResource<CompanyType, CompanyTypeFormValues> = {
   queryFn: listCompanyTypes,
   getId: (item) => item._id,
   labelOf: (item) => item.nombre,
-  icon: 'fas fa-layer-group',
+  icon: 'layer-group',
 
   header: {
-    icon: 'fas fa-layer-group',
+    icon: 'layer-group',
     title: 'Tipos de Empresa',
     subtitle: 'Categorías para clasificar las empresas',
   },
@@ -49,7 +49,7 @@ const resource: CrudResource<CompanyType, CompanyTypeFormValues> = {
       key: 'nombre',
       header: 'Nombre',
       cell: (row) => (
-        <PrimaryCell icon="fas fa-layer-group" tone="indigo" title={row.nombre || '—'} />
+        <PrimaryCell icon="layer-group" title={row.nombre || '—'} />
       ),
     },
     { key: 'descripcion', header: 'Descripción', cell: (row) => row.descripcion || '—' },
@@ -90,26 +90,26 @@ const resource: CrudResource<CompanyType, CompanyTypeFormValues> = {
 
   detailTitle: 'Detalle del tipo',
   detailDescription: 'Consulta la configuración completa',
-  detailIcon: 'fas fa-eye',
+  detailIcon: 'eye',
   detailHeading: {
     title: (item) => item.nombre,
     subtitle: (item) => item.descripcion || 'Sin descripción',
   },
   detailRows: [
     {
-      icon: 'fas fa-circle-check',
+      icon: 'circle-check',
       label: 'Estado',
       value: (item) => <StatusBadge active={item.activo} />,
     },
     {
-      icon: 'fas fa-calendar',
+      icon: 'calendar',
       label: 'Creación',
       value: (item) => formatDate(item.fecha_creacion),
     },
   ],
   detailSections: [
     {
-      icon: 'fas fa-tags',
+      icon: 'tags',
       title: 'Características',
       content: (item) =>
         item.caracteristicas.length ? (

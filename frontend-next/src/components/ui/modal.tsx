@@ -1,6 +1,7 @@
 'use client'
 
 import { Icon } from '@/components/ui/icon'
+import { GlassIcon } from '@/components/ui/glass-icons'
 import { useEffect, useId, useRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -46,7 +47,6 @@ export function Modal({
   title,
   description,
   icon,
-  iconGradient = 'from-indigo-500 to-purple-600',
   size = 'md',
   footer,
   children,
@@ -55,10 +55,8 @@ export function Modal({
   onClose: () => void
   title: ReactNode
   description?: ReactNode
-  /** Icono Font Awesome del encabezado. */
+  /** Nombre semántico del icono Flowbite del encabezado. */
   icon?: string
-  /** Degradado del recuadro del icono; cada vista usa el suyo. */
-  iconGradient?: string
   size?: ModalSize
   footer?: ReactNode
   children: ReactNode
@@ -169,14 +167,9 @@ export function Modal({
       >
         <header className="flex items-start gap-3 border-b border-black/10 bg-white/25 px-6 py-5 dark:border-white/10 dark:bg-white/5">
           {icon && (
-            <div
-              className={cn(
-                'flex size-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br shadow-lg',
-                iconGradient,
-              )}
-            >
-              <Icon className={cn(icon, 'text-xl text-white')} />
-            </div>
+            <GlassIcon size="lg">
+              <Icon name={icon} />
+            </GlassIcon>
           )}
           <div className="min-w-0 flex-1">
             {/* Envuelve en varias líneas en vez de cortarse: los títulos largos caben. */}
@@ -201,7 +194,7 @@ export function Modal({
               'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400',
             )}
           >
-            <Icon className="fas fa-times text-lg" />
+            <Icon name="times" className="text-lg" />
           </button>
         </header>
 
@@ -260,7 +253,7 @@ export function ModalButton({
           className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent"
         />
       ) : (
-        icon && <Icon className={icon} />
+        icon && <Icon name={icon} />
       )}
       {children}
     </button>

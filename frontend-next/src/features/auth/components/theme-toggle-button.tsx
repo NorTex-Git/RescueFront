@@ -8,7 +8,7 @@ import { useTheme } from '@/components/theme-provider'
  * pero en un botón de vidrio propio: el login no tiene navbar y sus superficies vienen
  * de `login.css`, no de `portal.css`.
  */
-export function ThemeToggleButton() {
+export function ThemeToggleButton({ embedded = false }: { embedded?: boolean }) {
   const { theme, toggleTheme } = useTheme()
 
   return (
@@ -17,9 +17,9 @@ export function ThemeToggleButton() {
       onClick={toggleTheme}
       aria-label="Cambiar tema"
       title="Cambiar tema"
-      className="theme-toggle-btn fixed top-4 right-4 z-20 flex size-11 items-center justify-center rounded-full sm:top-6 sm:right-6"
+      className={`theme-toggle-btn${embedded ? ' theme-toggle-btn--embedded' : ''}`}
     >
-      <Icon className={theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon'} />
+      <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
     </button>
   )
 }

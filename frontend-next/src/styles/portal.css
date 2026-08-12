@@ -5,22 +5,15 @@
  * Se listan explícitamente en vez de confiar en los `@import` internos de
  * `spa-global.css`: allí van después de reglas CSS, así que al inlinarlos Turbopack
  * lo trata como error de parseo.
- *
- * Font Awesome viene de npm, no del CDN de cdnjs (regla 7 del plan).
  */
 
 @import './spa/variables.css';
 @import './spa/spa-global.css';
 @import './spa/forms.css';
-@import './spa/ios-header.css';
 @import './spa/ios-buttons.css';
-@import './spa/ios-stats.css';
 @import './spa/ios-filters.css';
-@import './spa/ios-cards-unified.css';
-@import './spa/light-theme.css';
 @import './spa/modals-core.css';
 @import './spa/modals.css';
-@import './spa/performance.css';
 @import './global-text-theme.css';
 @import './scrollbar-global.css';
 @import './portal-empresa/spa/shell-spa.css';

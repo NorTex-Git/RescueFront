@@ -48,13 +48,13 @@ const CARD_TONES = [
 /** Icono según el nombre de la carpeta, para acercarse a las categorías del mockup. */
 function folderIcon(folder: string): string {
   const f = folder.toLowerCase()
-  if (f.includes('siren')) return 'fas fa-tower-broadcast'
-  if (f.includes('camar') || f.includes('camera')) return 'fas fa-video'
-  if (f.includes('panic') || f.includes('boton')) return 'fas fa-bell'
-  if (f.includes('logo')) return 'fas fa-image'
-  if (f.includes('campan') || f.includes('campaign')) return 'fas fa-bullhorn'
-  if (f.includes('manual')) return 'fas fa-book'
-  return 'fas fa-folder'
+  if (f.includes('siren')) return 'tower-broadcast'
+  if (f.includes('camar') || f.includes('camera')) return 'video'
+  if (f.includes('panic') || f.includes('boton')) return 'bell'
+  if (f.includes('logo')) return 'image'
+  if (f.includes('campan') || f.includes('campaign')) return 'bullhorn'
+  if (f.includes('manual')) return 'book'
+  return 'folder'
 }
 
 /** Nombre legible de una carpeta, como `_format_folder_display` del Flask (`app.py:1076`). */
@@ -105,7 +105,7 @@ export function AdminMultimediaView({
   return (
     <>
       <PageHeader
-        icon="fas fa-photo-video"
+        icon="photo-video"
         title="Biblioteca Multimedia"
         titleBadge={`${folders.length} ${folders.length === 1 ? 'carpeta' : 'carpetas'}`}
         subtitle="Carpetas y archivos sincronizados desde el servicio multimedia"
@@ -117,11 +117,11 @@ export function AdminMultimediaView({
               onClick={() => setCreateOpen(true)}
               disabled={hardLoadError || (foldersQuery.isFetching && folders.length === 0)}
             >
-              <Icon className="fas fa-folder-plus" />
+              <Icon name="folder-plus" />
               Crear directorio
             </Button>
             <Button onClick={() => setUploadOpen(true)} disabled={hardLoadError || folders.length === 0}>
-              <Icon className="fas fa-plus" />
+              <Icon name="plus" />
               Agregar archivo
             </Button>
           </>
@@ -133,7 +133,7 @@ export function AdminMultimediaView({
       ) : folders.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-[var(--shell-border)] bg-[var(--shell-surface)] px-6 py-16 text-center">
           <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-[var(--shell-accent-soft)] text-2xl text-[var(--shell-accent)]">
-            <Icon className="fas fa-folder-open" />
+            <Icon name="folder-open" />
           </div>
           <h3 className="text-lg font-semibold text-[var(--shell-text-strong)]">
             Sin carpetas disponibles
@@ -166,8 +166,7 @@ export function AdminMultimediaView({
         onClose={() => setCreateOpen(false)}
         title="Crear nuevo directorio"
         description="Asigna un nombre para la carpeta en el servicio multimedia"
-        icon="fas fa-folder-plus"
-        iconGradient="from-indigo-500 to-purple-600"
+        icon="folder-plus"
         fields={createFolderFields}
         schema={createFolderSchema}
         defaultValues={{ name: '' }}
@@ -204,9 +203,8 @@ export function AdminMultimediaView({
         title="Eliminar directorio"
         confirmLabel="Eliminar"
         confirmVariant="danger"
-        icon="fas fa-trash"
-        headerIcon="fas fa-triangle-exclamation"
-        iconGradient="from-red-500 to-rose-700"
+        icon="trash"
+        headerIcon="triangle-exclamation"
         onConfirm={async () => {
           if (!deleteTarget) return
           await deleteFolder(deleteTarget)
@@ -242,7 +240,7 @@ function FolderCard({
         aria-label={`Eliminar ${folderDisplayName(folder)}`}
         className="absolute top-3 right-3 flex size-9 items-center justify-center rounded-full border border-red-500/20 bg-red-500/10 text-sm text-red-600 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-500/20 focus-visible:opacity-100 dark:text-red-300"
       >
-        <Icon className="fas fa-trash" />
+        <Icon name="trash" />
       </button>
 
       <div
@@ -251,7 +249,7 @@ function FolderCard({
           CARD_TONES[index % CARD_TONES.length],
         )}
       >
-        <Icon className={folderIcon(folder)} />
+        <Icon name={folderIcon(folder)} />
       </div>
 
       <h3
@@ -266,7 +264,7 @@ function FolderCard({
 
       <div className="mt-4">
         <Button size="sm" variant="secondary" onClick={onView}>
-          <Icon className="fas fa-eye" />
+          <Icon name="eye" />
           Ver archivos
         </Button>
       </div>
@@ -325,16 +323,15 @@ function UploadModal({
       onClose={close}
       title="Agregar archivo multimedia"
       description="Selecciona la carpeta destino y adjunta el archivo"
-      icon="fas fa-upload"
-      iconGradient="from-emerald-500 to-lime-500"
+      icon="upload"
       footer={
         <>
-          <ModalButton icon="fas fa-times" onClick={close} disabled={submitting}>
+          <ModalButton icon="times" onClick={close} disabled={submitting}>
             Cancelar
           </ModalButton>
           <ModalButton
             variant="primary"
-            icon="fas fa-cloud-upload-alt"
+            icon="cloud-upload-alt"
             loading={submitting}
             onClick={submit}
           >
@@ -378,7 +375,7 @@ function UploadModal({
           />
           {file && (
             <p className="mt-2 truncate text-xs text-gray-600 dark:text-white/60" title={file.name}>
-              <Icon className="fas fa-paperclip mr-1.5" />
+              <Icon name="paperclip" className="mr-1.5" />
               {file.name}
             </p>
           )}
@@ -417,11 +414,10 @@ function ViewFolderModal({ folder, onClose }: { folder: string | null; onClose: 
       onClose={onClose}
       title={folder ? folderDisplayName(folder) : 'Carpeta'}
       description="Archivos disponibles en la carpeta sincronizada"
-      icon="fas fa-eye"
-      iconGradient="from-sky-500 to-indigo-500"
+      icon="eye"
       size="xl"
       footer={
-        <ModalButton icon="fas fa-times" onClick={onClose}>
+        <ModalButton icon="times" onClick={onClose}>
           Cerrar
         </ModalButton>
       }
@@ -458,7 +454,7 @@ function ViewFolderModal({ folder, onClose }: { folder: string | null; onClose: 
                 size="sm"
                 onClick={() => setVisible((count) => count + BATCH)}
               >
-                <Icon className="fas fa-arrow-down" />
+                <Icon name="arrow-down" />
                 Cargar más ({files.length - visible} restantes)
               </Button>
             </div>
@@ -477,13 +473,14 @@ function FilePreview({ file }: { file: MediaFile }) {
     <li className="flex flex-col gap-3 rounded-2xl border border-black/10 bg-white/50 p-3 dark:border-white/10 dark:bg-white/5">
       <div className="flex items-center gap-2">
         <Icon
+          name={isImage ? 'image' : isAudio ? 'volume-high' : 'file'}
           className={cn(
             'text-sm',
             isImage
-              ? 'fas fa-image text-sky-600 dark:text-sky-300'
+              ? 'text-sky-600 dark:text-sky-300'
               : isAudio
-                ? 'fas fa-volume-high text-indigo-600 dark:text-indigo-300'
-                : 'fas fa-file text-gray-500 dark:text-white/50',
+                ? 'text-indigo-600 dark:text-indigo-300'
+                : 'text-gray-500 dark:text-white/50',
           )}
         />
         <p className="truncate text-sm font-semibold" title={file.displayName}>
@@ -512,7 +509,7 @@ function FilePreview({ file }: { file: MediaFile }) {
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:underline dark:text-blue-300"
         >
-          <Icon className="fas fa-external-link-alt" />
+          <Icon name="external-link-alt" />
           Abrir archivo
         </a>
       )}

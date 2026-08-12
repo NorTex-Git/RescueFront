@@ -104,7 +104,7 @@ export function TagsInput({
             'disabled:cursor-not-allowed disabled:opacity-40',
           )}
         >
-          <Icon className="fas fa-plus" />
+          <Icon name="plus" />
           <span className="sr-only sm:not-sr-only">Agregar</span>
         </button>
       </div>
@@ -132,7 +132,7 @@ export function TagsInput({
                   'dark:text-blue-100/60 dark:hover:bg-blue-400/25 dark:hover:text-white',
                 )}
               >
-                <Icon className="fas fa-times" />
+                <Icon name="times" />
               </button>
             </li>
           ))}

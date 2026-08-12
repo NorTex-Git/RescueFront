@@ -33,10 +33,10 @@ function buildResource(tipos: FieldOption[]): CrudResource<Empresa, EmpresaFormV
     queryFn: listEmpresas,
     getId: (item) => item._id,
     labelOf: (item) => item.nombre,
-    icon: 'fas fa-building',
+    icon: 'building',
 
     header: {
-      icon: 'fas fa-building',
+      icon: 'building',
       title: 'Empresas',
       subtitle: 'Alta y acceso de las empresas del sistema',
     },
@@ -61,8 +61,7 @@ function buildResource(tipos: FieldOption[]): CrudResource<Empresa, EmpresaFormV
         header: 'Nombre',
         cell: (row) => (
           <PrimaryCell
-            icon="fas fa-building"
-            tone="indigo"
+            icon="building"
             title={row.nombre || '—'}
             subtitle={row.email || row.ubicacion || undefined}
           />
@@ -112,7 +111,7 @@ function buildResource(tipos: FieldOption[]): CrudResource<Empresa, EmpresaFormV
 
     detailTitle: 'Detalle de la empresa',
     detailDescription: 'Datos de acceso y configuración',
-    detailIcon: 'fas fa-eye',
+    detailIcon: 'eye',
     detailSize: 'md',
     detailHeading: {
       title: (item) => item.nombre,
@@ -120,32 +119,32 @@ function buildResource(tipos: FieldOption[]): CrudResource<Empresa, EmpresaFormV
     },
     detailRows: [
       {
-        icon: 'fas fa-circle-check',
+        icon: 'circle-check',
         label: 'Estado',
         value: (item) => <StatusBadge active={item.activa} />,
       },
       {
-        icon: 'fas fa-layer-group',
+        icon: 'layer-group',
         label: 'Tipo',
         value: (item) => (item.tipo_empresa_id && tipoNombre.get(item.tipo_empresa_id)) || '—',
       },
-      { icon: 'fas fa-location-dot', label: 'Ubicación', value: (item) => item.ubicacion || '—' },
-      { icon: 'fas fa-user', label: 'Usuario', value: (item) => item.username || '—' },
-      { icon: 'fas fa-envelope', label: 'Correo', value: (item) => item.email || '—' },
+      { icon: 'location-dot', label: 'Ubicación', value: (item) => item.ubicacion || '—' },
+      { icon: 'user', label: 'Usuario', value: (item) => item.username || '—' },
+      { icon: 'envelope', label: 'Correo', value: (item) => item.email || '—' },
       {
-        icon: 'fas fa-right-to-bracket',
+        icon: 'right-to-bracket',
         label: 'Último acceso',
         value: (item) => (item.last_login ? formatDate(item.last_login) : 'Nunca'),
       },
       {
-        icon: 'fas fa-calendar',
+        icon: 'calendar',
         label: 'Creación',
         value: (item) => formatDate(item.fecha_creacion),
       },
     ],
     detailSections: [
       {
-        icon: 'fas fa-location-dot',
+        icon: 'location-dot',
         title: 'Sedes',
         content: (item) =>
           item.sedes.length ? (
@@ -164,7 +163,7 @@ function buildResource(tipos: FieldOption[]): CrudResource<Empresa, EmpresaFormV
           ),
       },
       {
-        icon: 'fas fa-user-tag',
+        icon: 'user-tag',
         title: 'Roles',
         content: (item) =>
           item.roles.length ? (

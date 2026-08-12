@@ -39,7 +39,7 @@ export function Navbar({
             aria-expanded={menuOpen}
             onClick={onToggleMenu}
           >
-            <Icon className="fas fa-bars" />
+            <Icon name="bars" />
           </button>
 
           <div className="flex items-center gap-3">
@@ -76,7 +76,7 @@ export function Navbar({
             title="Cambiar tema"
             onClick={toggleTheme}
           >
-            <Icon className={theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon'} />
+            <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
           </button>
         </div>
       </div>

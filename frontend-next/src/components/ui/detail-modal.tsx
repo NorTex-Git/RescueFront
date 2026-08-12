@@ -17,7 +17,7 @@ import { Modal, ModalButton, type ModalSize } from './modal'
 export type DetailRow<T> = {
   label: string
   value: (item: T) => ReactNode
-  /** Icono Font Awesome junto a la etiqueta. */
+  /** Nombre semántico del icono Flowbite junto a la etiqueta. */
   icon?: string
   /** Ocupa las dos columnas de la rejilla. */
   full?: boolean
@@ -35,7 +35,6 @@ export function DetailModal<T>({
   title,
   description,
   icon,
-  iconGradient,
   item,
   heading,
   rows,
@@ -49,7 +48,6 @@ export function DetailModal<T>({
   title: string
   description?: string
   icon?: string
-  iconGradient?: string
   /** `null` cuando no hay nada seleccionado; el modal no se abre. */
   item: T | null
   /** Nombre y descripción del registro, destacados dentro del cuerpo. */
@@ -67,11 +65,10 @@ export function DetailModal<T>({
       title={title}
       description={description}
       icon={icon}
-      iconGradient={iconGradient}
       size={size}
       footer={
         footer ?? (
-          <ModalButton icon="fas fa-times" onClick={onClose}>
+          <ModalButton icon="times" onClick={onClose}>
             Cerrar
           </ModalButton>
         )
@@ -102,7 +99,7 @@ export function DetailModal<T>({
                   }`}
                 >
                   <dt className="flex items-center gap-2 text-sm text-gray-500 dark:text-white/50">
-                    {row.icon && <Icon className={`${row.icon} text-xs`} />}
+                    {row.icon && <Icon name={row.icon} className="text-xs" />}
                     {row.label}
                   </dt>
                   <dd className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -120,7 +117,7 @@ export function DetailModal<T>({
             >
               <h4 className="mb-2 flex items-center gap-2 text-sm font-bold text-gray-900 dark:text-white">
                 {section.icon && (
-                  <Icon className={`${section.icon} text-gray-400 dark:text-white/40`} />
+                  <Icon name={section.icon} className="text-gray-400 dark:text-white/40" />
                 )}
                 {section.title}
               </h4>
