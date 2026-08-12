@@ -17,6 +17,7 @@ import {
   USUARIO_FORM_DEFAULTS,
   usuarioFields,
   usuarioFormSchema,
+  type UsuarioFormOptions,
   type UsuarioFormValues,
 } from '../schema'
 import type { Usuario } from '../types'
@@ -32,6 +33,7 @@ import type { Usuario } from '../types'
 function buildResource(
   empresaId: string,
   roles: string[],
+  sedes: string[],
   empresaNombre: string,
 ): CrudResource<Usuario, UsuarioFormValues> {
   return {
@@ -131,8 +133,9 @@ function buildResource(
       { label: 'Correo', value: (item) => item.email || '—' },
       { label: 'Estado', value: (item) => <StatusBadge active={item.activo} /> },
     ],
+    detailSize: 'md',
 
-    fields: usuarioFields(roles),
+    fields: usuarioFields(roles, sedes),
     schema: usuarioFormSchema,
     emptyValues: USUARIO_FORM_DEFAULTS,
     toFormValues: (item) => ({
@@ -157,29 +160,30 @@ function buildResource(
 export function UsuariosView({
   empresaId,
   empresaNombre,
-  rolesLoad,
+  formOptionsLoad,
   initialLoad,
-  onRetryRoles,
+  onRetryFormOptions,
   filterSlot,
 }: {
   empresaId: string
   /** Para el subtítulo de la cabecera; viene de la sesión, que es cosa del servidor. */
   empresaNombre: string
-  /** Roles definidos en la empresa; alimentan el select del formulario. */
-  rolesLoad: LoadResult<string[]>
+  /** Roles y sedes de la empresa; alimentan los selects del formulario. */
+  formOptionsLoad: LoadResult<UsuarioFormOptions>
   /** Ausente cuando el admin cambia de empresa: entonces los pide el cliente. */
   initialLoad?: LoadResult<Usuario[]>
-  onRetryRoles?: () => void
+  onRetryFormOptions?: () => void
   /** El portal admin mete aquí su selector de empresa; el de empresa no lo usa. */
   filterSlot?: React.ReactNode
 }) {
-  const roles = rolesLoad.ok ? rolesLoad.data : []
+  const roles = formOptionsLoad.ok ? formOptionsLoad.data.roles : []
+  const sedes = formOptionsLoad.ok ? formOptionsLoad.data.sedes : []
   return (
     <CrudView
-      resource={buildResource(empresaId, roles, empresaNombre)}
+      resource={buildResource(empresaId, roles, sedes, empresaNombre)}
       initialLoad={initialLoad}
-      dependencyLoads={[rolesLoad]}
-      onRetryDependencies={onRetryRoles}
+      dependencyLoads={[formOptionsLoad]}
+      onRetryDependencies={onRetryFormOptions}
       filterSlot={filterSlot}
     />
   )

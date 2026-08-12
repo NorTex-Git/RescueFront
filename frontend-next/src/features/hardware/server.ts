@@ -10,15 +10,25 @@ export async function fetchHardware(): Promise<Hardware[]> {
   return parseHardwareList(raw)
 }
 
+export async function fetchHardwareByEmpresa(empresaId: string): Promise<Hardware[]> {
+  const raw = await apiFetch<unknown>(
+    `/api/hardware/empresa/${encodeURIComponent(empresaId)}/including-inactive`,
+  )
+  return parseHardwareList(raw)
+}
+
 const hardwareTypesSchema = z.object({
   success: z.boolean(),
-  data: z.array(z.object({ nombre: z.string().default(''), name: z.string().optional() })).default([]),
+  data: z
+    .array(z.object({ nombre: z.string().default(''), name: z.string().optional() }))
+    .default([]),
 })
 
 export async function fetchHardwareTypeOptions(): Promise<FieldOption[]> {
   const raw = await apiFetch<unknown>('/api/hardware-types')
-  return hardwareTypesSchema.parse(raw).data
-    .map((item) => item.nombre || item.name || '')
+  return hardwareTypesSchema
+    .parse(raw)
+    .data.map((item) => item.nombre || item.name || '')
     .filter(Boolean)
     .map((nombre) => ({ value: nombre, label: nombre }))
 }

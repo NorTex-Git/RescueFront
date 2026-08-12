@@ -2,7 +2,8 @@ import type { Metadata } from 'next'
 
 import { AdminUsuariosView } from '@/features/usuarios/components/admin-usuarios-view'
 import { fetchEmpresas } from '@/features/empresas/server'
-import { fetchRoles, fetchUsuarios } from '@/features/usuarios/server'
+import { fetchUsuarioFormOptions, fetchUsuarios } from '@/features/usuarios/server'
+import type { UsuarioFormOptions } from '@/features/usuarios/schema'
 import type { LoadResult } from '@/load-result'
 import { preload } from '@/preload'
 
@@ -22,19 +23,25 @@ export default async function AdminUsuariosPage() {
   // de cliente. Las demás se piden al cambiar el selector.
   const initialEmpresaId = options[0]?.value ?? ''
 
-  const [usuariosLoad, rolesLoad]: [LoadResult<Awaited<ReturnType<typeof fetchUsuarios>>>, LoadResult<string[]>] = initialEmpresaId
+  const [usuariosLoad, formOptionsLoad]: [
+    LoadResult<Awaited<ReturnType<typeof fetchUsuarios>>>,
+    LoadResult<UsuarioFormOptions>,
+  ] = initialEmpresaId
     ? await Promise.all([
         preload('usuarios', () => fetchUsuarios(initialEmpresaId)),
-        preload('roles de empresa', () => fetchRoles(initialEmpresaId)),
+        preload('roles y sedes de empresa', () => fetchUsuarioFormOptions(initialEmpresaId)),
       ])
-    : [{ ok: true, data: [] }, { ok: true, data: [] }]
+    : [
+        { ok: true, data: [] },
+        { ok: true, data: { roles: [], sedes: [] } },
+      ]
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <AdminUsuariosView
         empresasLoad={empresasLoad}
         initialEmpresaId={initialEmpresaId}
-        initialRolesLoad={rolesLoad}
+        initialFormOptionsLoad={formOptionsLoad}
         initialLoad={usuariosLoad}
       />
     </div>

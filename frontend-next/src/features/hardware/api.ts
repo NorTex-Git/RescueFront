@@ -13,18 +13,28 @@ function toPayload(values: HardwareFormValues) {
     empresa_nombre: values.empresa_nombre,
     sede: values.sede,
     direccion: values.direccion,
-    datos: { datos: {
-      brand: values.brand, model: values.model, price: values.price, stock: values.stock,
-      status: values.status, warranty: values.warranty, description: values.description,
-    } },
+    datos: {
+      datos: {
+        brand: values.brand,
+        model: values.model,
+        price: values.price,
+        stock: values.stock,
+        status: values.status,
+        warranty: values.warranty,
+        description: values.description,
+      },
+    },
   }
 }
 
-export async function listHardware(): Promise<Hardware[]> {
+export async function listHardware(empresaId?: string): Promise<Hardware[]> {
   // El monitor externo actualiza `physical_status`; esta comprobación marca como
   // inactivos los equipos cuyo último reporte venció antes de volver a listarlos.
   await apiRequest(`${BASE}/physical-status/check`, { method: 'POST' })
-  const raw = await apiRequest<unknown>(`${BASE}/all-including-inactive`)
+  const endpoint = empresaId
+    ? `${BASE}/empresa/${encodeURIComponent(empresaId)}/including-inactive`
+    : `${BASE}/all-including-inactive`
+  const raw = await apiRequest<unknown>(endpoint)
   return parseHardwareList(raw)
 }
 

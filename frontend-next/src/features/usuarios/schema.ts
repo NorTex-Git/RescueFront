@@ -18,12 +18,17 @@ export const usuarioFormSchema = z.object({
     .refine((value) => value.length >= 6 && value.length <= 15, 'Debe tener entre 6 y 15 dígitos'),
   // El rol no tiene lista fija: sale de los tipos de alerta de la empresa.
   rol: z.string().trim().min(1, 'El rol es obligatorio'),
-  sede: z.string().trim().max(100, 'La sede no puede exceder 100 caracteres').optional(),
+  sede: z
+    .string()
+    .trim()
+    .min(1, 'La sede es obligatoria')
+    .max(100, 'La sede no puede exceder 100 caracteres'),
   telefono: z.string().trim().optional(),
   email: z.union([z.literal(''), z.email('Correo inválido')]).optional(),
 })
 
 export type UsuarioFormValues = z.infer<typeof usuarioFormSchema>
+export type UsuarioFormOptions = { roles: string[]; sedes: string[] }
 
 export const USUARIO_FORM_DEFAULTS: UsuarioFormValues = {
   nombre: '',
@@ -38,7 +43,10 @@ export const USUARIO_FORM_DEFAULTS: UsuarioFormValues = {
  * Campos del formulario. `roles` viene de la empresa, por eso es una función y no
  * una constante.
  */
-export function usuarioFields(roles: string[]): FormField<keyof UsuarioFormValues & string>[] {
+export function usuarioFields(
+  roles: string[],
+  sedes: string[],
+): FormField<keyof UsuarioFormValues & string>[] {
   return [
     { name: 'nombre', label: 'Nombre', placeholder: 'Nombre completo' },
     { name: 'cedula', label: 'Cédula', placeholder: 'Solo números' },
@@ -48,7 +56,13 @@ export function usuarioFields(roles: string[]): FormField<keyof UsuarioFormValue
       type: 'select',
       options: roles.map((rol) => ({ value: rol, label: rol })),
     },
-    { name: 'sede', label: 'Sede', placeholder: 'Sede a la que pertenece' },
+    {
+      name: 'sede',
+      label: 'Sede',
+      type: 'select',
+      placeholder: 'Selecciona una sede',
+      options: sedes.map((sede) => ({ value: sede, label: sede })),
+    },
     { name: 'telefono', label: 'Teléfono', type: 'tel', placeholder: 'Contacto directo' },
     {
       name: 'email',

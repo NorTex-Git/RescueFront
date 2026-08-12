@@ -56,12 +56,16 @@ export type CrudResource<TItem, TValues extends FieldValues> = {
    * "Sedes totales 27". Se derivan de los `items` ya cargados, sin pedir nada nuevo al
    * backend: cada recurso decide qué le importa mostrar de un vistazo.
    */
-  headerStats?: (items: TItem[]) => { label: string; value: React.ReactNode; tone?: HeaderStatTone }[]
+  headerStats?: (
+    items: TItem[],
+  ) => { label: string; value: React.ReactNode; tone?: HeaderStatTone }[]
 
   columns: Column<TItem>[]
   rowClassName?: (item: TItem) => string | undefined
   /** Sincronización periódica para recursos actualizados por sistemas externos. */
   refetchInterval?: number
+  /** Oculta mutaciones pero conserva filtros, detalle y la misma vista del admin. */
+  readOnly?: boolean
   /** Opcional: sin filtros no se pinta la barra. */
   filters?: FilterDef<TItem>[]
   /**
@@ -207,13 +211,15 @@ export function CrudView<TItem, TValues extends FieldValues>({
       cell: (row) => (
         <div className="flex justify-end gap-1">
           <RowActionButton icon="fas fa-eye" label="Ver" onClick={() => modals.openDetail(row)} />
-          <RowActionButton
-            icon="fas fa-pen"
-            label="Editar"
-            disabled={dependencyError !== null}
-            onClick={() => modals.openEdit(row)}
-          />
-          {resource.toggle && (
+          {!resource.readOnly && (
+            <RowActionButton
+              icon="fas fa-pen"
+              label="Editar"
+              disabled={dependencyError !== null}
+              onClick={() => modals.openEdit(row)}
+            />
+          )}
+          {!resource.readOnly && resource.toggle && (
             <RowActionButton
               icon={resource.toggle.isActive(row) ? 'fas fa-ban' : 'fas fa-check'}
               label={resource.toggle.isActive(row) ? 'Desactivar' : 'Activar'}
@@ -221,7 +227,7 @@ export function CrudView<TItem, TValues extends FieldValues>({
               onClick={() => modals.openToggle(row)}
             />
           )}
-          {resource.remove && (
+          {!resource.readOnly && resource.remove && (
             <RowActionButton
               icon="fas fa-trash"
               label="Eliminar"
@@ -253,16 +259,26 @@ export function CrudView<TItem, TValues extends FieldValues>({
         stats={
           headerStats.length > 0 &&
           headerStats.map((stat) => (
-            <HeaderStatPill key={stat.label} label={stat.label} value={stat.value} tone={stat.tone} />
+            <HeaderStatPill
+              key={stat.label}
+              label={stat.label}
+              value={stat.value}
+              tone={stat.tone}
+            />
           ))
         }
         actions={
           <>
             {isFetching && <span className="text-xs opacity-60">Actualizando…</span>}
-            <Button onClick={modals.openCreate} disabled={hardLoadError || dependencyError !== null}>
-              <Icon className="fas fa-plus" />
-              Nuevo
-            </Button>
+            {!resource.readOnly && (
+              <Button
+                onClick={modals.openCreate}
+                disabled={hardLoadError || dependencyError !== null}
+              >
+                <Icon className="fas fa-plus" />
+                Nuevo
+              </Button>
+            )}
           </>
         }
       />
@@ -318,47 +334,51 @@ export function CrudView<TItem, TValues extends FieldValues>({
         </>
       )}
 
-      <FormModal
-        open={modals.isOpen('create')}
-        onClose={modals.close}
-        title={`Nuevo ${resource.singular}`}
-        description={resource.formDescription}
-        icon={resource.icon}
-        iconGradient={resource.iconGradient}
-        fields={resource.fields}
-        schema={resource.createSchema ?? resource.schema}
-        defaultValues={resource.emptyValues}
-        size={resource.formSize}
-        submitLabel="Crear"
-        onSubmit={async (values) => {
-          await resource.create(values)
-          invalidate()
-          toast.success('Registro creado')
-        }}
-      />
+      {!resource.readOnly && (
+        <FormModal
+          open={modals.isOpen('create')}
+          onClose={modals.close}
+          title={`Nuevo ${resource.singular}`}
+          description={resource.formDescription}
+          icon={resource.icon}
+          iconGradient={resource.iconGradient}
+          fields={resource.fields}
+          schema={resource.createSchema ?? resource.schema}
+          defaultValues={resource.emptyValues}
+          size={resource.formSize}
+          submitLabel="Crear"
+          onSubmit={async (values) => {
+            await resource.create(values)
+            invalidate()
+            toast.success('Registro creado')
+          }}
+        />
+      )}
 
-      <FormModal
-        open={modals.isOpen('edit')}
-        onClose={modals.close}
-        title={`Editar ${resource.singular}`}
-        icon={resource.icon}
-        iconGradient={resource.iconGradient}
-        description={
-          editing
-            ? `${resource.labelOf(editing)}${resource.formDescription ? ` · ${resource.formDescription}` : ''}`
-            : resource.formDescription
-        }
-        fields={resource.fields}
-        schema={resource.schema}
-        defaultValues={editing ? resource.toFormValues(editing) : resource.emptyValues}
-        size={resource.formSize}
-        onSubmit={async (values) => {
-          if (!editing) return
-          await resource.update(editing, values)
-          invalidate()
-          toast.success('Registro actualizado')
-        }}
-      />
+      {!resource.readOnly && (
+        <FormModal
+          open={modals.isOpen('edit')}
+          onClose={modals.close}
+          title={`Editar ${resource.singular}`}
+          icon={resource.icon}
+          iconGradient={resource.iconGradient}
+          description={
+            editing
+              ? `${resource.labelOf(editing)}${resource.formDescription ? ` · ${resource.formDescription}` : ''}`
+              : resource.formDescription
+          }
+          fields={resource.fields}
+          schema={resource.schema}
+          defaultValues={editing ? resource.toFormValues(editing) : resource.emptyValues}
+          size={resource.formSize}
+          onSubmit={async (values) => {
+            if (!editing) return
+            await resource.update(editing, values)
+            invalidate()
+            toast.success('Registro actualizado')
+          }}
+        />
+      )}
 
       <DetailModal
         open={modals.isOpen('detail')}
@@ -374,7 +394,7 @@ export function CrudView<TItem, TValues extends FieldValues>({
         size={resource.detailSize}
       />
 
-      {resource.toggle && (
+      {!resource.readOnly && resource.toggle && (
         <ConfirmDialog
           open={modals.isOpen('toggle')}
           onClose={modals.close}
@@ -398,7 +418,7 @@ export function CrudView<TItem, TValues extends FieldValues>({
         </ConfirmDialog>
       )}
 
-      {resource.remove && (
+      {!resource.readOnly && resource.remove && (
         <ConfirmDialog
           open={modals.isOpen('delete')}
           onClose={modals.close}

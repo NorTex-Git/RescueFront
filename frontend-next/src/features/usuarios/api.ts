@@ -1,7 +1,8 @@
 import { apiRequest } from '@/lib/api/client'
+import { empresaSchema } from '@/features/empresas/types'
 
 import { normalizeEmpresaRoles } from './roles'
-import type { UsuarioFormValues } from './schema'
+import type { UsuarioFormOptions, UsuarioFormValues } from './schema'
 import { usuariosListSchema, type Usuario } from './types'
 
 /**
@@ -30,11 +31,12 @@ export async function listUsuarios(empresaId: string, includeInactive = false): 
  * `/api/empresas/{id}`, con prefijo, a diferencia de las rutas de usuarios de arriba:
  * el detalle de empresa vive en otro blueprint. Sin él responde 404.
  */
-export async function fetchEmpresaRolesClient(empresaId: string): Promise<string[]> {
-  const raw = await apiRequest<{ data?: { roles?: unknown } }>(
-    `/api/empresas/${encodeURIComponent(empresaId)}`,
-  )
-  return normalizeEmpresaRoles(raw.data?.roles)
+export async function fetchUsuarioFormOptionsClient(
+  empresaId: string,
+): Promise<UsuarioFormOptions> {
+  const raw = await apiRequest<{ data?: unknown }>(`/api/empresas/${encodeURIComponent(empresaId)}`)
+  const empresa = empresaSchema.parse(raw.data)
+  return { roles: normalizeEmpresaRoles(empresa.roles), sedes: empresa.sedes }
 }
 
 export async function createUsuario(empresaId: string, values: UsuarioFormValues): Promise<void> {

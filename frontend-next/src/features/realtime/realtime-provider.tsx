@@ -1,15 +1,21 @@
 'use client'
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
 import { toast } from 'sonner'
 
 import { clientEnv } from '@/lib/config'
 
 import { fetchActiveNotifications, fetchRealtimeTicket } from './api'
 import type { AlertNotification, ConnectionStatus, NotificationFeed, RealtimeEvent } from './types'
-
-const NOTIFICATIONS_KEY = ['notifications', 'active'] as const
 
 type RealtimeContextValue = NotificationFeed & {
   status: ConnectionStatus
@@ -21,8 +27,13 @@ const RealtimeContext = createContext<RealtimeContextValue | null>(null)
 function isRealtimeEvent(value: unknown): value is RealtimeEvent {
   if (!value || typeof value !== 'object') return false
   const event = value as Partial<RealtimeEvent>
-  return typeof event.eventId === 'string' && typeof event.type === 'string' &&
-    event.version === 1 && !!event.payload && typeof event.payload === 'object'
+  return (
+    typeof event.eventId === 'string' &&
+    typeof event.type === 'string' &&
+    event.version === 1 &&
+    !!event.payload &&
+    typeof event.payload === 'object'
+  )
 }
 
 function alertFrom(event: RealtimeEvent): AlertNotification | null {
@@ -38,12 +49,22 @@ function realtimeUrl(ticket: string) {
   return url.toString()
 }
 
-export function RealtimeProvider({ children }: { children: ReactNode }) {
+export function RealtimeProvider({
+  children,
+  empresaId,
+}: {
+  children: ReactNode
+  empresaId?: string
+}) {
   const queryClient = useQueryClient()
   const [status, setStatus] = useState<ConnectionStatus>('connecting')
   const seenEvents = useRef(new Set<string>())
+  const notificationsKey = useMemo(
+    () => ['notifications', empresaId ?? 'global', 'active'] as const,
+    [empresaId],
+  )
   const query = useQuery({
-    queryKey: NOTIFICATIONS_KEY,
+    queryKey: notificationsKey,
     queryFn: fetchActiveNotifications,
     staleTime: 60_000,
     refetchOnWindowFocus: true,
@@ -63,39 +84,48 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       }
       const alert = alertFrom(event)
       if (event.type === 'alert.created' && alert) {
-        queryClient.setQueryData<NotificationFeed>(NOTIFICATIONS_KEY, (current) => {
+        queryClient.setQueryData<NotificationFeed>(notificationsKey, (current) => {
           const previous = current ?? { notifications: [], total: 0 }
           const id = String(alert._id ?? event.entityId ?? '')
           const withoutDuplicate = previous.notifications.filter((item) => String(item._id) !== id)
           return {
             notifications: [alert, ...withoutDuplicate].slice(0, 10),
-            total: withoutDuplicate.length === previous.notifications.length
-              ? previous.total + 1 : previous.total,
+            total:
+              withoutDuplicate.length === previous.notifications.length
+                ? previous.total + 1
+                : previous.total,
           }
         })
         toast.error(alert.nombre_alerta || alert.tipo_alerta || 'Nueva alerta', {
           description: [alert.empresa_nombre, alert.sede].filter(Boolean).join(' · '),
         })
-        void queryClient.invalidateQueries({ queryKey: ['alerts'] })
-        void queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+        if (event.empresaId) {
+          void queryClient.invalidateQueries({ queryKey: ['empresa', event.empresaId, 'alerts'] })
+        }
       } else if (event.type === 'alert.deactivated') {
         const id = String(event.entityId ?? alert?._id ?? '')
-        queryClient.setQueryData<NotificationFeed>(NOTIFICATIONS_KEY, (current) => {
+        queryClient.setQueryData<NotificationFeed>(notificationsKey, (current) => {
           if (!current) return current
           const next = current.notifications.filter((item) => String(item._id) !== id)
           return {
             notifications: next,
-            total: Math.max(0, current.total - (next.length < current.notifications.length ? 1 : 0)),
+            total: Math.max(
+              0,
+              current.total - (next.length < current.notifications.length ? 1 : 0),
+            ),
           }
         })
-        void queryClient.invalidateQueries({ queryKey: ['alerts'] })
-        void queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+        if (event.empresaId) {
+          void queryClient.invalidateQueries({ queryKey: ['empresa', event.empresaId, 'alerts'] })
+        }
       } else if (event.type === 'hardware.status.changed') {
         const hardware = event.payload.hardware
         if (hardware && typeof hardware === 'object') {
           const update = hardware as { _id?: string }
-          queryClient.setQueryData<Array<{ _id?: string }>>(['hardware'], (current) =>
-            current?.map((item) => item._id === update._id ? { ...item, ...update } : item),
+          queryClient.setQueriesData<Array<{ _id?: string }>>(
+            { queryKey: ['hardware'] },
+            (current) =>
+              current?.map((item) => (item._id === update._id ? { ...item, ...update } : item)),
           )
         } else {
           void queryClient.invalidateQueries({ queryKey: ['hardware'] })
@@ -127,7 +157,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
         socket.onopen = () => {
           attempts = 0
           setStatus('connected')
-          void queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_KEY })
+          void queryClient.invalidateQueries({ queryKey: notificationsKey })
         }
         socket.onmessage = (message) => {
           try {
@@ -170,14 +200,17 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       if (reconnectTimer) clearTimeout(reconnectTimer)
       socket?.close()
     }
-  }, [queryClient])
+  }, [notificationsKey, queryClient])
 
-  const value = useMemo<RealtimeContextValue>(() => ({
-    notifications: query.data?.notifications ?? [],
-    total: query.data?.total ?? 0,
-    status,
-    refresh: query.refetch,
-  }), [query.data, query.refetch, status])
+  const value = useMemo<RealtimeContextValue>(
+    () => ({
+      notifications: query.data?.notifications ?? [],
+      total: query.data?.total ?? 0,
+      status,
+      refresh: query.refetch,
+    }),
+    [query.data, query.refetch, status],
+  )
 
   return <RealtimeContext.Provider value={value}>{children}</RealtimeContext.Provider>
 }

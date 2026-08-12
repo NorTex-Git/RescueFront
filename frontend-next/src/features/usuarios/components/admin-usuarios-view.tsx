@@ -6,13 +6,10 @@ import { useRouter } from 'next/navigation'
 import type { FieldOption } from '@/components/ui/form-field'
 import { LoadErrorState } from '@/components/ui/load-error-state'
 import { EmpresaScope } from '@/features/empresas/components/empresa-scope'
-import {
-  initialDataOf,
-  toLoadError,
-  type LoadResult,
-} from '@/load-result'
+import { initialDataOf, toLoadError, type LoadResult } from '@/load-result'
 
-import { fetchEmpresaRolesClient } from '../api'
+import { fetchUsuarioFormOptionsClient } from '../api'
+import type { UsuarioFormOptions } from '../schema'
 import type { Usuario } from '../types'
 
 import { UsuariosView } from './usuarios-view'
@@ -25,12 +22,12 @@ import { UsuariosView } from './usuarios-view'
 export function AdminUsuariosView({
   empresasLoad,
   initialEmpresaId,
-  initialRolesLoad,
+  initialFormOptionsLoad,
   initialLoad,
 }: {
   empresasLoad: LoadResult<FieldOption[]>
   initialEmpresaId: string
-  initialRolesLoad: LoadResult<string[]>
+  initialFormOptionsLoad: LoadResult<UsuarioFormOptions>
   initialLoad: LoadResult<Usuario[]>
 }) {
   const router = useRouter()
@@ -49,7 +46,7 @@ export function AdminUsuariosView({
           empresaId={empresaId}
           empresaNombre={empresaNombre}
           selector={selector}
-          initialRolesLoad={isInitial ? initialRolesLoad : undefined}
+          initialFormOptionsLoad={isInitial ? initialFormOptionsLoad : undefined}
           initialLoad={isInitial ? initialLoad : undefined}
         />
       )}
@@ -66,24 +63,24 @@ function UsuariosBridge({
   empresaId,
   empresaNombre,
   selector,
-  initialRolesLoad,
+  initialFormOptionsLoad,
   initialLoad,
 }: {
   empresaId: string
   empresaNombre: string
   selector: React.ReactNode
-  initialRolesLoad?: LoadResult<string[]>
+  initialFormOptionsLoad?: LoadResult<UsuarioFormOptions>
   initialLoad?: LoadResult<Usuario[]>
 }) {
-  const rolesQuery = useQuery({
-    queryKey: ['empresa-roles', empresaId],
-    queryFn: () => fetchEmpresaRolesClient(empresaId),
+  const formOptionsQuery = useQuery({
+    queryKey: ['empresa-user-form-options', empresaId],
+    queryFn: () => fetchUsuarioFormOptionsClient(empresaId),
     enabled: empresaId !== '',
-    initialData: initialRolesLoad ? initialDataOf(initialRolesLoad) : undefined,
+    initialData: initialFormOptionsLoad ? initialDataOf(initialFormOptionsLoad) : undefined,
   })
-  const rolesLoad: LoadResult<string[]> = rolesQuery.isError
-    ? { ok: false, error: toLoadError(rolesQuery.error, 'roles de empresa') }
-    : { ok: true, data: rolesQuery.data ?? [] }
+  const formOptionsLoad: LoadResult<UsuarioFormOptions> = formOptionsQuery.isError
+    ? { ok: false, error: toLoadError(formOptionsQuery.error, 'roles y sedes de empresa') }
+    : { ok: true, data: formOptionsQuery.data ?? { roles: [], sedes: [] } }
 
   return (
     <UsuariosView
@@ -92,9 +89,9 @@ function UsuariosBridge({
       key={empresaId}
       empresaId={empresaId}
       empresaNombre={empresaNombre}
-      rolesLoad={rolesLoad}
+      formOptionsLoad={formOptionsLoad}
       initialLoad={initialLoad}
-      onRetryRoles={() => void rolesQuery.refetch()}
+      onRetryFormOptions={() => void formOptionsQuery.refetch()}
       // Dentro de la barra de filtros, no en una franja propia.
       filterSlot={selector}
     />

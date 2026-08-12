@@ -2,7 +2,13 @@ import type { FieldOption } from '@/components/ui/form-field'
 import { companyTypesListSchema } from '@/features/company-types/types'
 import { apiFetch } from '@/lib/api/server'
 
-import { empresasListSchema, type Empresa } from './types'
+import { empresaSchema, empresasListSchema, type Empresa } from './types'
+
+/** Datos de la empresa autenticada (sedes incluidas) para formularios y dashboard. */
+export async function fetchEmpresa(empresaId: string): Promise<Empresa> {
+  const raw = await apiFetch<unknown>(`/api/empresas/${empresaId}`)
+  return empresaSchema.parse((raw as { data?: unknown })?.data)
+}
 
 /** Carga inicial del listado, incluyendo inactivas para poder reactivarlas. */
 export async function fetchEmpresas(): Promise<Empresa[]> {

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 import { PortalShell } from '@/components/shell/portal-shell'
 import type { NavItem } from '@/components/shell/sidebar'
-import { requireSession } from '@/lib/auth/session'
+import { empresaIdFrom, requireSession } from '@/lib/auth/session'
 
 import '@/styles/portal.css'
 
@@ -29,6 +29,7 @@ export default async function EmpresaLayout({ children }: { children: ReactNode 
       userName={nombre}
       userRole="Empresa"
       initials={nombre.slice(0, 2).toUpperCase()}
+      realtimeEmpresaId={empresaIdFrom(session)}
     >
       {children}
     </PortalShell>

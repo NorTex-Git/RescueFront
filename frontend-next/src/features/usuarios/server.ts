@@ -1,6 +1,8 @@
 import { apiFetch } from '@/lib/api/server'
+import { empresaSchema } from '@/features/empresas/types'
 
 import { normalizeEmpresaRoles } from './roles'
+import type { UsuarioFormOptions } from './schema'
 import { usuariosListSchema, type Usuario } from './types'
 
 /**
@@ -28,11 +30,10 @@ export async function fetchUsuarios(empresaId: string): Promise<Usuario[]> {
  * blueprint multi-tenant (`/empresas`), pero el detalle de la empresa está en el
  * blueprint de empresas (`/api/empresas`). Sin el prefijo responde 404.
  */
-export async function fetchRoles(empresaId: string): Promise<string[]> {
-  const raw = await apiFetch<{ data?: { roles?: unknown } }>(
-    `/api/empresas/${encodeURIComponent(empresaId)}`,
-  )
-  return normalizeEmpresaRoles(raw.data?.roles)
+export async function fetchUsuarioFormOptions(empresaId: string): Promise<UsuarioFormOptions> {
+  const raw = await apiFetch<{ data?: unknown }>(`/api/empresas/${encodeURIComponent(empresaId)}`)
+  const empresa = empresaSchema.parse(raw.data)
+  return { roles: normalizeEmpresaRoles(empresa.roles), sedes: empresa.sedes }
 }
 
 export { normalizeEmpresaRoles } from './roles'

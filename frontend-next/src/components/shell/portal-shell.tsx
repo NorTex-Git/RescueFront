@@ -20,6 +20,7 @@ export function PortalShell({
   userName,
   userRole,
   initials,
+  realtimeEmpresaId,
   sidebarExtra,
   children,
 }: {
@@ -27,6 +28,8 @@ export function PortalShell({
   userName: string
   userRole: string
   initials: string
+  /** Acota snapshots y cachés en tiempo real al tenant autenticado. */
+  realtimeEmpresaId?: string
   /** Bloque persistente sobre "Cerrar Sesión" del sidebar. */
   sidebarExtra?: ReactNode
   children: ReactNode
@@ -50,7 +53,7 @@ export function PortalShell({
   }
 
   return (
-    <RealtimeProvider>
+    <RealtimeProvider empresaId={realtimeEmpresaId}>
       <Navbar
         title={userName}
         subtitle={userRole}
