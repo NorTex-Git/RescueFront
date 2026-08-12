@@ -79,30 +79,53 @@
 }
 
 /**
+ * Guarda de desbordamiento horizontal.
+ *
+ * Los modales son `position: fixed; inset: 0` centrados con `justify-center`. Si la
+ * página gana scroll horizontal (una tabla o rejilla de dashboard más ancha que el
+ * móvil), el *layout viewport* se ensancha y el modal se centra sobre ese ancho
+ * inflado, quedando fuera de la parte visible ("corrido para un lado, a veces ni se
+ * ve"). Aquí se corta el scroll horizontal de raíz para anclar el modal a lo visible.
+ *
+ * `clip` y no `hidden`: no crea un contenedor de desplazamiento, así no rompe
+ * `position: sticky` ni el `scrollbar-gutter` que fija `scrollbar-global.css`.
+ */
+html,
+body {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
+/**
  * Anchos del panel de modal.
  *
  * En CSS plano y no con utilidades `max-w-*`: al elegirse el ancho desde un objeto
  * (`SIZES[size]` en `components/ui/modal.tsx`), Tailwind no siempre genera esas
  * utilidades y el panel se quedaba sin `max-width`, ocupando toda la pantalla.
  * `!important` para ganarle al CSS heredado, que abusa de él.
+ *
+ * Cada ancho se tope con `100vw - 1rem`: aunque el contenedor esté mal, el panel
+ * nunca puede exceder el viewport (defensa en profundidad frente a la guarda de
+ * arriba). `100vw` no incluye barra de scroll, pero en móvil no la hay y en desktop
+ * el margen de `1rem` la absorbe.
  */
 .modal-panel {
   width: 100%;
 }
 .modal-panel[data-size='xs'] {
-  max-width: 22rem !important;
+  max-width: min(22rem, 100vw - 1rem) !important;
 }
 .modal-panel[data-size='sm'] {
-  max-width: 28rem !important;
+  max-width: min(28rem, 100vw - 1rem) !important;
 }
 .modal-panel[data-size='md'] {
-  max-width: 34rem !important;
+  max-width: min(34rem, 100vw - 1rem) !important;
 }
 .modal-panel[data-size='lg'] {
-  max-width: 44rem !important;
+  max-width: min(44rem, 100vw - 1rem) !important;
 }
 .modal-panel[data-size='xl'] {
-  max-width: 64rem !important;
+  max-width: min(64rem, 100vw - 1rem) !important;
 }
 
 @layer base {

@@ -63,7 +63,7 @@ export function PortalShell({
         alertsHref={userRole === 'Empresa' ? '/empresa/alertas' : undefined}
       />
 
-      <div className="flex min-h-screen bg-[var(--shell-bg)] pt-[68px]">
+      <div className="flex min-h-screen max-w-full overflow-x-clip bg-[var(--shell-bg)] pt-[68px]">
         <Sidebar
           items={items}
           open={menuOpen}
@@ -72,7 +72,7 @@ export function PortalShell({
           extra={sidebarExtra}
         />
 
-        <main className="min-w-0 flex-1">{children}</main>
+        <main className="min-w-0 flex-1 overflow-x-clip">{children}</main>
       </div>
 
       <Modal
