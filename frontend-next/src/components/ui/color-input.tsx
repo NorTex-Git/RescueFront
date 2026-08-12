@@ -41,7 +41,7 @@ export function ColorInput({
 
   return (
     <Field id={inputId} label={label} error={error} hint={hint} variant={variant}>
-      <div className="flex gap-2">
+      <div className="flex min-w-0 max-w-full gap-2">
         <input
           type="color"
           value={swatch}
@@ -64,7 +64,7 @@ export function ColorInput({
           spellCheck={false}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? `${inputId}-error` : undefined}
-          className={cn(fieldClass(variant, error, 'flex-1'), 'font-mono')}
+          className={cn(fieldClass(variant, error, 'min-w-0 flex-1'), 'font-mono')}
         />
       </div>
     </Field>

@@ -48,6 +48,7 @@ export function Modal({
   description,
   icon,
   size = 'md',
+  mobileFullscreen = false,
   footer,
   children,
 }: {
@@ -58,6 +59,8 @@ export function Modal({
   /** Nombre semántico del icono Flowbite del encabezado. */
   icon?: string
   size?: ModalSize
+  /** Usa casi todo el alto disponible en móvil; ideal para formularios crear/editar. */
+  mobileFullscreen?: boolean
   footer?: ReactNode
   children: ReactNode
 }) {
@@ -136,7 +139,7 @@ export function Modal({
       className={cn(
         'fixed inset-0 z-[10000] flex items-start justify-center overflow-y-auto sm:items-center',
         'bg-black/25 backdrop-blur-[20px] backdrop-saturate-150 dark:bg-black/45',
-        'overscroll-contain px-3 py-4 sm:px-4 sm:py-[max(4dvh,1.5rem)]',
+        'overscroll-contain p-2 sm:px-4 sm:py-[max(4dvh,1.5rem)]',
         'animate-in fade-in duration-200',
       )}
       onMouseDown={(event) => {
@@ -154,8 +157,9 @@ export function Modal({
         tabIndex={-1}
         data-size={size}
         className={cn(
-          'modal-panel relative flex flex-col overflow-hidden',
-          'max-h-[calc(100dvh-2rem)] rounded-[22px] sm:max-h-[92dvh] sm:rounded-[28px]',
+          'modal-panel relative min-w-0 flex flex-col overflow-hidden',
+          'max-h-[calc(100dvh-1rem)] rounded-[20px] sm:max-h-[92dvh] sm:rounded-[28px]',
+          mobileFullscreen && 'h-[calc(100dvh-1rem)] sm:h-auto',
           // El vidrio: muy translúcido, lo de detrás se intuye desenfocado.
           'backdrop-blur-2xl backdrop-saturate-150',
           'border border-black/10 bg-white/55 text-gray-900',
@@ -165,7 +169,7 @@ export function Modal({
           'animate-in zoom-in-95 slide-in-from-bottom-2 duration-200',
         )}
       >
-        <header className="flex items-start gap-3 border-b border-black/10 bg-white/25 px-6 py-5 dark:border-white/10 dark:bg-white/5">
+        <header className="flex shrink-0 items-start gap-2.5 border-b border-black/10 bg-white/25 px-4 py-4 sm:gap-3 sm:px-6 sm:py-5 dark:border-white/10 dark:bg-white/5">
           {icon && (
             <GlassIcon size="lg">
               <Icon name={icon} />
@@ -198,10 +202,12 @@ export function Modal({
           </button>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">{children}</div>
+        <div className="min-h-0 min-w-0 flex-1 touch-pan-y overflow-x-hidden overflow-y-auto px-4 py-4 overscroll-contain sm:px-6 sm:py-6">
+          {children}
+        </div>
 
         {footer && (
-          <footer className="flex flex-col gap-3 border-t border-black/10 bg-black/5 px-6 py-4 sm:flex-row sm:justify-end dark:border-white/10 dark:bg-black/20">
+          <footer className="flex shrink-0 flex-col gap-2.5 border-t border-black/10 bg-black/5 px-4 py-3 sm:flex-row sm:justify-end sm:gap-3 sm:px-6 sm:py-4 dark:border-white/10 dark:bg-black/20">
             {footer}
           </footer>
         )}
@@ -237,7 +243,7 @@ export function ModalButton({
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-full px-6 py-3',
+        'inline-flex w-full min-w-0 items-center justify-center gap-2 rounded-full px-5 py-3 sm:w-auto sm:px-6',
         'text-sm font-semibold transition-all',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500/60',
         'disabled:cursor-not-allowed disabled:opacity-60',

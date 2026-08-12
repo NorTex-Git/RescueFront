@@ -19,11 +19,7 @@ import { initialDataOf, toLoadError, type LoadResult } from '@/load-result'
 
 import { createFolder, deleteFolder, fetchFiles, fetchFolders, uploadFile } from '../api'
 import type { MediaFile } from '../normalize'
-import {
-  FILE_BASENAME_PATTERN,
-  createFolderSchema,
-  type CreateFolderValues,
-} from '../schema'
+import { FILE_BASENAME_PATTERN, createFolderSchema, type CreateFolderValues } from '../schema'
 import { MediaAudioPlayer } from './media-audio-player'
 
 const FOLDERS_KEY = ['media-folders'] as const
@@ -120,7 +116,10 @@ export function AdminMultimediaView({
               <Icon name="folder-plus" />
               Crear directorio
             </Button>
-            <Button onClick={() => setUploadOpen(true)} disabled={hardLoadError || folders.length === 0}>
+            <Button
+              onClick={() => setUploadOpen(true)}
+              disabled={hardLoadError || folders.length === 0}
+            >
               <Icon name="plus" />
               Agregar archivo
             </Button>
@@ -324,6 +323,7 @@ function UploadModal({
       title="Agregar archivo multimedia"
       description="Selecciona la carpeta destino y adjunta el archivo"
       icon="upload"
+      mobileFullscreen
       footer={
         <>
           <ModalButton icon="times" onClick={close} disabled={submitting}>
@@ -340,7 +340,7 @@ function UploadModal({
         </>
       }
     >
-      <div className="space-y-5">
+      <div className="min-w-0 space-y-5">
         <Select
           label="Carpeta destino"
           value={folder}
@@ -367,9 +367,9 @@ function UploadModal({
             type="file"
             onChange={(event) => setFile(event.target.files?.[0] ?? null)}
             className={cn(
-              'w-full rounded-2xl border border-black/10 bg-white/60 px-4 py-3 text-sm',
+              'block w-full min-w-0 max-w-full rounded-2xl border border-black/10 bg-white/60 px-3 py-3 text-xs sm:px-4 sm:text-sm',
               'text-gray-700 dark:border-white/15 dark:bg-white/8 dark:text-white/85',
-              'file:mr-4 file:rounded-full file:border-0 file:bg-blue-500 file:px-4 file:py-2',
+              'file:mr-2 file:rounded-full file:border-0 file:bg-blue-500 file:px-3 file:py-2 sm:file:mr-4 sm:file:px-4',
               'file:text-sm file:font-semibold file:text-white hover:file:bg-blue-600',
             )}
           />
@@ -470,8 +470,8 @@ function FilePreview({ file }: { file: MediaFile }) {
   const isAudio = hasExtension(file.name, AUDIO_EXTENSIONS)
 
   return (
-    <li className="flex flex-col gap-3 rounded-2xl border border-black/10 bg-white/50 p-3 dark:border-white/10 dark:bg-white/5">
-      <div className="flex items-center gap-2">
+    <li className="min-w-0 flex flex-col gap-3 rounded-2xl border border-black/10 bg-white/50 p-3 dark:border-white/10 dark:bg-white/5">
+      <div className="min-w-0 flex items-center gap-2">
         <Icon
           name={isImage ? 'image' : isAudio ? 'volume-high' : 'file'}
           className={cn(
@@ -483,7 +483,7 @@ function FilePreview({ file }: { file: MediaFile }) {
                 : 'text-gray-500 dark:text-white/50',
           )}
         />
-        <p className="truncate text-sm font-semibold" title={file.displayName}>
+        <p className="min-w-0 truncate text-sm font-semibold" title={file.displayName}>
           {file.displayName}
         </p>
       </div>

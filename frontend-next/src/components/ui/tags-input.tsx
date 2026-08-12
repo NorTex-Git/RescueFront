@@ -77,7 +77,7 @@ export function TagsInput({
 
   return (
     <Field id={inputId} label={label} error={error} hint={hint} variant={variant}>
-      <div className="flex gap-2">
+      <div className="flex min-w-0 max-w-full gap-2">
         <input
           id={inputId}
           type="text"
@@ -90,7 +90,7 @@ export function TagsInput({
           placeholder={isFull ? `Máximo ${maxTags} alcanzado` : placeholder}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? `${inputId}-error` : undefined}
-          className={fieldClass(variant, error, 'flex-1')}
+          className={fieldClass(variant, error, 'min-w-0 flex-1')}
         />
         <button
           type="button"
@@ -115,12 +115,12 @@ export function TagsInput({
             <li
               key={tag}
               className={cn(
-                'inline-flex items-center gap-2 rounded-full py-1.5 pr-1.5 pl-3.5 text-sm font-medium',
+                'inline-flex min-w-0 max-w-full items-center gap-2 rounded-full py-1.5 pr-1.5 pl-3.5 text-sm font-medium',
                 'border border-blue-500/25 bg-blue-500/10 text-blue-700',
                 'dark:border-blue-400/30 dark:bg-blue-400/15 dark:text-blue-100',
               )}
             >
-              {tag}
+              <span className="min-w-0 truncate">{tag}</span>
               <button
                 type="button"
                 onClick={() => remove(index)}

@@ -115,6 +115,7 @@ export function FormModal<TValues extends FieldValues>({
       description={description}
       icon={icon}
       size={size}
+      mobileFullscreen
       footer={
         <>
           <ModalButton type="button" icon="times" onClick={onClose} disabled={isSubmitting}>
@@ -133,114 +134,129 @@ export function FormModal<TValues extends FieldValues>({
       }
     >
       <FormProvider {...methods}>
-      <form id="form-modal" onSubmit={submit} noValidate className="space-y-6">
-        {rootError && (
-          <p
-            role="alert"
-            className="rounded-xl border border-red-400/40 bg-red-500/15 px-4 py-3 text-sm text-red-200"
-          >
-            {rootError}
-          </p>
-        )}
+        <form
+          id="form-modal"
+          onSubmit={submit}
+          noValidate
+          className="min-w-0 space-y-5 sm:space-y-6"
+        >
+          {rootError && (
+            <p
+              role="alert"
+              className="rounded-xl border border-red-400/40 bg-red-500/15 px-4 py-3 text-sm text-red-200"
+            >
+              {rootError}
+            </p>
+          )}
 
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          {fields.map((field) => {
-            const message = errors[field.name]?.message
-            const common = {
-              label: field.label,
-              error: typeof message === 'string' ? message : undefined,
-              hint: field.hint,
-              disabled: field.disabled,
-              variant: 'glass' as const,
-            }
+          <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
+            {fields.map((field) => {
+              const message = errors[field.name]?.message
+              const common = {
+                label: field.label,
+                error: typeof message === 'string' ? message : undefined,
+                hint: field.hint,
+                disabled: field.disabled,
+                variant: 'glass' as const,
+              }
 
-            return (
-              <div key={field.name} className={cn(field.full && 'sm:col-span-2')}>
-                {field.render ? (
-                  <Controller
-                    control={control}
-                    name={field.name}
-                    render={({ field: { value, onChange } }) =>
-                      // `?? <></>` porque `render` devuelve `ReactNode`, y `Controller`
-                      // exige un elemento.
-                      (field.render?.({
-                        value,
-                        onChange,
-                        error: common.error,
-                        disabled: field.disabled,
-                      }) as React.ReactElement) ?? <></>
-                    }
-                  />
-                ) : field.type === 'tags' ? (
-                  /*
-                   * `register` solo sirve para inputs nativos: aquí el valor es un
-                   * `string[]` que no vive en ningún elemento del DOM, así que va por
-                   * `Controller`.
-                   */
-                  <Controller
-                    control={control}
-                    name={field.name}
-                    render={({ field: { value, onChange } }) => (
-                      <TagsInput
-                        {...common}
-                        value={Array.isArray(value) ? (value as string[]) : []}
-                        onChange={onChange}
-                        placeholder={field.placeholder}
-                        maxTags={field.maxTags}
-                      />
-                    )}
-                  />
-                ) : field.type === 'color' ? (
-                  <Controller
-                    control={control}
-                    name={field.name}
-                    render={({ field: { value, onChange } }) => (
-                      <ColorInput
-                        {...common}
-                        value={typeof value === 'string' ? value : ''}
-                        onChange={onChange}
-                      />
-                    )}
-                  />
-                ) : field.type === 'select' ? (
-                  /*
-                   * Controlado, no con `register`: el desplegable propio no es un
-                   * `<select>` nativo, así que no emite eventos de cambio del DOM.
-                   */
-                  <Controller
-                    control={control}
-                    name={field.name}
-                    render={({ field: { value, onChange } }) => (
-                      <Select
-                        {...common}
-                        value={typeof value === 'string' ? value : ''}
-                        onChange={onChange}
-                        options={field.options ?? []}
-                        // Si el campo ya define una opción de valor vacío, esa es su
-                        // propia semántica —"Global", "Todos"— y añadir un
-                        // "Selecciona…" delante la duplicaría.
-                        placeholder={
-                          field.options?.some((option) => option.value === '') ? null : undefined
-                        }
-                      />
-                    )}
-                  />
-                ) : field.type === 'textarea' ? (
-                  <Textarea {...common} placeholder={field.placeholder} {...register(field.name)} />
-                ) : (
-                  <Input
-                    {...common}
-                    type={field.type ?? 'text'}
-                    placeholder={field.placeholder}
-                    autoComplete={field.autoComplete}
-                    {...register(field.name, field.type === 'number' ? { valueAsNumber: true } : undefined)}
-                  />
-                )}
-              </div>
-            )
-          })}
-        </div>
-      </form>
+              return (
+                <div
+                  key={field.name}
+                  className={cn('min-w-0 max-w-full', field.full && 'md:col-span-2')}
+                >
+                  {field.render ? (
+                    <Controller
+                      control={control}
+                      name={field.name}
+                      render={({ field: { value, onChange } }) =>
+                        // `?? <></>` porque `render` devuelve `ReactNode`, y `Controller`
+                        // exige un elemento.
+                        (field.render?.({
+                          value,
+                          onChange,
+                          error: common.error,
+                          disabled: field.disabled,
+                        }) as React.ReactElement) ?? <></>
+                      }
+                    />
+                  ) : field.type === 'tags' ? (
+                    /*
+                     * `register` solo sirve para inputs nativos: aquí el valor es un
+                     * `string[]` que no vive en ningún elemento del DOM, así que va por
+                     * `Controller`.
+                     */
+                    <Controller
+                      control={control}
+                      name={field.name}
+                      render={({ field: { value, onChange } }) => (
+                        <TagsInput
+                          {...common}
+                          value={Array.isArray(value) ? (value as string[]) : []}
+                          onChange={onChange}
+                          placeholder={field.placeholder}
+                          maxTags={field.maxTags}
+                        />
+                      )}
+                    />
+                  ) : field.type === 'color' ? (
+                    <Controller
+                      control={control}
+                      name={field.name}
+                      render={({ field: { value, onChange } }) => (
+                        <ColorInput
+                          {...common}
+                          value={typeof value === 'string' ? value : ''}
+                          onChange={onChange}
+                        />
+                      )}
+                    />
+                  ) : field.type === 'select' ? (
+                    /*
+                     * Controlado, no con `register`: el desplegable propio no es un
+                     * `<select>` nativo, así que no emite eventos de cambio del DOM.
+                     */
+                    <Controller
+                      control={control}
+                      name={field.name}
+                      render={({ field: { value, onChange } }) => (
+                        <Select
+                          {...common}
+                          value={typeof value === 'string' ? value : ''}
+                          onChange={onChange}
+                          options={field.options ?? []}
+                          // Si el campo ya define una opción de valor vacío, esa es su
+                          // propia semántica —"Global", "Todos"— y añadir un
+                          // "Selecciona…" delante la duplicaría.
+                          placeholder={
+                            field.options?.some((option) => option.value === '') ? null : undefined
+                          }
+                        />
+                      )}
+                    />
+                  ) : field.type === 'textarea' ? (
+                    <Textarea
+                      {...common}
+                      placeholder={field.placeholder}
+                      {...register(field.name)}
+                    />
+                  ) : (
+                    <Input
+                      {...common}
+                      type={field.type ?? 'text'}
+                      placeholder={field.placeholder}
+                      autoComplete={field.autoComplete}
+                      {...register(
+                        field.name,
+                        field.type === 'number' ? { valueAsNumber: true } : undefined,
+                      )}
+                    />
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </form>
       </FormProvider>
     </Modal>
   )

@@ -467,6 +467,7 @@ export function AlertsView({
         description="Notifica al personal de la sede seleccionada"
         icon="bell"
         size="lg"
+        mobileFullscreen
         footer={
           <>
             <ModalButton onClick={() => setCreateOpen(false)}>Cancelar</ModalButton>

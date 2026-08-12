@@ -14,13 +14,13 @@ import { cn } from '@/lib/utils'
 export type FieldVariant = 'default' | 'glass'
 
 const FIELD_STYLES =
-  'w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 ' +
+  'block w-full min-w-0 max-w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 ' +
   'placeholder:text-gray-400 focus:border-rescue-blue focus:ring-1 focus:ring-rescue-blue focus:outline-none ' +
   'disabled:cursor-not-allowed disabled:bg-gray-100 ' +
   'dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:disabled:bg-gray-900'
 
 const GLASS_STYLES =
-  'w-full rounded-2xl px-5 py-3.5 text-base transition-colors ' +
+  'block w-full min-w-0 max-w-full rounded-2xl px-4 py-3 text-base transition-colors sm:px-5 sm:py-3.5 ' +
   // Claro: vidrio blanco sobre el panel translúcido.
   'border border-black/10 bg-white/60 text-gray-900 placeholder:text-gray-500 ' +
   // Oscuro: el mismo vidrio, invertido.
@@ -56,7 +56,7 @@ export function Field({
   children: ReactNode
 }) {
   return (
-    <div className={variant === 'glass' ? '' : 'flex flex-col gap-1.5'}>
+    <div className={cn('min-w-0 max-w-full', variant !== 'glass' && 'flex flex-col gap-1.5')}>
       {label && (
         <label htmlFor={id} className={LABEL_STYLES[variant]}>
           {label}
@@ -67,7 +67,7 @@ export function Field({
         <p
           id={`${id}-error`}
           className={cn(
-            'mt-1.5 text-xs',
+            'mt-1.5 break-words text-xs',
             variant === 'glass'
               ? 'text-red-600 dark:text-red-300'
               : 'text-red-600 dark:text-red-400',
@@ -79,7 +79,7 @@ export function Field({
         hint && (
           <p
             className={cn(
-              'mt-1.5 text-xs',
+              'mt-1.5 break-words text-xs',
               variant === 'glass'
                 ? 'text-gray-600 dark:text-white/50'
                 : 'text-gray-600 dark:text-gray-400',

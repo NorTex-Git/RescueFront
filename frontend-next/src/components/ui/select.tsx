@@ -84,8 +84,11 @@ export function Select({
     const maxHeight = Math.min(256, openUp ? above : below)
 
     setPosition({
-      left: rect.left,
-      width: rect.width,
+      left: Math.max(
+        8,
+        Math.min(rect.left, window.innerWidth - Math.min(rect.width, window.innerWidth - 16) - 8),
+      ),
+      width: Math.min(rect.width, window.innerWidth - 16),
       top: openUp ? rect.top - gap - maxHeight : rect.bottom + gap,
       maxHeight,
     })
@@ -192,7 +195,7 @@ export function Select({
 
   return (
     <Field id={selectId} label={label} error={error} hint={hint} variant={variant}>
-      <div ref={rootRef} className="relative">
+      <div ref={rootRef} className="relative min-w-0 max-w-full">
         <button
           ref={buttonRef}
           type="button"
@@ -208,18 +211,15 @@ export function Select({
           onKeyDown={onKeyDown}
           className={cn(
             fieldClass(variant, error),
-            'flex items-center justify-between gap-2 text-left',
+            'flex min-w-0 max-w-full items-center justify-between gap-2 text-left',
             // Sin opción elegida el texto es un marcador de posición, no un valor.
             !current?.value && 'text-gray-500 dark:text-white/40',
           )}
         >
-          <span className="truncate">{current?.label ?? placeholder}</span>
+          <span className="min-w-0 truncate">{current?.label ?? placeholder}</span>
           <Icon
             name="chevron-down"
-            className={cn(
-              'shrink-0 text-xs transition-transform',
-              open && 'rotate-180',
-            )}
+            className={cn('shrink-0 text-xs transition-transform', open && 'rotate-180')}
           />
         </button>
 
