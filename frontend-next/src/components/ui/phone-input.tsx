@@ -1,12 +1,78 @@
 'use client'
 
 import { useId } from 'react'
-import PhoneNumberInput, { type Value } from 'react-phone-number-input'
+import PhoneNumberInput, {
+  getCountryCallingCode,
+  type Country,
+  type Value,
+} from 'react-phone-number-input'
 import labels from 'react-phone-number-input/locale/es.json'
 
 import { cn } from '@/lib/utils'
 
 import { Field, fieldClass, type FieldVariant } from './input'
+import { Select } from './select'
+
+type LibraryCountryOption = {
+  value?: Country
+  label: string
+  divider?: boolean
+}
+
+function flagOf(country: Country): string {
+  return country
+    .toUpperCase()
+    .split('')
+    .map((letter) => String.fromCodePoint(127397 + letter.charCodeAt(0)))
+    .join('')
+}
+
+function SearchableCountrySelect({
+  value,
+  onChange,
+  options,
+  disabled,
+  readOnly,
+}: {
+  value?: Country
+  onChange: (country?: Country) => void
+  options: LibraryCountryOption[]
+  disabled?: boolean
+  readOnly?: boolean
+}) {
+  const countryOptions = options
+    .filter((option): option is LibraryCountryOption & { value: Country } =>
+      Boolean(option.value && !option.divider),
+    )
+    .map((option) => {
+      const flag = flagOf(option.value)
+      const callingCode = `+${getCountryCallingCode(option.value)}`
+      return {
+        value: option.value,
+        label: `${flag} ${option.label} (${callingCode})`,
+        shortLabel: `${flag} ${callingCode}`,
+      }
+    })
+
+  return (
+    <div className="w-[7.5rem] shrink-0 sm:w-[8.5rem]">
+      <Select
+        value={value ?? 'CO'}
+        onChange={(country) => onChange(country as Country)}
+        options={countryOptions}
+        placeholder={null}
+        disabled={disabled || readOnly}
+        searchable
+        searchPlaceholder="Buscar país o prefijo"
+        menuMinWidth={320}
+        buttonClassName={cn(
+          '!rounded-xl !border-0 !bg-black/5 !px-2.5 !py-2 shadow-none',
+          'dark:!bg-white/8 focus:!ring-1',
+        )}
+      />
+    </div>
+  )
+}
 
 export function InternationalPhoneInput({
   value,
@@ -40,6 +106,7 @@ export function InternationalPhoneInput({
         international
         countryCallingCodeEditable={false}
         addInternationalOption={false}
+        countrySelectComponent={SearchableCountrySelect}
         labels={labels}
         disabled={disabled}
         limitMaxLength

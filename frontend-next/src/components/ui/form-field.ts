@@ -5,7 +5,7 @@
  * los estados de error, el foco y el envío los pone `FormModal` una sola vez. Así es
  * como los 6.523 líneas de `*-modals.js` se reducen a listas de campos.
  */
-export type FieldOption = { value: string; label: string }
+export type FieldOption = { value: string; label: string; shortLabel?: string }
 
 export type FieldType =
   | 'text'

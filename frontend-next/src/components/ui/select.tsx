@@ -33,6 +33,10 @@ export function Select({
   variant = 'glass',
   disabled,
   id,
+  searchable = false,
+  searchPlaceholder = 'Buscar…',
+  buttonClassName,
+  menuMinWidth,
 }: {
   value: string
   onChange: (value: string) => void
@@ -45,6 +49,10 @@ export function Select({
   variant?: FieldVariant
   disabled?: boolean
   id?: string
+  searchable?: boolean
+  searchPlaceholder?: string
+  buttonClassName?: string
+  menuMinWidth?: number
 }) {
   const generatedId = useId()
   const selectId = id ?? generatedId
@@ -52,9 +60,11 @@ export function Select({
 
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
+  const [query, setQuery] = useState('')
   const rootRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const listRef = useRef<HTMLUListElement>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
 
   /**
    * Posición de la lista en coordenadas de viewport.
@@ -83,16 +93,16 @@ export function Select({
     const openUp = below < 160 && above > below
     const maxHeight = Math.min(256, openUp ? above : below)
 
+    const desiredWidth = Math.max(rect.width, menuMinWidth ?? 0)
+    const width = Math.min(desiredWidth, window.innerWidth - 16)
+
     setPosition({
-      left: Math.max(
-        8,
-        Math.min(rect.left, window.innerWidth - Math.min(rect.width, window.innerWidth - 16) - 8),
-      ),
-      width: Math.min(rect.width, window.innerWidth - 16),
+      left: Math.max(8, Math.min(rect.left, window.innerWidth - width - 8)),
+      width,
       top: openUp ? rect.top - gap - maxHeight : rect.bottom + gap,
       maxHeight,
     })
-  }, [])
+  }, [menuMinWidth])
 
   useLayoutEffect(() => {
     if (open) measure()
@@ -111,9 +121,19 @@ export function Select({
     }
   }, [open, measure])
 
-  const items = placeholder === null ? options : [{ value: '', label: placeholder }, ...options]
-  const selectedIndex = items.findIndex((item) => item.value === value)
-  const current = selectedIndex >= 0 ? items[selectedIndex] : items[0]
+  const allItems = placeholder === null ? options : [{ value: '', label: placeholder }, ...options]
+  const normalizeSearch = (text: string) =>
+    text
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLocaleLowerCase('es')
+
+  const normalizedQuery = normalizeSearch(query.trim())
+  const items = normalizedQuery
+    ? allItems.filter((item) => normalizeSearch(item.label).includes(normalizedQuery))
+    : allItems
+  const selectedIndex = allItems.findIndex((item) => item.value === value)
+  const current = selectedIndex >= 0 ? allItems[selectedIndex] : allItems[0]
 
   // Cierre al pulsar fuera. En `pointerdown` y no en `click` para que se cierre antes
   // de que el elemento de debajo reciba el evento.
@@ -135,11 +155,18 @@ export function Select({
   // La opción activa siempre visible al navegar con el teclado.
   useEffect(() => {
     if (!open) return
-    listRef.current?.children[activeIndex]?.scrollIntoView({ block: 'nearest' })
-  }, [open, activeIndex])
+    const searchOffset = searchable ? 1 : 0
+    listRef.current?.children[activeIndex + searchOffset]?.scrollIntoView({ block: 'nearest' })
+  }, [open, activeIndex, searchable])
+
+  useEffect(() => {
+    if (!open || !searchable) return
+    requestAnimationFrame(() => searchRef.current?.focus())
+  }, [open, searchable])
 
   function openList() {
     if (disabled) return
+    setQuery('')
     setActiveIndex(selectedIndex >= 0 ? selectedIndex : 0)
     setOpen(true)
   }
@@ -167,7 +194,7 @@ export function Select({
         break
       case 'ArrowDown':
         event.preventDefault()
-        setActiveIndex((index) => Math.min(index + 1, items.length - 1))
+        setActiveIndex((index) => Math.min(index + 1, Math.max(items.length - 1, 0)))
         break
       case 'ArrowUp':
         event.preventDefault()
@@ -179,7 +206,7 @@ export function Select({
         break
       case 'End':
         event.preventDefault()
-        setActiveIndex(items.length - 1)
+        setActiveIndex(Math.max(items.length - 1, 0))
         break
       case 'Enter':
       case ' ':
@@ -214,9 +241,12 @@ export function Select({
             'flex min-w-0 max-w-full items-center justify-between gap-2 text-left',
             // Sin opción elegida el texto es un marcador de posición, no un valor.
             !current?.value && 'text-gray-500 dark:text-white/40',
+            buttonClassName,
           )}
         >
-          <span className="min-w-0 truncate">{current?.label ?? placeholder}</span>
+          <span className="min-w-0 truncate">
+            {current?.shortLabel ?? current?.label ?? placeholder}
+          </span>
           <Icon
             name="chevron-down"
             className={cn('shrink-0 text-xs transition-transform', open && 'rotate-180')}
@@ -246,6 +276,41 @@ export function Select({
                 'dark:border-white/15 dark:bg-slate-900 dark:text-white',
               )}
             >
+              {searchable && (
+                <li
+                  role="presentation"
+                  className="sticky top-0 z-10 bg-white p-1.5 dark:bg-slate-900"
+                >
+                  <div className="relative">
+                    <Icon
+                      name="search"
+                      className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-xs text-gray-400 dark:text-white/40"
+                    />
+                    <input
+                      ref={searchRef}
+                      type="search"
+                      value={query}
+                      onChange={(event) => {
+                        setQuery(event.target.value)
+                        setActiveIndex(0)
+                      }}
+                      onKeyDown={(event) => {
+                        if (['ArrowDown', 'ArrowUp', 'Enter', 'Escape'].includes(event.key)) {
+                          onKeyDown(event)
+                        }
+                      }}
+                      placeholder={searchPlaceholder}
+                      aria-label={searchPlaceholder}
+                      className={cn(
+                        'w-full rounded-xl border py-2.5 pr-3 pl-9 text-sm outline-none',
+                        'border-black/10 bg-gray-50 text-gray-900 placeholder:text-gray-400',
+                        'focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20',
+                        'dark:border-white/10 dark:bg-white/8 dark:text-white dark:placeholder:text-white/35',
+                      )}
+                    />
+                  </div>
+                </li>
+              )}
               {items.map((item, index) => {
                 const isSelected = item.value === value
                 return (
@@ -276,6 +341,11 @@ export function Select({
                   </li>
                 )
               })}
+              {items.length === 0 && (
+                <li className="px-3.5 py-6 text-center text-sm text-gray-500 dark:text-white/45">
+                  No se encontraron resultados
+                </li>
+              )}
             </ul>,
             document.body,
           )}
