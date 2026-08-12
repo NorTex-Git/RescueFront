@@ -13,6 +13,8 @@ import {
 import { toast } from 'sonner'
 
 import { clientEnv } from '@/lib/config'
+import type { AlertMessage } from '@/features/alerts/api'
+import type { Alert, AlertsPage } from '@/features/alerts/types'
 
 import { fetchActiveNotifications, fetchRealtimeTicket } from './api'
 import type { AlertNotification, ConnectionStatus, NotificationFeed, RealtimeEvent } from './types'
@@ -98,6 +100,26 @@ export function RealtimeProvider({
         seenEvents.current.delete(seenEvents.current.values().next().value as string)
       }
       const alert = alertFrom(event)
+
+      function patchAlertQueries(nextAlert: AlertNotification) {
+        if (!event.empresaId) return
+        const id = String(nextAlert._id ?? event.entityId ?? '')
+        if (!id) return
+        queryClient.setQueriesData<AlertsPage>(
+          { queryKey: ['empresa', event.empresaId, 'alerts'] },
+          (current) => {
+            if (!current) return current
+            let changed = false
+            const data = current.data.map((item) => {
+              if (String(item._id) !== id) return item
+              changed = true
+              return { ...item, ...(nextAlert as Partial<Alert>) }
+            })
+            return changed ? { ...current, data } : current
+          },
+        )
+      }
+
       if (event.type === 'alert.created' && alert) {
         queryClient.setQueryData<NotificationFeed>(notificationsKey, (current) => {
           const previous = current ?? { notifications: [], total: 0 }
@@ -132,6 +154,26 @@ export function RealtimeProvider({
         })
         if (event.empresaId) {
           void queryClient.invalidateQueries({ queryKey: ['empresa', event.empresaId, 'alerts'] })
+        }
+      } else if (
+        (event.type === 'alert.participant.status.changed' || event.type === 'alert.updated') &&
+        alert
+      ) {
+        patchAlertQueries(alert)
+        if (event.empresaId) {
+          void queryClient.invalidateQueries({ queryKey: ['empresa', event.empresaId, 'alerts'] })
+        }
+      } else if (event.type === 'alert.message.created') {
+        const message = event.payload.message
+        const alertId = String(event.payload.alertId ?? event.entityId ?? '')
+        if (alertId && message && typeof message === 'object') {
+          const update = message as AlertMessage
+          queryClient.setQueryData<AlertMessage[]>(['alert', alertId, 'messages'], (current) => {
+            if (!current) return current
+            const withoutDuplicate = current.filter((item) => item._id !== update._id)
+            return [update, ...withoutDuplicate]
+          })
+          void queryClient.invalidateQueries({ queryKey: ['alert', alertId, 'messages'] })
         }
       } else if (event.type === 'hardware.status.changed') {
         const hardware = event.payload.hardware
@@ -200,6 +242,11 @@ export function RealtimeProvider({
           attempts = 0
           setStatus('connected')
           void queryClient.invalidateQueries({ queryKey: notificationsKey })
+          void queryClient.invalidateQueries({ queryKey: ['hardware'] })
+          void queryClient.invalidateQueries({ queryKey: ['alert'] })
+          if (empresaId) {
+            void queryClient.invalidateQueries({ queryKey: ['empresa', empresaId, 'alerts'] })
+          }
         }
         candidate.onmessage = (message) => {
           try {
@@ -264,7 +311,7 @@ export function RealtimeProvider({
       clearOpenTimer()
       socket?.close()
     }
-  }, [notificationsKey, queryClient])
+  }, [empresaId, notificationsKey, queryClient])
 
   const value = useMemo<RealtimeContextValue>(
     () => ({

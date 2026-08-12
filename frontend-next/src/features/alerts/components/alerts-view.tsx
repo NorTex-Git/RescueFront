@@ -20,7 +20,12 @@ import { formatTimestamp, titleCase } from '@/features/stats/format'
 
 import { osmEmbedSrc, parseMapCoords } from '@/lib/maps'
 
-import { createEmpresaAlert, deactivateEmpresaAlert, listEmpresaAlerts } from '../api'
+import {
+  createEmpresaAlert,
+  deactivateEmpresaAlert,
+  listAlertMessages,
+  listEmpresaAlerts,
+} from '../api'
 import {
   alertContacts,
   alertLocation,
@@ -124,6 +129,56 @@ function AlertLocationMap({ alert }: { alert: Alert }) {
   )
 }
 
+function AlertMessagesList({ alertId }: { alertId: string }) {
+  const query = useQuery({
+    queryKey: ['alert', alertId, 'messages'],
+    queryFn: () => listAlertMessages(alertId),
+    staleTime: 30_000,
+  })
+
+  if (query.isPending) {
+    return <p className="text-[var(--shell-text-muted)]">Cargando conversación…</p>
+  }
+  if (query.isError) {
+    return <p className="text-red-600 dark:text-red-300">No se pudo cargar la conversación.</p>
+  }
+  if (!query.data.length) {
+    return <p className="text-[var(--shell-text-muted)]">Aún no hay mensajes registrados.</p>
+  }
+
+  return (
+    <ol className="max-h-80 space-y-2 overflow-y-auto pr-1">
+      {query.data.map((message) => {
+        const outgoing = message.direction === 'out'
+        return (
+          <li
+            key={message._id}
+            className={`rounded-xl border px-3 py-2 ${
+              outgoing
+                ? 'ml-6 border-[var(--shell-accent)]/25 bg-[var(--shell-accent-soft)]'
+                : 'mr-6 border-[var(--shell-border)] bg-[var(--shell-surface-muted)]'
+            }`}
+          >
+            <div className="flex items-center justify-between gap-3 text-xs text-[var(--shell-text-muted)]">
+              <span>
+                {message.user_name || message.phone || (outgoing ? 'RESCUE' : 'Contacto')}
+              </span>
+              <span>
+                {formatTimestamp(
+                  message.fecha ?? message.fecha_creacion ?? message.created_at ?? null,
+                )}
+              </span>
+            </div>
+            <p className="mt-1 whitespace-pre-wrap text-sm text-[var(--shell-text-strong)]">
+              {message.body || `[${message.type || 'mensaje'}]`}
+            </p>
+          </li>
+        )
+      })}
+    </ol>
+  )
+}
+
 const detailRows: DetailRow<Alert>[] = [
   { label: 'Empresa', icon: 'building', value: (alert) => alert.empresa_nombre || '—' },
   { label: 'Sede', icon: 'location-dot', value: (alert) => alert.sede || '—' },
@@ -148,6 +203,11 @@ const detailRows: DetailRow<Alert>[] = [
 ]
 
 const detailSections: DetailSection<Alert>[] = [
+  {
+    title: 'Conversación',
+    icon: 'message',
+    content: (alert) => <AlertMessagesList alertId={alert._id} />,
+  },
   {
     title: 'Contactos notificados',
     icon: 'phone',
@@ -226,10 +286,6 @@ export function AlertsView({
     queryFn: () => listEmpresaAlerts(empresaId, status, page, PAGE_SIZE),
     initialData: page === 1 ? initialPage : undefined,
     staleTime: 20_000,
-    // El backend no emite eventos de "embarcado"; mientras el modal de una alerta
-    // activa está abierto, refrescamos esa página cada 12 s para ver los estados en
-    // vivo. Fuera de eso el WebSocket (created/deactivated) mantiene la lista al día.
-    refetchInterval: selectedId !== null && status === 'active' ? 12_000 : false,
   })
   const pageData = query.data ?? initialPage
 

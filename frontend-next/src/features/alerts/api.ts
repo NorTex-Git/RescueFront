@@ -5,6 +5,20 @@ import { apiRequest } from '@/lib/api/client'
 
 import { alertsPageSchema, type AlertStatus, type AlertsPage, type CreateAlertInput } from './types'
 
+export type AlertMessage = {
+  _id: string
+  alert_id?: string
+  phone?: string
+  direction?: 'in' | 'out'
+  type?: string
+  body?: string
+  user_name?: string
+  user_role?: string
+  fecha?: string
+  fecha_creacion?: string
+  created_at?: string
+}
+
 export async function listEmpresaAlerts(
   empresaId: string,
   status: AlertStatus,
@@ -57,4 +71,15 @@ export async function deactivateEmpresaAlert(alertId: string, empresaId: string,
       mensaje_desactivacion: message || undefined,
     },
   })
+}
+
+export async function listAlertMessages(alertId: string): Promise<AlertMessage[]> {
+  const response = await apiRequest<{ messages?: unknown }>(
+    `/api/alerts/${encodeURIComponent(alertId)}/messages?limit=50`,
+  )
+  if (!Array.isArray(response.messages)) return []
+  return response.messages.filter(
+    (message): message is AlertMessage =>
+      Boolean(message) && typeof message === 'object' && typeof message._id === 'string',
+  )
 }
