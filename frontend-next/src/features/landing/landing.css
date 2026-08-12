@@ -378,6 +378,12 @@
   transform: scaleX(1);
 }
 @media (max-width: 860px) {
+  .clamp-section {
+    /* Sigue el viewport visible cuando la barra del navegador móvil aparece o se oculta. */
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+  }
   .hero2 {
     height: 100svh;
     min-height: 100svh;
