@@ -173,20 +173,6 @@ function buildDetailRows(status: AlertStatus): DetailRow<Alert>[] {
 function buildDetailSections(status: AlertStatus): DetailSection<Alert>[] {
   const sections: DetailSection<Alert>[] = [
     {
-      title: 'Imagen de la alerta',
-      icon: 'image',
-      // Devolver null oculta la sección completa (ver DetailModal).
-      content: (alert) =>
-        alert.image_alert ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={alert.image_alert}
-            alt={alert.nombre_alerta || alert.tipo_alerta || 'Imagen de la alerta'}
-            className="h-56 w-full rounded-xl bg-slate-100/75 object-contain p-3 dark:bg-black/20"
-          />
-        ) : null,
-    },
-    {
       title: 'Contactos notificados',
       icon: 'phone',
       content: (alert) => <AlertContactsList alert={alert} />,
@@ -506,6 +492,18 @@ export function AlertsView({
         title="Detalle de la alerta"
         description="Información operativa completa"
         icon="triangle-exclamation"
+        headerVisual={
+          selected?.image_alert ? (
+            <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-black/10 bg-white dark:border-white/15">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={selected.image_alert}
+                alt={selected.nombre_alerta || selected.tipo_alerta || 'Alerta'}
+                className="size-full object-cover"
+              />
+            </span>
+          ) : undefined
+        }
         item={selected}
         heading={{
           title: (alert) => alert.nombre_alerta || alert.tipo_alerta || 'Alerta',

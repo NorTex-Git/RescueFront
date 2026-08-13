@@ -35,6 +35,7 @@ export function DetailModal<T>({
   title,
   description,
   icon,
+  headerVisual,
   item,
   heading,
   rows,
@@ -48,6 +49,8 @@ export function DetailModal<T>({
   title: string
   description?: string
   icon?: string
+  /** Visual del encabezado (logo/imagen) en lugar del icono. */
+  headerVisual?: ReactNode
   /** `null` cuando no hay nada seleccionado; el modal no se abre. */
   item: T | null
   /** Nombre y descripción del registro, destacados dentro del cuerpo. */
@@ -65,6 +68,7 @@ export function DetailModal<T>({
       title={title}
       description={description}
       icon={icon}
+      headerVisual={headerVisual}
       size={size}
       footer={
         footer ?? (

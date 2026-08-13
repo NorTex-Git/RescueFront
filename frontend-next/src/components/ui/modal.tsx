@@ -47,6 +47,7 @@ export function Modal({
   title,
   description,
   icon,
+  headerVisual,
   size = 'md',
   mobileFullscreen = false,
   footer,
@@ -58,6 +59,8 @@ export function Modal({
   description?: ReactNode
   /** Nombre semántico del icono Flowbite del encabezado. */
   icon?: string
+  /** Visual personalizado del encabezado (p. ej. un logo/imagen); reemplaza al `icon`. */
+  headerVisual?: ReactNode
   size?: ModalSize
   /** Usa casi todo el alto disponible en móvil; ideal para formularios crear/editar. */
   mobileFullscreen?: boolean
@@ -170,11 +173,13 @@ export function Modal({
         )}
       >
         <header className="flex shrink-0 items-start gap-2.5 border-b border-black/10 bg-white/25 px-4 py-4 sm:gap-3 sm:px-6 sm:py-5 dark:border-white/10 dark:bg-white/5">
-          {icon && (
-            <GlassIcon size="lg">
-              <Icon name={icon} />
-            </GlassIcon>
-          )}
+          {headerVisual
+            ? headerVisual
+            : icon && (
+                <GlassIcon size="lg">
+                  <Icon name={icon} />
+                </GlassIcon>
+              )}
           <div className="min-w-0 flex-1">
             {/* Envuelve en varias líneas en vez de cortarse: los títulos largos caben. */}
             <h2 className="text-xl leading-tight font-bold text-balance break-words sm:text-2xl">
