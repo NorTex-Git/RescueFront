@@ -168,12 +168,14 @@ export function RealtimeProvider({
         const alertId = String(event.payload.alertId ?? event.entityId ?? '')
         if (alertId && message && typeof message === 'object') {
           const update = message as AlertMessage
+          // El historial viene en orden cronológico ascendente; los mensajes nuevos
+          // van al final (abajo, como un chat). Se deduplica por _id. No se invalida
+          // la query: el cache ya queda correcto y evitamos un refetch innecesario.
           queryClient.setQueryData<AlertMessage[]>(['alert', alertId, 'messages'], (current) => {
             if (!current) return current
             const withoutDuplicate = current.filter((item) => item._id !== update._id)
-            return [update, ...withoutDuplicate]
+            return [...withoutDuplicate, update]
           })
-          void queryClient.invalidateQueries({ queryKey: ['alert', alertId, 'messages'] })
         }
       } else if (event.type === 'hardware.status.changed') {
         const hardware = event.payload.hardware

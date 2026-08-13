@@ -75,11 +75,20 @@ export async function deactivateEmpresaAlert(alertId: string, empresaId: string,
 
 export async function listAlertMessages(alertId: string): Promise<AlertMessage[]> {
   const response = await apiRequest<{ messages?: unknown }>(
-    `/api/alerts/${encodeURIComponent(alertId)}/messages?limit=50`,
+    `/api/mqtt-alerts/${encodeURIComponent(alertId)}/messages?limit=50`,
   )
   if (!Array.isArray(response.messages)) return []
   return response.messages.filter(
     (message): message is AlertMessage =>
       Boolean(message) && typeof message === 'object' && typeof message._id === 'string',
   )
+}
+
+/** La empresa escribe al grupo de la alerta (se envía por WhatsApp a todos los contactos). */
+export async function sendAlertMessage(alertId: string, message: string): Promise<AlertMessage> {
+  const response = await apiRequest<{ message: AlertMessage }>(
+    `/api/mqtt-alerts/${encodeURIComponent(alertId)}/messages/send`,
+    { method: 'POST', body: { message } },
+  )
+  return response.message
 }

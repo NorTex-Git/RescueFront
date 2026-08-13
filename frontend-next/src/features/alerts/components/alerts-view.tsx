@@ -20,12 +20,7 @@ import { formatTimestamp, titleCase } from '@/features/stats/format'
 
 import { osmEmbedSrc, parseMapCoords } from '@/lib/maps'
 
-import {
-  createEmpresaAlert,
-  deactivateEmpresaAlert,
-  listAlertMessages,
-  listEmpresaAlerts,
-} from '../api'
+import { createEmpresaAlert, deactivateEmpresaAlert, listEmpresaAlerts } from '../api'
 import {
   alertClosedBy,
   alertContacts,
@@ -37,6 +32,7 @@ import {
   type AlertStatus,
   type CreateAlertInput,
 } from '../types'
+import { AlertConversationModal } from './alert-conversation-modal'
 
 const PAGE_SIZE = 8
 const PANEL =
@@ -134,56 +130,6 @@ function AlertLocationMap({ alert }: { alert: Alert }) {
   )
 }
 
-function AlertMessagesList({ alertId }: { alertId: string }) {
-  const query = useQuery({
-    queryKey: ['alert', alertId, 'messages'],
-    queryFn: () => listAlertMessages(alertId),
-    staleTime: 30_000,
-  })
-
-  if (query.isPending) {
-    return <p className="text-[var(--shell-text-muted)]">Cargando conversación…</p>
-  }
-  if (query.isError) {
-    return <p className="text-red-600 dark:text-red-300">No se pudo cargar la conversación.</p>
-  }
-  if (!query.data.length) {
-    return <p className="text-[var(--shell-text-muted)]">Aún no hay mensajes registrados.</p>
-  }
-
-  return (
-    <ol className="max-h-80 space-y-2 overflow-y-auto pr-1">
-      {query.data.map((message) => {
-        const outgoing = message.direction === 'out'
-        return (
-          <li
-            key={message._id}
-            className={`rounded-xl border px-3 py-2 ${
-              outgoing
-                ? 'ml-6 border-[var(--shell-accent)]/25 bg-[var(--shell-accent-soft)]'
-                : 'mr-6 border-[var(--shell-border)] bg-[var(--shell-surface-muted)]'
-            }`}
-          >
-            <div className="flex items-center justify-between gap-3 text-xs text-[var(--shell-text-muted)]">
-              <span>
-                {message.user_name || message.phone || (outgoing ? 'RESCUE' : 'Contacto')}
-              </span>
-              <span>
-                {formatTimestamp(
-                  message.fecha ?? message.fecha_creacion ?? message.created_at ?? null,
-                )}
-              </span>
-            </div>
-            <p className="mt-1 whitespace-pre-wrap text-sm text-[var(--shell-text-strong)]">
-              {message.body || `[${message.type || 'mensaje'}]`}
-            </p>
-          </li>
-        )
-      })}
-    </ol>
-  )
-}
-
 /** Filas del modal de detalle; las de cierre sólo aplican al historial (inactivas). */
 function buildDetailRows(status: AlertStatus): DetailRow<Alert>[] {
   const rows: DetailRow<Alert>[] = [
@@ -213,7 +159,7 @@ function buildDetailRows(status: AlertStatus): DetailRow<Alert>[] {
       },
       {
         label: 'Desactivada por',
-        icon: 'user-check',
+        icon: 'user',
         value: (alert) => alertClosedBy(alert) ?? '—',
         full: true,
       },
@@ -239,11 +185,6 @@ function buildDetailSections(status: AlertStatus): DetailSection<Alert>[] {
             className="h-56 w-full rounded-xl bg-slate-100/75 object-contain p-3 dark:bg-black/20"
           />
         ) : null,
-    },
-    {
-      title: 'Conversación',
-      icon: 'message',
-      content: (alert) => <AlertMessagesList alertId={alert._id} />,
     },
     {
       title: 'Contactos notificados',
@@ -313,6 +254,7 @@ export function AlertsView({
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [messagesId, setMessagesId] = useState<string | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
   const [deactivating, setDeactivating] = useState<Alert | null>(null)
   const [closingMessage, setClosingMessage] = useState('')
@@ -339,6 +281,10 @@ export function AlertsView({
   const selected = useMemo(
     () => pageData.data.find((alert) => String(alert._id) === selectedId) ?? null,
     [pageData.data, selectedId],
+  )
+  const messagesAlert = useMemo(
+    () => pageData.data.find((alert) => String(alert._id) === messagesId) ?? null,
+    [pageData.data, messagesId],
   )
 
   const rows = useMemo(() => {
@@ -457,6 +403,15 @@ export function AlertsView({
           >
             <Icon name="eye" />
           </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            title="Mensajes"
+            aria-label="Mensajes"
+            onClick={() => setMessagesId(alert._id)}
+          >
+            <Icon name="message" />
+          </Button>
           {status === 'active' && (
             <Button
               variant="danger"
@@ -559,6 +514,13 @@ export function AlertsView({
         rows={detailRows}
         sections={detailSections}
         size="lg"
+      />
+
+      <AlertConversationModal
+        open={messagesId !== null && messagesAlert !== null}
+        onClose={() => setMessagesId(null)}
+        alert={messagesAlert}
+        status={status}
       />
 
       <Modal
