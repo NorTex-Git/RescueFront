@@ -126,6 +126,18 @@ export function AlertConversationModal({
       title="Mensajes de la alerta"
       description={alert?.nombre_alerta || alert?.tipo_alerta || 'Conversación'}
       icon="message"
+      headerVisual={
+        alert?.image_alert ? (
+          <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-black/10 bg-white dark:border-white/15">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={alert.image_alert}
+              alt={alert.nombre_alerta || alert.tipo_alerta || 'Alerta'}
+              className="size-full object-cover"
+            />
+          </span>
+        ) : undefined
+      }
       size="lg"
       mobileFullscreen
     >
