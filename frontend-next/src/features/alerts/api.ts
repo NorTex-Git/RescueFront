@@ -17,6 +17,19 @@ export type AlertMessage = {
   fecha?: string
   fecha_creacion?: string
   created_at?: string
+  /** Ruta relativa del archivo servido por el backend (imagen/audio/video/sticker). */
+  media_url?: string | null
+  mime_type?: string | null
+  /** Id de mensaje de WhatsApp (wamid). */
+  wa_message_id?: string | null
+  /** Cita del mensaje respondido (para pintar el hilo). */
+  reply_to?: {
+    message_id?: string
+    wa_message_id?: string | null
+    author?: string
+    snippet?: string
+    type?: string
+  } | null
 }
 
 export async function listEmpresaAlerts(
@@ -85,10 +98,14 @@ export async function listAlertMessages(alertId: string): Promise<AlertMessage[]
 }
 
 /** La empresa escribe al grupo de la alerta (se envía por WhatsApp a todos los contactos). */
-export async function sendAlertMessage(alertId: string, message: string): Promise<AlertMessage> {
+export async function sendAlertMessage(
+  alertId: string,
+  message: string,
+  replyToId?: string,
+): Promise<AlertMessage> {
   const response = await apiRequest<{ message: AlertMessage }>(
     `/api/mqtt-alerts/${encodeURIComponent(alertId)}/messages/send`,
-    { method: 'POST', body: { message } },
+    { method: 'POST', body: { message, reply_to_id: replyToId } },
   )
   return response.message
 }

@@ -8,9 +8,59 @@ import { Icon } from '@/components/ui/icon'
 import { Modal } from '@/components/ui/modal'
 import { useRealtime } from '@/features/realtime/realtime-provider'
 import { formatTimestamp } from '@/features/stats/format'
+import { API_PREFIX } from '@/lib/config'
 
 import { listAlertMessages, sendAlertMessage, type AlertMessage } from '../api'
 import { alertContacts, type Alert } from '../types'
+
+/** Clasifica el mensaje por su tipo/mime para elegir cómo renderizar la media. */
+function mediaKind(message: AlertMessage): 'image' | 'video' | 'audio' | 'file' {
+  const type = message.type
+  const mime = message.mime_type || ''
+  if (type === 'image' || type === 'sticker' || mime.startsWith('image/')) return 'image'
+  if (type === 'video' || mime.startsWith('video/')) return 'video'
+  if (type === 'audio' || mime.startsWith('audio/')) return 'audio'
+  return 'file'
+}
+
+/** Etiqueta para mensajes sin media renderizable (p. ej. documentos, excluidos). */
+function placeholderFor(type?: string): string {
+  if (type === 'document') return '📎 Documento recibido'
+  return `[${type || 'mensaje'}]`
+}
+
+function MessageMedia({ message }: { message: AlertMessage }) {
+  // El backend guarda una ruta relativa (/api/...); el BFF de Next añade el prefijo.
+  const src = `${API_PREFIX}${message.media_url}`
+  const kind = mediaKind(message)
+  if (kind === 'image') {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={src}
+        alt={message.body || 'Imagen'}
+        className="max-h-64 max-w-full rounded-xl object-contain"
+      />
+    )
+  }
+  if (kind === 'video') {
+    return <video src={src} controls className="max-h-72 max-w-full rounded-xl" />
+  }
+  if (kind === 'audio') {
+    return <audio src={src} controls className="w-full" />
+  }
+  return (
+    <a
+      href={src}
+      target="_blank"
+      rel="noreferrer"
+      className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--shell-accent)] hover:underline"
+    >
+      <Icon name="external-link-alt" className="text-xs" />
+      Abrir archivo
+    </a>
+  )
+}
 
 /** Punto de estado de la conexión en vivo, tomado del RealtimeProvider global. */
 function LiveIndicator() {
@@ -28,10 +78,50 @@ function LiveIndicator() {
   )
 }
 
-function MessageBubble({ message }: { message: AlertMessage }) {
-  const outgoing = message.direction === 'out'
+/** Bloque de cita del mensaje respondido, arriba de la burbuja. */
+function ReplyQuote({ author, snippet }: { author?: string; snippet?: string }) {
   return (
-    <div className={`flex ${outgoing ? 'justify-end' : 'justify-start'}`}>
+    <div className="mb-1.5 rounded-lg border-l-2 border-[var(--shell-accent)] bg-black/5 px-2 py-1 dark:bg-white/10">
+      {author && (
+        <p className="truncate text-xs font-semibold text-[var(--shell-accent)]">{author}</p>
+      )}
+      <p className="truncate text-xs text-[var(--shell-text-muted)]">{snippet || 'Mensaje'}</p>
+    </div>
+  )
+}
+
+/** Texto resumido de un mensaje (para citas y la tira del composer). */
+function messagePreview(message: AlertMessage): string {
+  if (message.body) return message.body
+  if (message.media_url) {
+    const labels: Record<string, string> = {
+      image: '📷 Imagen', audio: '🎵 Audio', video: '🎬 Video', sticker: 'Sticker',
+    }
+    return labels[message.type || ''] || 'Archivo'
+  }
+  return placeholderFor(message.type)
+}
+
+function MessageBubble({
+  message,
+  onReply,
+}: {
+  message: AlertMessage
+  onReply: (message: AlertMessage) => void
+}) {
+  const outgoing = message.direction === 'out'
+  const replyButton = (
+    <button
+      type="button"
+      onClick={() => onReply(message)}
+      className="shrink-0 self-center rounded-full px-2 py-1 text-xs font-medium text-[var(--shell-text-muted)] opacity-0 transition-opacity hover:text-[var(--shell-accent)] group-hover:opacity-100"
+    >
+      Responder
+    </button>
+  )
+  return (
+    <div className={`group flex items-center gap-1 ${outgoing ? 'justify-end' : 'justify-start'}`}>
+      {outgoing && replyButton}
       <div
         className={`max-w-[80%] rounded-2xl border px-3 py-2 ${
           outgoing
@@ -39,6 +129,9 @@ function MessageBubble({ message }: { message: AlertMessage }) {
             : 'rounded-bl-sm border-[var(--shell-border)] bg-[var(--shell-surface-muted)]'
         }`}
       >
+        {message.reply_to && (
+          <ReplyQuote author={message.reply_to.author} snippet={message.reply_to.snippet} />
+        )}
         <div className="flex items-center justify-between gap-3 text-xs text-[var(--shell-text-muted)]">
           <span className="truncate">
             {message.user_name || message.phone || (outgoing ? 'Empresa' : 'Contacto')}
@@ -47,10 +140,22 @@ function MessageBubble({ message }: { message: AlertMessage }) {
             {formatTimestamp(message.fecha ?? message.fecha_creacion ?? message.created_at ?? null)}
           </span>
         </div>
-        <p className="mt-1 whitespace-pre-wrap text-sm text-[var(--shell-text-strong)]">
-          {message.body || `[${message.type || 'mensaje'}]`}
-        </p>
+        {message.media_url ? (
+          <div className="mt-1.5 space-y-1.5">
+            <MessageMedia message={message} />
+            {message.body && (
+              <p className="whitespace-pre-wrap text-sm text-[var(--shell-text-strong)]">
+                {message.body}
+              </p>
+            )}
+          </div>
+        ) : (
+          <p className="mt-1 whitespace-pre-wrap text-sm text-[var(--shell-text-strong)]">
+            {message.body || placeholderFor(message.type)}
+          </p>
+        )}
       </div>
+      {!outgoing && replyButton}
     </div>
   )
 }
@@ -70,6 +175,7 @@ export function AlertConversationModal({
   const queryClient = useQueryClient()
   const alertId = alert?._id ?? ''
   const [draft, setDraft] = useState('')
+  const [replyingTo, setReplyingTo] = useState<AlertMessage | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   // Lazy: sólo se consulta el historial mientras el modal está abierto. El WS global
@@ -85,9 +191,11 @@ export function AlertConversationModal({
   const contactCount = alert ? alertContacts(alert).length : 0
 
   const sendMutation = useMutation({
-    mutationFn: (text: string) => sendAlertMessage(alertId, text),
+    mutationFn: (input: { text: string; replyToId?: string }) =>
+      sendAlertMessage(alertId, input.text, input.replyToId),
     onSuccess: (created) => {
       setDraft('')
+      setReplyingTo(null)
       // Refleja el mensaje al instante; el WS lo deduplica por _id si vuelve.
       queryClient.setQueryData<AlertMessage[]>(['alert', alertId, 'messages'], (current) => {
         if (!current) return current
@@ -110,7 +218,7 @@ export function AlertConversationModal({
   function submit() {
     const text = draft.trim()
     if (!text || sendMutation.isPending) return
-    sendMutation.mutate(text)
+    sendMutation.mutate({ text, replyToId: replyingTo?._id })
   }
 
   const primaryContact = alert ? alertContacts(alert)[0] : null
@@ -165,12 +273,35 @@ export function AlertConversationModal({
           ) : messages.length === 0 ? (
             <p className="text-[var(--shell-text-muted)]">Aún no hay mensajes registrados.</p>
           ) : (
-            messages.map((message) => <MessageBubble key={message._id} message={message} />)
+            messages.map((message) => (
+              <MessageBubble key={message._id} message={message} onReply={setReplyingTo} />
+            ))
           )}
         </div>
 
         {status === 'active' ? (
-          <div className="flex shrink-0 items-end gap-2 border-t border-[var(--shell-border)] pt-3">
+          <div className="shrink-0 border-t border-[var(--shell-border)] pt-3">
+            {replyingTo && (
+              <div className="mb-2 flex items-center justify-between gap-2 rounded-lg border-l-2 border-[var(--shell-accent)] bg-black/5 px-3 py-1.5 dark:bg-white/10">
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-semibold text-[var(--shell-accent)]">
+                    Respondiendo a {replyingTo.user_name || replyingTo.phone || 'mensaje'}
+                  </p>
+                  <p className="truncate text-xs text-[var(--shell-text-muted)]">
+                    {messagePreview(replyingTo)}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setReplyingTo(null)}
+                  aria-label="Cancelar respuesta"
+                  className="shrink-0 rounded-lg p-1.5 text-[var(--shell-text-muted)] hover:text-[var(--shell-text-strong)]"
+                >
+                  <Icon name="times" />
+                </button>
+              </div>
+            )}
+            <div className="flex items-end gap-2">
             <textarea
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
@@ -198,6 +329,7 @@ export function AlertConversationModal({
                 <Icon name="paper-plane" />
               )}
             </button>
+            </div>
           </div>
         ) : (
           <p className="shrink-0 border-t border-[var(--shell-border)] pt-3 text-center text-xs text-[var(--shell-text-muted)]">
