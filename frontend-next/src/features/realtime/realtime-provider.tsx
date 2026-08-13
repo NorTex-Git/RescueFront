@@ -15,11 +15,25 @@ import { toast } from 'sonner'
 import { clientEnv } from '@/lib/config'
 import type { AlertMessage } from '@/features/alerts/api'
 import type { Alert, AlertsPage } from '@/features/alerts/types'
+import { hardwareSchema, isHardwareOffline } from '@/features/hardware/types'
 
-import { fetchActiveNotifications, fetchRealtimeTicket } from './api'
-import type { AlertNotification, ConnectionStatus, NotificationFeed, RealtimeEvent } from './types'
+import {
+  fetchActiveNotifications,
+  fetchHardwareNotifications,
+  fetchRealtimeTicket,
+  hardwareToNotification,
+} from './api'
+import type {
+  AlertNotification,
+  ConnectionStatus,
+  HardwareNotification,
+  NotificationFeed,
+  RealtimeEvent,
+} from './types'
 
 type RealtimeContextValue = NotificationFeed & {
+  hardware: HardwareNotification[]
+  hardwareTotal: number
   status: ConnectionStatus
   refresh: () => Promise<unknown>
 }
@@ -68,6 +82,17 @@ export function RealtimeProvider({
   const query = useQuery({
     queryKey: notificationsKey,
     queryFn: fetchActiveNotifications,
+    staleTime: 60_000,
+    refetchOnWindowFocus: true,
+  })
+  const hardwareKey = useMemo(
+    () => ['hardware-notifications', empresaId ?? 'global'] as const,
+    [empresaId],
+  )
+  const hardwareQuery = useQuery({
+    queryKey: hardwareKey,
+    queryFn: () => fetchHardwareNotifications(empresaId),
+    enabled: Boolean(empresaId),
     staleTime: 60_000,
     refetchOnWindowFocus: true,
   })
@@ -186,8 +211,28 @@ export function RealtimeProvider({
             (current) =>
               current?.map((item) => (item._id === update._id ? { ...item, ...update } : item)),
           )
+
+          // Feed de notificaciones de hardware: solo equipos registrados (activa)
+          // que quedan inactivos (offline). Al volver online se retiran del feed.
+          const parsed = hardwareSchema.safeParse(hardware)
+          if (parsed.success) {
+            const offline = parsed.data.activa && isHardwareOffline(parsed.data)
+            const notif = hardwareToNotification(parsed.data)
+            const current = queryClient.getQueryData<HardwareNotification[]>(hardwareKey) ?? []
+            const wasPresent = current.some((item) => item._id === notif._id)
+            queryClient.setQueryData<HardwareNotification[]>(hardwareKey, () => {
+              const without = current.filter((item) => item._id !== notif._id)
+              return offline ? [notif, ...without].slice(0, 20) : without
+            })
+            if (offline && !wasPresent) {
+              toast.warning(`Equipo inactivo: ${notif.nombre}`, {
+                description: [notif.empresa_nombre, notif.sede].filter(Boolean).join(' · '),
+              })
+            }
+          }
         } else {
           void queryClient.invalidateQueries({ queryKey: ['hardware'] })
+          void queryClient.invalidateQueries({ queryKey: hardwareKey })
         }
       }
     }
@@ -313,16 +358,22 @@ export function RealtimeProvider({
       clearOpenTimer()
       socket?.close()
     }
-  }, [empresaId, notificationsKey, queryClient])
+  }, [empresaId, notificationsKey, hardwareKey, queryClient])
 
+  const refetchAlerts = query.refetch
+  const refetchHardware = hardwareQuery.refetch
   const value = useMemo<RealtimeContextValue>(
     () => ({
       notifications: query.data?.notifications ?? [],
       total: query.data?.total ?? 0,
+      hardware: hardwareQuery.data ?? [],
+      hardwareTotal: hardwareQuery.data?.length ?? 0,
       status,
-      refresh: query.refetch,
+      refresh: async () => {
+        await Promise.all([refetchAlerts(), refetchHardware()])
+      },
     }),
-    [query.data, query.refetch, status],
+    [query.data, hardwareQuery.data, refetchAlerts, refetchHardware, status],
   )
 
   return <RealtimeContext.Provider value={value}>{children}</RealtimeContext.Provider>

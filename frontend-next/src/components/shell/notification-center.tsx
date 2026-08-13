@@ -5,10 +5,9 @@ import { useEffect, useRef, useState } from 'react'
 
 import { Icon } from '@/components/ui/icon'
 import { useRealtime } from '@/features/realtime/realtime-provider'
-import type { AlertNotification } from '@/features/realtime/types'
+import type { AlertNotification, HardwareNotification } from '@/features/realtime/types'
 
-function dateOf(item: AlertNotification) {
-  const value = item.fecha_actualizacion || item.fecha_creacion
+function dateOf(value?: string) {
   if (!value) return ''
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return ''
@@ -24,10 +23,101 @@ function priorityClass(priority?: string) {
   return 'bg-blue-500'
 }
 
+type Tab = 'alertas' | 'hardware'
+
+function TabButton({
+  active,
+  label,
+  count,
+  onClick,
+}: {
+  active: boolean
+  label: string
+  count: number
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex flex-1 items-center justify-center gap-1.5 border-b-2 px-3 py-2.5 text-xs font-semibold transition-colors ${
+        active
+          ? 'border-[var(--shell-accent)] text-[var(--shell-text-strong)]'
+          : 'border-transparent text-[var(--shell-text-muted)] hover:text-[var(--shell-text-strong)]'
+      }`}
+    >
+      {label}
+      {count > 0 && (
+        <span
+          className={`min-w-4 rounded-full px-1 text-center text-[10px] leading-4 ${
+            active ? 'bg-[var(--shell-accent)] text-white' : 'bg-[var(--shell-border)] text-[var(--shell-text)]'
+          }`}
+        >
+          {count > 99 ? '99+' : count}
+        </span>
+      )}
+    </button>
+  )
+}
+
+function EmptyState({ icon, title }: { icon: string; title: string }) {
+  return (
+    <div className="px-6 py-10 text-center">
+      <Icon name={icon} className="mb-3 text-3xl text-[var(--shell-text-muted)]" />
+      <p className="text-sm font-medium text-[var(--shell-text-strong)]">{title}</p>
+      <p className="mt-1 text-xs text-[var(--shell-text-muted)]">Los cambios aparecerán aquí automáticamente.</p>
+    </div>
+  )
+}
+
+function AlertRow({ item }: { item: AlertNotification }) {
+  return (
+    <article className="flex gap-3 border-b border-[var(--shell-border)] px-4 py-3 last:border-0">
+      <span className={`mt-1.5 size-2 shrink-0 rounded-full ${priorityClass(item.prioridad)}`} />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-semibold text-[var(--shell-text-strong)]">
+          {item.nombre_alerta || item.tipo_alerta || 'Alerta'}
+        </p>
+        <p className="mt-0.5 truncate text-xs text-[var(--shell-text-muted)]">
+          {[item.empresa_nombre, item.sede].filter(Boolean).join(' · ') || item.descripcion || 'Sin ubicación'}
+        </p>
+        {dateOf(item.fecha_actualizacion || item.fecha_creacion) && (
+          <time className="mt-1 block text-[10px] text-[var(--shell-text-muted)]">
+            {dateOf(item.fecha_actualizacion || item.fecha_creacion)}
+          </time>
+        )}
+      </div>
+    </article>
+  )
+}
+
+function HardwareRow({ item }: { item: HardwareNotification }) {
+  return (
+    <article className="flex gap-3 border-b border-[var(--shell-border)] px-4 py-3 last:border-0">
+      <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-red-600 dark:text-red-300">
+        <Icon name="microchip" className="text-sm" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-semibold text-[var(--shell-text-strong)]">
+          {item.nombre || 'Equipo'}
+        </p>
+        <p className="mt-0.5 truncate text-xs text-[var(--shell-text-muted)]">
+          Inactivo · {[item.tipo, item.sede].filter(Boolean).join(' · ') || 'Sin sede'}
+        </p>
+        {dateOf(item.fecha) && (
+          <time className="mt-1 block text-[10px] text-[var(--shell-text-muted)]">{dateOf(item.fecha)}</time>
+        )}
+      </div>
+    </article>
+  )
+}
+
 export function NotificationCenter({ alertsHref }: { alertsHref?: string }) {
-  const { notifications, total, status, refresh } = useRealtime()
+  const { notifications, total, hardware, hardwareTotal, status, refresh } = useRealtime()
   const [open, setOpen] = useState(false)
+  const [tab, setTab] = useState<Tab>('alertas')
   const rootRef = useRef<HTMLDivElement>(null)
+  const badge = total + hardwareTotal
 
   useEffect(() => {
     function closeOnOutside(event: MouseEvent) {
@@ -49,15 +139,15 @@ export function NotificationCenter({ alertsHref }: { alertsHref?: string }) {
       <button
         className="relative flex size-[38px] items-center justify-center rounded-full border border-[var(--shell-border)] bg-[var(--shell-bg)] text-[var(--shell-text)] transition-colors hover:bg-[var(--shell-accent-tile)]"
         type="button"
-        aria-label={`Notificaciones: ${total} alertas activas`}
+        aria-label={`Notificaciones: ${total} alertas, ${hardwareTotal} equipos inactivos`}
         aria-expanded={open}
         aria-haspopup="dialog"
         onClick={() => setOpen((value) => !value)}
       >
         <Icon name="bell" className="text-lg" />
-        {total > 0 && (
+        {badge > 0 && (
           <span className="absolute -right-1 -top-1 min-w-4 rounded-full bg-red-600 px-1 text-center text-[10px] font-bold leading-4 text-white">
-            {total > 99 ? '99+' : total}
+            {badge > 99 ? '99+' : badge}
           </span>
         )}
       </button>
@@ -86,33 +176,26 @@ export function NotificationCenter({ alertsHref }: { alertsHref?: string }) {
             </button>
           </header>
 
-          <div className="max-h-[26rem] overflow-y-auto">
-            {notifications.length === 0 ? (
-              <div className="px-6 py-10 text-center">
-                <Icon name="bell" className="mb-3 text-3xl text-[var(--shell-text-muted)]" />
-                <p className="text-sm font-medium text-[var(--shell-text-strong)]">Sin alertas activas</p>
-                <p className="mt-1 text-xs text-[var(--shell-text-muted)]">Los cambios aparecerán aquí automáticamente.</p>
-              </div>
-            ) : notifications.map((item, index) => (
-              <article
-                key={String(item._id ?? index)}
-                className="flex gap-3 border-b border-[var(--shell-border)] px-4 py-3 last:border-0"
-              >
-                <span className={`mt-1.5 size-2 shrink-0 rounded-full ${priorityClass(item.prioridad)}`} />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-[var(--shell-text-strong)]">
-                    {item.nombre_alerta || item.tipo_alerta || 'Alerta'}
-                  </p>
-                  <p className="mt-0.5 truncate text-xs text-[var(--shell-text-muted)]">
-                    {[item.empresa_nombre, item.sede].filter(Boolean).join(' · ') || item.descripcion || 'Sin ubicación'}
-                  </p>
-                  {dateOf(item) && <time className="mt-1 block text-[10px] text-[var(--shell-text-muted)]">{dateOf(item)}</time>}
-                </div>
-              </article>
-            ))}
+          <div className="flex border-b border-[var(--shell-border)]">
+            <TabButton active={tab === 'alertas'} label="Alertas" count={total} onClick={() => setTab('alertas')} />
+            <TabButton active={tab === 'hardware'} label="Hardware" count={hardwareTotal} onClick={() => setTab('hardware')} />
           </div>
 
-          {alertsHref && (
+          <div className="max-h-[26rem] overflow-y-auto">
+            {tab === 'alertas' ? (
+              notifications.length === 0 ? (
+                <EmptyState icon="bell" title="Sin alertas activas" />
+              ) : (
+                notifications.map((item, index) => <AlertRow key={String(item._id ?? index)} item={item} />)
+              )
+            ) : hardware.length === 0 ? (
+              <EmptyState icon="microchip" title="Todo el hardware activo" />
+            ) : (
+              hardware.map((item) => <HardwareRow key={item._id} item={item} />)
+            )}
+          </div>
+
+          {alertsHref && tab === 'alertas' && (
             <Link
               href={alertsHref}
               className="block border-t border-[var(--shell-border)] px-4 py-3 text-center text-xs font-semibold text-[var(--shell-accent)] hover:bg-[var(--shell-bg)]"

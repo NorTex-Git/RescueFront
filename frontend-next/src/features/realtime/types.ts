@@ -28,3 +28,18 @@ export type NotificationFeed = {
   notifications: AlertNotification[]
   total: number
 }
+
+/** Notificación de un equipo que quedó inactivo (offline) dentro de la empresa. */
+export type HardwareNotification = {
+  _id: string
+  nombre?: string
+  tipo?: string
+  sede?: string
+  empresa_nombre?: string
+  fecha?: string
+}
+
+export type HardwareFeed = {
+  hardware: HardwareNotification[]
+  hardwareTotal: number
+}

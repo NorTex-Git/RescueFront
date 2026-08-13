@@ -97,6 +97,24 @@ function statusText(value: unknown): string {
       : ''
 }
 
+/** Estados que reporta el monitor externo cuando el equipo deja de responder. */
+const OFFLINE_PHYSICAL_STATES = ['inactivo', 'inactive', 'desactivado', 'offline']
+
+/** El equipo dejó de reportar (offline), según el estado físico del monitor. */
+export function isHardwareOffline(item: Hardware): boolean {
+  return OFFLINE_PHYSICAL_STATES.includes(physicalStatusOf(item).trim().toLowerCase())
+}
+
+/** Marca de tiempo del último cambio de estado físico, si el monitor la guardó. */
+export function physicalStatusUpdatedAt(item: Hardware): string | null {
+  const status = item.physical_status
+  if (status && typeof status === 'object' && !Array.isArray(status)) {
+    const updated = (status as Record<string, unknown>).updated_at
+    if (typeof updated === 'string') return updated
+  }
+  return null
+}
+
 /** Estado reportado por el monitor externo, no el flag administrativo `activa`. */
 export function physicalStatusOf(item: Hardware): string {
   const outer = item.datos && typeof item.datos === 'object' ? (item.datos as Record<string, unknown>) : {}

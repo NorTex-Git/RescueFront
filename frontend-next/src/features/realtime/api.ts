@@ -1,6 +1,38 @@
+import {
+  isHardwareOffline,
+  parseHardwareList,
+  physicalStatusUpdatedAt,
+  type Hardware,
+} from '@/features/hardware/types'
 import { API_PREFIX } from '@/lib/config'
 
-import type { AlertNotification, NotificationFeed } from './types'
+import type { AlertNotification, HardwareNotification, NotificationFeed } from './types'
+
+/** Proyecta un equipo a la notificación mínima que muestra el centro de notificaciones. */
+export function hardwareToNotification(item: Hardware): HardwareNotification {
+  return {
+    _id: item._id,
+    nombre: item.nombre || 'Equipo',
+    tipo: item.tipo ?? undefined,
+    sede: item.sede ?? undefined,
+    empresa_nombre: item.empresa_nombre ?? undefined,
+    fecha: physicalStatusUpdatedAt(item) ?? undefined,
+  }
+}
+
+/** Equipos actualmente inactivos (offline) y registrados (activa) de la empresa. */
+export async function fetchHardwareNotifications(empresaId?: string): Promise<HardwareNotification[]> {
+  if (!empresaId) return []
+  const response = await fetch(
+    `${API_PREFIX}/api/hardware/empresa/${encodeURIComponent(empresaId)}/including-inactive`,
+    { credentials: 'same-origin', cache: 'no-store' },
+  )
+  if (!response.ok) throw new Error('No se pudo cargar el estado del hardware')
+  const payload = await response.json().catch(() => null)
+  return parseHardwareList(payload ?? [])
+    .filter((item) => item.activa && isHardwareOffline(item))
+    .map(hardwareToNotification)
+}
 
 export async function fetchActiveNotifications(): Promise<NotificationFeed> {
   const response = await fetch(`${API_PREFIX}/api/notifications/active?limit=10`, {
