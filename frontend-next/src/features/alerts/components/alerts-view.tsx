@@ -336,9 +336,20 @@ export function AlertsView({
       header: 'Alerta',
       cell: (alert) => (
         <div className="flex min-w-52 items-center gap-3">
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-red-500/10 text-red-600 dark:text-red-300">
-            <Icon name="triangle-exclamation" />
-          </span>
+          {alert.image_alert ? (
+            <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-black/10 bg-white dark:border-white/15">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={alert.image_alert}
+                alt={alert.nombre_alerta || alert.tipo_alerta || 'Alerta'}
+                className="size-full object-cover"
+              />
+            </span>
+          ) : (
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-red-500/10 text-red-600 dark:text-red-300">
+              <Icon name="triangle-exclamation" />
+            </span>
+          )}
           <div className="min-w-0">
             <p className="font-semibold text-[var(--shell-text-strong)]">
               {alert.nombre_alerta || alert.tipo_alerta || 'Alerta'}
@@ -387,7 +398,7 @@ export function AlertsView({
             aria-label="Ver detalle"
             onClick={() => setSelectedId(alert._id)}
           >
-            <Icon name="eye" />
+            <Icon name="eye" className="text-lg" />
           </Button>
           <Button
             variant="ghost"
@@ -396,7 +407,7 @@ export function AlertsView({
             aria-label="Mensajes"
             onClick={() => setMessagesId(alert._id)}
           >
-            <Icon name="message" />
+            <Icon name="message" className="text-lg" />
           </Button>
           {status === 'active' && (
             <Button
@@ -406,7 +417,7 @@ export function AlertsView({
               aria-label="Desactivar"
               onClick={() => setDeactivating(alert)}
             >
-              <Icon name="circle-check" />
+              <Icon name="circle-check" className="text-lg" />
             </Button>
           )}
         </div>
