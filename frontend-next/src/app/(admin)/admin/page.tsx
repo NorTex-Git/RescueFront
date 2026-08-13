@@ -41,6 +41,13 @@ export default async function AdminDashboardPage() {
 
   const maxHardware = Math.max(1, ...hardwareBreakdown.map((item) => item.cantidad))
   const totalAlertas = stats.total_alertas ?? 0
+  const severidad = stats.alertas_por_severidad ?? {}
+  const alertSegments = [
+    { label: 'Críticas', value: severidad.critica ?? 0, color: '#ef4444' },
+    { label: 'Altas', value: severidad.alta ?? 0, color: '#f59e0b' },
+    { label: 'Medias', value: severidad.media ?? 0, color: '#3b82f6' },
+    { label: 'Bajas', value: severidad.baja ?? 0, color: '#10b981' },
+  ].filter((seg) => seg.value > 0)
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -166,7 +173,7 @@ export default async function AdminDashboardPage() {
             </div>
             <div className="flex items-center gap-[22px] px-5 py-4">
               <DonutChart
-                segments={[]}
+                segments={alertSegments}
                 center={
                   <>
                     <span className="text-2xl font-bold tracking-[-0.6px] text-[var(--shell-text-strong)]">
@@ -176,15 +183,23 @@ export default async function AdminDashboardPage() {
                   </>
                 }
               />
-              {/*
-               * El desglose por severidad (Críticas/Medias/Informativas) del mockup queda
-               * pendiente: no hay endpoint verificado que lo entregue (ver `server.ts`). No
-               * se inventan proporciones — se muestra solo el total real.
-               */}
-              <p className="flex-1 text-[12px] text-[var(--shell-text-muted)]">
-                El desglose por severidad estará disponible al conectar el endpoint de distribución
-                de alertas.
-              </p>
+              {alertSegments.length === 0 ? (
+                <p className="flex-1 text-[12px] text-[var(--shell-text-muted)]">
+                  Sin alertas registradas en los últimos 30 días.
+                </p>
+              ) : (
+                <ul className="flex-1 space-y-2">
+                  {alertSegments.map((seg) => (
+                    <li key={seg.label} className="flex items-center justify-between text-xs">
+                      <span className="flex items-center gap-2 text-[var(--shell-text)]">
+                        <span className="size-2.5 rounded-full" style={{ backgroundColor: seg.color }} />
+                        {seg.label}
+                      </span>
+                      <span className="font-semibold text-[var(--shell-text-strong)]">{seg.value}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
         </div>

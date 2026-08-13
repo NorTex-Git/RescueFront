@@ -112,12 +112,20 @@ function HardwareRow({ item }: { item: HardwareNotification }) {
   )
 }
 
-export function NotificationCenter({ alertsHref }: { alertsHref?: string }) {
+export function NotificationCenter({
+  alertsHref,
+  hardwareOnly = false,
+}: {
+  alertsHref?: string
+  /** Admin: solo importan las notificaciones de hardware (sin pestaña de alertas). */
+  hardwareOnly?: boolean
+}) {
   const { notifications, total, hardware, hardwareTotal, status, refresh } = useRealtime()
   const [open, setOpen] = useState(false)
-  const [tab, setTab] = useState<Tab>('alertas')
+  const [tab, setTab] = useState<Tab>(hardwareOnly ? 'hardware' : 'alertas')
   const rootRef = useRef<HTMLDivElement>(null)
-  const badge = total + hardwareTotal
+  const activeTab: Tab = hardwareOnly ? 'hardware' : tab
+  const badge = hardwareOnly ? hardwareTotal : total + hardwareTotal
 
   useEffect(() => {
     function closeOnOutside(event: MouseEvent) {
@@ -176,13 +184,15 @@ export function NotificationCenter({ alertsHref }: { alertsHref?: string }) {
             </button>
           </header>
 
-          <div className="flex border-b border-[var(--shell-border)]">
-            <TabButton active={tab === 'alertas'} label="Alertas" count={total} onClick={() => setTab('alertas')} />
-            <TabButton active={tab === 'hardware'} label="Hardware" count={hardwareTotal} onClick={() => setTab('hardware')} />
-          </div>
+          {!hardwareOnly && (
+            <div className="flex border-b border-[var(--shell-border)]">
+              <TabButton active={tab === 'alertas'} label="Alertas" count={total} onClick={() => setTab('alertas')} />
+              <TabButton active={tab === 'hardware'} label="Hardware" count={hardwareTotal} onClick={() => setTab('hardware')} />
+            </div>
+          )}
 
           <div className="max-h-[26rem] overflow-y-auto">
-            {tab === 'alertas' ? (
+            {activeTab === 'alertas' ? (
               notifications.length === 0 ? (
                 <EmptyState icon="bell" title="Sin alertas activas" />
               ) : (
@@ -195,7 +205,7 @@ export function NotificationCenter({ alertsHref }: { alertsHref?: string }) {
             )}
           </div>
 
-          {alertsHref && tab === 'alertas' && (
+          {alertsHref && activeTab === 'alertas' && (
             <Link
               href={alertsHref}
               className="block border-t border-[var(--shell-border)] px-4 py-3 text-center text-xs font-semibold text-[var(--shell-accent)] hover:bg-[var(--shell-bg)]"

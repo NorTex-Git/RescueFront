@@ -16,11 +16,19 @@ import { fetchHardware } from '@/features/hardware/server'
  * trabajo aparte una vez confirmada la forma real de la respuesta.
  */
 
+export type AlertSeverityBreakdown = {
+  critica?: number
+  alta?: number
+  media?: number
+  baja?: number
+}
+
 export type DashboardStats = {
   total_empresas?: number
   total_usuarios?: number
   total_hardware?: number
   total_alertas?: number
+  alertas_por_severidad?: AlertSeverityBreakdown
 }
 
 export async function fetchDashboardStats(): Promise<DashboardStats> {

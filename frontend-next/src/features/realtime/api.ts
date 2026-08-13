@@ -20,13 +20,19 @@ export function hardwareToNotification(item: Hardware): HardwareNotification {
   }
 }
 
-/** Equipos actualmente inactivos (offline) y registrados (activa) de la empresa. */
+/** Equipos actualmente inactivos (offline) y registrados (activa).
+ *
+ * Con `empresaId` (portal empresa) se acota a esa empresa; sin él (admin) trae todo el
+ * hardware del sistema (endpoint de super admin).
+ */
 export async function fetchHardwareNotifications(empresaId?: string): Promise<HardwareNotification[]> {
-  if (!empresaId) return []
-  const response = await fetch(
-    `${API_PREFIX}/api/hardware/empresa/${encodeURIComponent(empresaId)}/including-inactive`,
-    { credentials: 'same-origin', cache: 'no-store' },
-  )
+  const endpoint = empresaId
+    ? `/api/hardware/empresa/${encodeURIComponent(empresaId)}/including-inactive`
+    : `/api/hardware/all-including-inactive`
+  const response = await fetch(`${API_PREFIX}${endpoint}`, {
+    credentials: 'same-origin',
+    cache: 'no-store',
+  })
   if (!response.ok) throw new Error('No se pudo cargar el estado del hardware')
   const payload = await response.json().catch(() => null)
   return parseHardwareList(payload ?? [])

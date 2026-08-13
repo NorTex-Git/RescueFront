@@ -92,7 +92,7 @@ export function RealtimeProvider({
   const hardwareQuery = useQuery({
     queryKey: hardwareKey,
     queryFn: () => fetchHardwareNotifications(empresaId),
-    enabled: Boolean(empresaId),
+    // Empresa: acotado a su empresaId. Admin (sin empresaId): todo el hardware.
     staleTime: 60_000,
     refetchOnWindowFocus: true,
   })
