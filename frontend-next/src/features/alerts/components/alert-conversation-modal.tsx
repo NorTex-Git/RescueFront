@@ -10,7 +10,7 @@ import { useRealtime } from '@/features/realtime/realtime-provider'
 import { formatTimestamp } from '@/features/stats/format'
 import { API_PREFIX } from '@/lib/config'
 
-import { listAlertMessages, sendAlertMessage, type AlertMessage } from '../api'
+import { listAlertMessages, reactToMessage, sendAlertMessage, type AlertMessage } from '../api'
 import { alertContacts, type Alert } from '../types'
 
 /** Clasifica el mensaje por su tipo/mime para elegir cómo renderizar la media. */
@@ -102,26 +102,97 @@ function messagePreview(message: AlertMessage): string {
   return placeholderFor(message.type)
 }
 
-function MessageBubble({
+const REACTION_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🙏']
+
+/** Reacciones agrupadas por emoji, pegadas a la burbuja (estilo WhatsApp). */
+function ReactionBadges({ reactions }: { reactions?: AlertMessage['reactions'] }) {
+  if (!reactions) return null
+  const counts = new Map<string, number>()
+  for (const r of Object.values(reactions)) {
+    if (r?.emoji) counts.set(r.emoji, (counts.get(r.emoji) ?? 0) + 1)
+  }
+  if (counts.size === 0) return null
+  return (
+    <div className="mt-1 flex flex-wrap gap-1">
+      {[...counts.entries()].map(([emoji, n]) => (
+        <span
+          key={emoji}
+          className="inline-flex items-center gap-0.5 rounded-full border border-[var(--shell-border)] bg-[var(--shell-surface)] px-1.5 py-0.5 text-xs"
+        >
+          <span>{emoji}</span>
+          {n > 1 && <span className="text-[var(--shell-text-muted)]">{n}</span>}
+        </span>
+      ))}
+    </div>
+  )
+}
+
+/** Controles al hover: responder + reaccionar (picker de emoji con toggle). */
+function MessageControls({
   message,
   onReply,
+  onReact,
 }: {
   message: AlertMessage
   onReply: (message: AlertMessage) => void
+  onReact: (messageId: string, emoji: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const mine = message.reactions?.empresa?.emoji
+  return (
+    <div className="relative flex shrink-0 items-center self-center opacity-0 transition-opacity group-hover:opacity-100">
+      <button
+        type="button"
+        onClick={() => onReply(message)}
+        className="rounded-full px-2 py-1 text-xs font-medium text-[var(--shell-text-muted)] hover:text-[var(--shell-accent)]"
+      >
+        Responder
+      </button>
+      <button
+        type="button"
+        aria-label="Reaccionar"
+        onClick={() => setOpen((o) => !o)}
+        className="rounded-full px-1.5 py-1 text-sm text-[var(--shell-text-muted)] hover:text-[var(--shell-accent)]"
+      >
+        🙂
+      </button>
+      {open && (
+        <div className="absolute bottom-full z-10 mb-1 flex gap-0.5 rounded-full border border-[var(--shell-border)] bg-[var(--shell-surface)] p-1 shadow-lg">
+          {REACTION_EMOJIS.map((emoji) => (
+            <button
+              key={emoji}
+              type="button"
+              onClick={() => {
+                onReact(message._id, mine === emoji ? '' : emoji)
+                setOpen(false)
+              }}
+              className={`rounded-full px-1.5 py-0.5 text-base transition-transform hover:scale-125 ${
+                mine === emoji ? 'bg-[var(--shell-accent-soft)]' : ''
+              }`}
+            >
+              {emoji}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function MessageBubble({
+  message,
+  onReply,
+  onReact,
+}: {
+  message: AlertMessage
+  onReply: (message: AlertMessage) => void
+  onReact: (messageId: string, emoji: string) => void
 }) {
   const outgoing = message.direction === 'out'
-  const replyButton = (
-    <button
-      type="button"
-      onClick={() => onReply(message)}
-      className="shrink-0 self-center rounded-full px-2 py-1 text-xs font-medium text-[var(--shell-text-muted)] opacity-0 transition-opacity hover:text-[var(--shell-accent)] group-hover:opacity-100"
-    >
-      Responder
-    </button>
-  )
+  const controls = <MessageControls message={message} onReply={onReply} onReact={onReact} />
   return (
     <div className={`group flex items-center gap-1 ${outgoing ? 'justify-end' : 'justify-start'}`}>
-      {outgoing && replyButton}
+      {outgoing && controls}
       <div
         className={`max-w-[80%] rounded-2xl border px-3 py-2 ${
           outgoing
@@ -154,8 +225,9 @@ function MessageBubble({
             {message.body || placeholderFor(message.type)}
           </p>
         )}
+        <ReactionBadges reactions={message.reactions} />
       </div>
-      {!outgoing && replyButton}
+      {!outgoing && controls}
     </div>
   )
 }
@@ -187,7 +259,9 @@ export function AlertConversationModal({
     staleTime: 15_000,
   })
 
-  const messages = query.data ?? []
+  // Las reacciones se pintan en la burbuja, no como mensaje: se ocultan del hilo
+  // (incluye posibles "[reaction]" viejos registrados antes de esta función).
+  const messages = (query.data ?? []).filter((m) => m.type !== 'reaction')
   const contactCount = alert ? alertContacts(alert).length : 0
 
   const sendMutation = useMutation({
@@ -207,6 +281,23 @@ export function AlertConversationModal({
       toast.error(error instanceof Error ? error.message : 'No se pudo enviar el mensaje.')
     },
   })
+
+  const reactMutation = useMutation({
+    mutationFn: (input: { messageId: string; emoji: string }) =>
+      reactToMessage(input.messageId, input.emoji),
+    onSuccess: (reactions, { messageId }) => {
+      queryClient.setQueryData<AlertMessage[]>(['alert', alertId, 'messages'], (current) =>
+        current?.map((m) => (m._id === messageId ? { ...m, reactions } : m)),
+      )
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'No se pudo reaccionar.')
+    },
+  })
+
+  function handleReact(messageId: string, emoji: string) {
+    reactMutation.mutate({ messageId, emoji })
+  }
 
   // Autoscroll al fondo cuando cambia la cantidad de mensajes o al abrir.
   useEffect(() => {
@@ -274,7 +365,12 @@ export function AlertConversationModal({
             <p className="text-[var(--shell-text-muted)]">Aún no hay mensajes registrados.</p>
           ) : (
             messages.map((message) => (
-              <MessageBubble key={message._id} message={message} onReply={setReplyingTo} />
+              <MessageBubble
+                key={message._id}
+                message={message}
+                onReply={setReplyingTo}
+                onReact={handleReact}
+              />
             ))
           )}
         </div>

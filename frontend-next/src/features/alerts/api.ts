@@ -30,6 +30,8 @@ export type AlertMessage = {
     snippet?: string
     type?: string
   } | null
+  /** Reacciones: { actorKey: { emoji, name } }. */
+  reactions?: Record<string, { emoji: string; name?: string }> | null
 }
 
 export async function listEmpresaAlerts(
@@ -95,6 +97,18 @@ export async function listAlertMessages(alertId: string): Promise<AlertMessage[]
     (message): message is AlertMessage =>
       Boolean(message) && typeof message === 'object' && typeof message._id === 'string',
   )
+}
+
+/** La empresa reacciona a un mensaje (emoji vacío = quitar). Devuelve las reacciones. */
+export async function reactToMessage(
+  messageId: string,
+  emoji: string,
+): Promise<Record<string, { emoji: string; name?: string }>> {
+  const response = await apiRequest<{ reactions?: Record<string, { emoji: string; name?: string }> }>(
+    `/api/mqtt-alerts/messages/${encodeURIComponent(messageId)}/react`,
+    { method: 'POST', body: { emoji } },
+  )
+  return response.reactions ?? {}
 }
 
 /** La empresa escribe al grupo de la alerta (se envía por WhatsApp a todos los contactos). */

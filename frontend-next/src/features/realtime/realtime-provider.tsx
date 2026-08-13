@@ -202,6 +202,20 @@ export function RealtimeProvider({
             return [...withoutDuplicate, update]
           })
         }
+      } else if (event.type === 'alert.message.reaction') {
+        const alertId = String(event.payload.alertId ?? event.entityId ?? '')
+        const messageId = String(event.payload.messageId ?? '')
+        const reactions = event.payload.reactions
+        if (alertId && messageId && reactions && typeof reactions === 'object') {
+          queryClient.setQueryData<AlertMessage[]>(['alert', alertId, 'messages'], (current) => {
+            if (!current) return current
+            return current.map((item) =>
+              item._id === messageId
+                ? { ...item, reactions: reactions as AlertMessage['reactions'] }
+                : item,
+            )
+          })
+        }
       } else if (event.type === 'hardware.status.changed') {
         const hardware = event.payload.hardware
         if (hardware && typeof hardware === 'object') {
