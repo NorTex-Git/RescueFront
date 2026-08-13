@@ -27,10 +27,12 @@ import {
   listEmpresaAlerts,
 } from '../api'
 import {
+  alertClosedBy,
   alertContacts,
   alertLocation,
   alertOrigin,
   type Alert,
+  type AlertContact,
   type AlertsPage,
   type AlertStatus,
   type CreateAlertInput,
@@ -48,10 +50,13 @@ function priorityTone(priority: string): 'danger' | 'warning' | 'info' | 'neutra
   return 'neutral'
 }
 
-/** Estado "embarcado" (en camino) de cada contacto notificado. */
-function EmbarkedBadge({ value }: { value: boolean | null }) {
-  if (value === true) return <Badge tone="success">En camino</Badge>
-  if (value === false) return <Badge tone="danger">No disponible</Badge>
+/**
+ * Estado de respuesta de un contacto notificado. Prioriza "en camino" (embarcado)
+ * sobre "disponible", y distingue ambos de "sin respuesta".
+ */
+function ContactStatusBadge({ contact }: { contact: AlertContact }) {
+  if (contact.embarcado) return <Badge tone="success">En camino</Badge>
+  if (contact.disponible) return <Badge tone="info">Disponible</Badge>
   return <Badge tone="neutral">Sin respuesta</Badge>
 }
 
@@ -71,11 +76,11 @@ function AlertContactsList({ alert }: { alert: Alert }) {
             <p className="truncate font-medium text-[var(--shell-text-strong)]">
               {contact.nombre || 'Contacto'}
             </p>
-            {contact.numero && (
-              <p className="text-xs text-[var(--shell-text-muted)]">{contact.numero}</p>
-            )}
+            <p className="truncate text-xs text-[var(--shell-text-muted)]">
+              {[contact.rol, contact.numero].filter(Boolean).join(' · ') || 'Sin datos de contacto'}
+            </p>
           </div>
-          <EmbarkedBadge value={contact.embarcado} />
+          <ContactStatusBadge contact={contact} />
         </li>
       ))}
     </ul>
@@ -179,75 +184,113 @@ function AlertMessagesList({ alertId }: { alertId: string }) {
   )
 }
 
-const detailRows: DetailRow<Alert>[] = [
-  { label: 'Empresa', icon: 'building', value: (alert) => alert.empresa_nombre || '—' },
-  { label: 'Sede', icon: 'location-dot', value: (alert) => alert.sede || '—' },
-  { label: 'Prioridad', icon: 'signal', value: (alert) => titleCase(alert.prioridad) },
-  {
-    label: 'Origen',
-    icon: 'bolt',
-    value: (alert) => alertOrigin(alert) ?? '—',
-  },
-  {
-    label: 'Creada',
-    icon: 'calendar',
-    value: (alert) => formatTimestamp(alert.fecha_creacion ?? null),
-    full: true,
-  },
-  {
-    label: 'Desactivada',
-    icon: 'circle-check',
-    value: (alert) => formatTimestamp(alert.fecha_desactivacion ?? null),
-    full: true,
-  },
-]
+/** Filas del modal de detalle; las de cierre sólo aplican al historial (inactivas). */
+function buildDetailRows(status: AlertStatus): DetailRow<Alert>[] {
+  const rows: DetailRow<Alert>[] = [
+    { label: 'Empresa', icon: 'building', value: (alert) => alert.empresa_nombre || '—' },
+    { label: 'Sede', icon: 'location-dot', value: (alert) => alert.sede || '—' },
+    { label: 'Prioridad', icon: 'signal', value: (alert) => titleCase(alert.prioridad) },
+    {
+      label: 'Origen',
+      icon: 'bolt',
+      value: (alert) => alertOrigin(alert) ?? '—',
+    },
+    {
+      label: 'Creada',
+      icon: 'calendar',
+      value: (alert) => formatTimestamp(alert.fecha_creacion ?? null),
+      full: true,
+    },
+  ]
 
-const detailSections: DetailSection<Alert>[] = [
-  {
-    title: 'Conversación',
-    icon: 'message',
-    content: (alert) => <AlertMessagesList alertId={alert._id} />,
-  },
-  {
-    title: 'Contactos notificados',
-    icon: 'phone',
-    content: (alert) => <AlertContactsList alert={alert} />,
-  },
-  {
-    title: 'Ubicación',
-    icon: 'map-pin',
-    content: (alert) => <AlertLocationMap alert={alert} />,
-  },
-  {
-    title: 'Descripción',
-    icon: 'align-left',
-    content: (alert) => alert.descripcion || 'Sin descripción.',
-  },
-  {
-    title: 'Instrucciones',
-    icon: 'list-check',
-    content: (alert) =>
-      alert.instrucciones.length ? (
-        <ul className="list-disc space-y-1 pl-5">
-          {alert.instrucciones.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-      ) : (
-        'Sin instrucciones registradas.'
-      ),
-  },
-  {
-    title: 'Elementos necesarios',
-    icon: 'toolbox',
-    content: (alert) => alert.elementos_necesarios.join(', ') || 'Sin elementos registrados.',
-  },
-  {
-    title: 'Cierre',
-    icon: 'message',
-    content: (alert) => alert.mensaje_desactivacion || 'Sin mensaje de cierre.',
-  },
-]
+  if (status === 'inactive') {
+    rows.push(
+      {
+        label: 'Desactivada',
+        icon: 'circle-check',
+        value: (alert) => formatTimestamp(alert.fecha_desactivacion ?? null),
+        full: true,
+      },
+      {
+        label: 'Desactivada por',
+        icon: 'user-check',
+        value: (alert) => alertClosedBy(alert) ?? '—',
+        full: true,
+      },
+    )
+  }
+
+  return rows
+}
+
+/** Secciones del modal; la imagen se omite si no hay, y "Cierre" sólo en el historial. */
+function buildDetailSections(status: AlertStatus): DetailSection<Alert>[] {
+  const sections: DetailSection<Alert>[] = [
+    {
+      title: 'Imagen de la alerta',
+      icon: 'image',
+      // Devolver null oculta la sección completa (ver DetailModal).
+      content: (alert) =>
+        alert.image_alert ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={alert.image_alert}
+            alt={alert.nombre_alerta || alert.tipo_alerta || 'Imagen de la alerta'}
+            className="h-56 w-full rounded-xl bg-slate-100/75 object-contain p-3 dark:bg-black/20"
+          />
+        ) : null,
+    },
+    {
+      title: 'Conversación',
+      icon: 'message',
+      content: (alert) => <AlertMessagesList alertId={alert._id} />,
+    },
+    {
+      title: 'Contactos notificados',
+      icon: 'phone',
+      content: (alert) => <AlertContactsList alert={alert} />,
+    },
+    {
+      title: 'Ubicación',
+      icon: 'map-pin',
+      content: (alert) => <AlertLocationMap alert={alert} />,
+    },
+    {
+      title: 'Descripción',
+      icon: 'align-left',
+      content: (alert) => alert.descripcion || 'Sin descripción.',
+    },
+    {
+      title: 'Instrucciones',
+      icon: 'list-check',
+      content: (alert) =>
+        alert.instrucciones.length ? (
+          <ul className="list-disc space-y-1 pl-5">
+            {alert.instrucciones.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        ) : (
+          'Sin instrucciones registradas.'
+        ),
+    },
+    {
+      title: 'Elementos necesarios',
+      icon: 'toolbox',
+      content: (alert) => alert.elementos_necesarios.join(', ') || 'Sin elementos registrados.',
+    },
+  ]
+
+  if (status === 'inactive') {
+    sections.push({
+      title: 'Cierre',
+      icon: 'message',
+      content: (alert) => alert.mensaje_desactivacion || 'Sin mensaje de cierre.',
+    })
+  }
+
+  return sections
+}
 
 export function AlertsView({
   empresaId,
@@ -265,6 +308,8 @@ export function AlertsView({
   alertTypes: AlertType[]
 }) {
   const queryClient = useQueryClient()
+  const detailRows = useMemo(() => buildDetailRows(status), [status])
+  const detailSections = useMemo(() => buildDetailSections(status), [status])
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)

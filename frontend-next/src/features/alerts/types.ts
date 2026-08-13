@@ -67,8 +67,24 @@ function asText(value: unknown): string | null {
   return typeof value === 'string' && value.trim() ? value : null
 }
 
-/** Contacto notificado, con su estado de "embarcado" (en camino) reportado por el móvil. */
-export type AlertContact = { nombre: string | null; numero: string | null; embarcado: boolean | null }
+/**
+ * Contacto notificado. `disponible` = confirmó que puede atender; `embarcado` =
+ * ya va en camino. Ambos los reporta la app móvil por separado.
+ */
+export type AlertContact = {
+  nombre: string | null
+  numero: string | null
+  rol: string | null
+  disponible: boolean | null
+  embarcado: boolean | null
+}
+
+/** Extrae el nombre legible de un rol, que el backend guarda como objeto o texto. */
+function asRoleName(value: unknown): string | null {
+  if (typeof value === 'string') return asText(value)
+  const rol = asRecord(value)
+  return asText(rol.nombre)
+}
 
 export function alertContacts(alert: Alert): AlertContact[] {
   return alert.numeros_telefonicos.map((raw) => {
@@ -76,9 +92,24 @@ export function alertContacts(alert: Alert): AlertContact[] {
     return {
       nombre: asText(contact.nombre),
       numero: asText(contact.numero) ?? asText(contact.telefono),
+      rol: asRoleName(contact.rol),
+      disponible: typeof contact.disponible === 'boolean' ? contact.disponible : null,
       embarcado: typeof contact.embarcado === 'boolean' ? contact.embarcado : null,
     }
   })
+}
+
+/** Nombre (o tipo, como respaldo) de quién desactivó la alerta. */
+export function alertClosedBy(alert: Alert): string | null {
+  const cerrado = alert.desactivado_por
+  const nombre = asText(cerrado.nombre)
+  if (nombre) return nombre
+  const tipo = asText(cerrado.tipo)
+  return tipo ? titleCaseTipo(tipo) : null
+}
+
+function titleCaseTipo(tipo: string): string {
+  return tipo.charAt(0).toUpperCase() + tipo.slice(1)
 }
 
 /** Ubicación de la alerta: dirección + URLs de mapa (OSM y Google) que guarda el backend. */

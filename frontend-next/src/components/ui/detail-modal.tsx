@@ -110,22 +110,28 @@ export function DetailModal<T>({
             </dl>
           )}
 
-          {sections?.map((section) => (
-            <section
-              key={section.title}
-              className="border-t border-black/10 pt-4 dark:border-white/10"
-            >
-              <h4 className="mb-2 flex items-center gap-2 text-sm font-bold text-gray-900 dark:text-white">
-                {section.icon && (
-                  <Icon name={section.icon} className="text-gray-400 dark:text-white/40" />
-                )}
-                {section.title}
-              </h4>
-              <div className="min-w-0 max-w-full break-words text-sm text-gray-700 dark:text-white/75">
-                {section.content(item)}
-              </div>
-            </section>
-          ))}
+          {sections?.map((section) => {
+            // Una sección cuyo `content` devuelve null/false se omite por completo:
+            // así el modal no muestra apartados vacíos (p. ej. imagen inexistente).
+            const content = section.content(item)
+            if (content == null || content === false) return null
+            return (
+              <section
+                key={section.title}
+                className="border-t border-black/10 pt-4 dark:border-white/10"
+              >
+                <h4 className="mb-2 flex items-center gap-2 text-sm font-bold text-gray-900 dark:text-white">
+                  {section.icon && (
+                    <Icon name={section.icon} className="text-gray-400 dark:text-white/40" />
+                  )}
+                  {section.title}
+                </h4>
+                <div className="min-w-0 max-w-full break-words text-sm text-gray-700 dark:text-white/75">
+                  {content}
+                </div>
+              </section>
+            )
+          })}
         </div>
       )}
     </Modal>
