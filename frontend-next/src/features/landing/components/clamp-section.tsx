@@ -97,6 +97,12 @@ export function ClampSection() {
             RE<span data-clamp-zoom>S</span>CUE
           </span>
           <span data-clamp-word>SYSTEM</span>
+          {/* Texto solo para lectores de pantalla y buscadores: da al h1 keywords
+              descriptivas sin alterar el diseño ni la animación del clamp. */}
+          <span className="sr-only">
+            RESCUE: plataforma de alertas, seguridad y respuesta a emergencias en tiempo real por
+            WhatsApp y hardware para empresas en Colombia.
+          </span>
         </h1>
         <p data-clamp-sub>Una alerta. Todos los equipos coordinados.</p>
       </div>
