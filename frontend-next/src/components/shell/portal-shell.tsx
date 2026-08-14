@@ -5,6 +5,7 @@ import { useState, type ReactNode } from 'react'
 
 import { Modal, ModalButton } from '@/components/ui/modal'
 import { API_PREFIX } from '@/lib/config'
+import { AlertSoundNotifier } from '@/features/alerts/components/alert-sound-notifier'
 import { RealtimeProvider } from '@/features/realtime/realtime-provider'
 
 import { Navbar } from './navbar'
@@ -52,8 +53,12 @@ export function PortalShell({
     router.replace('/login')
   }
 
+  const isEmpresa = userRole === 'Empresa'
+
   return (
     <RealtimeProvider empresaId={realtimeEmpresaId}>
+      {/* Solo la vista empresa reproduce el sonido/popup al llegar una alerta. */}
+      {isEmpresa && <AlertSoundNotifier />}
       <Navbar
         title={userName}
         subtitle={userRole}

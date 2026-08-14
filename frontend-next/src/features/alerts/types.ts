@@ -13,6 +13,7 @@ export const alertSchema = z
     descripcion: z.string().nullish(),
     prioridad: z.string().default('media'),
     image_alert: z.string().nullish(),
+    sonido_link: z.string().nullish(),
     elementos_necesarios: z.array(z.string()).catch([]),
     instrucciones: z.array(z.string()).catch([]),
     numeros_telefonicos: z.array(z.unknown()).catch([]),

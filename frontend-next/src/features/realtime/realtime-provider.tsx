@@ -31,9 +31,14 @@ import type {
   RealtimeEvent,
 } from './types'
 
+/** Alerta recién llegada (para el sonido/popup de empresa). `id` cambia en cada evento. */
+export type IncomingAlarm = { alert: AlertNotification; id: string }
+
 type RealtimeContextValue = NotificationFeed & {
   hardware: HardwareNotification[]
   hardwareTotal: number
+  /** Última alerta entrante en la vista empresa (dispara el sonido). */
+  incomingAlarm: IncomingAlarm | null
   status: ConnectionStatus
   refresh: () => Promise<unknown>
 }
@@ -74,6 +79,7 @@ export function RealtimeProvider({
 }) {
   const queryClient = useQueryClient()
   const [status, setStatus] = useState<ConnectionStatus>('connecting')
+  const [incomingAlarm, setIncomingAlarm] = useState<IncomingAlarm | null>(null)
   const seenEvents = useRef(new Set<string>())
   const notificationsKey = useMemo(
     () => ['notifications', empresaId ?? 'global', 'active'] as const,
@@ -161,6 +167,10 @@ export function RealtimeProvider({
         toast.error(alert.nombre_alerta || alert.tipo_alerta || 'Nueva alerta', {
           description: [alert.empresa_nombre, alert.sede].filter(Boolean).join(' · '),
         })
+        // Solo en la vista empresa: dispara el sonido + popup de alarma.
+        if (empresaId) {
+          setIncomingAlarm({ alert, id: event.eventId })
+        }
         if (event.empresaId) {
           void queryClient.invalidateQueries({ queryKey: ['empresa', event.empresaId, 'alerts'] })
         }
@@ -382,12 +392,13 @@ export function RealtimeProvider({
       total: query.data?.total ?? 0,
       hardware: hardwareQuery.data ?? [],
       hardwareTotal: hardwareQuery.data?.length ?? 0,
+      incomingAlarm,
       status,
       refresh: async () => {
         await Promise.all([refetchAlerts(), refetchHardware()])
       },
     }),
-    [query.data, hardwareQuery.data, refetchAlerts, refetchHardware, status],
+    [query.data, hardwareQuery.data, incomingAlarm, refetchAlerts, refetchHardware, status],
   )
 
   return <RealtimeContext.Provider value={value}>{children}</RealtimeContext.Provider>
