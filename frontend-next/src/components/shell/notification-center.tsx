@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
 import { Icon } from '@/components/ui/icon'
@@ -70,9 +71,13 @@ function EmptyState({ icon, title }: { icon: string; title: string }) {
   )
 }
 
-function AlertRow({ item }: { item: AlertNotification }) {
+function AlertRow({ item, onClick }: { item: AlertNotification; onClick?: () => void }) {
   return (
-    <article className="flex gap-3 border-b border-[var(--shell-border)] px-4 py-3 last:border-0">
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full gap-3 border-b border-[var(--shell-border)] px-4 py-3 text-left last:border-0 hover:bg-[var(--shell-bg)]"
+    >
       <span className={`mt-1.5 size-2 shrink-0 rounded-full ${priorityClass(item.prioridad)}`} />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-[var(--shell-text-strong)]">
@@ -87,13 +92,17 @@ function AlertRow({ item }: { item: AlertNotification }) {
           </time>
         )}
       </div>
-    </article>
+    </button>
   )
 }
 
-function HardwareRow({ item }: { item: HardwareNotification }) {
+function HardwareRow({ item, onClick }: { item: HardwareNotification; onClick?: () => void }) {
   return (
-    <article className="flex gap-3 border-b border-[var(--shell-border)] px-4 py-3 last:border-0">
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full gap-3 border-b border-[var(--shell-border)] px-4 py-3 text-left last:border-0 hover:bg-[var(--shell-bg)]"
+    >
       <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-red-600 dark:text-red-300">
         <Icon name="microchip" className="text-sm" />
       </span>
@@ -108,20 +117,35 @@ function HardwareRow({ item }: { item: HardwareNotification }) {
           <time className="mt-1 block text-[10px] text-[var(--shell-text-muted)]">{dateOf(item.fecha)}</time>
         )}
       </div>
-    </article>
+    </button>
   )
 }
 
 export function NotificationCenter({
   alertsHref,
+  hardwareHref,
   hardwareOnly = false,
 }: {
   alertsHref?: string
+  /** Base para abrir el hardware al hacer click (p. ej. /empresa/hardware o /admin/hardware). */
+  hardwareHref?: string
   /** Admin: solo importan las notificaciones de hardware (sin pestaña de alertas). */
   hardwareOnly?: boolean
 }) {
   const { notifications, total, hardware, hardwareTotal, status, refresh } = useRealtime()
+  const router = useRouter()
   const [open, setOpen] = useState(false)
+
+  function goToAlert(id?: string) {
+    if (!alertsHref || !id) return
+    setOpen(false)
+    router.push(`${alertsHref}?ver=${encodeURIComponent(id)}`)
+  }
+  function goToHardware(id?: string) {
+    if (!hardwareHref || !id) return
+    setOpen(false)
+    router.push(`${hardwareHref}?ver=${encodeURIComponent(id)}`)
+  }
   const [tab, setTab] = useState<Tab>(hardwareOnly ? 'hardware' : 'alertas')
   const rootRef = useRef<HTMLDivElement>(null)
   const activeTab: Tab = hardwareOnly ? 'hardware' : tab
@@ -196,12 +220,20 @@ export function NotificationCenter({
               notifications.length === 0 ? (
                 <EmptyState icon="bell" title="Sin alertas activas" />
               ) : (
-                notifications.map((item, index) => <AlertRow key={String(item._id ?? index)} item={item} />)
+                notifications.map((item, index) => (
+                  <AlertRow
+                    key={String(item._id ?? index)}
+                    item={item}
+                    onClick={() => goToAlert(item._id ? String(item._id) : undefined)}
+                  />
+                ))
               )
             ) : hardware.length === 0 ? (
               <EmptyState icon="microchip" title="Todo el hardware activo" />
             ) : (
-              hardware.map((item) => <HardwareRow key={item._id} item={item} />)
+              hardware.map((item) => (
+                <HardwareRow key={item._id} item={item} onClick={() => goToHardware(item._id)} />
+              ))
             )}
           </div>
 

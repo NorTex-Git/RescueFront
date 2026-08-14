@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
 import { PageHeader } from '@/components/shell/page-header'
@@ -272,6 +272,24 @@ export function AlertsView({
     () => pageData.data.find((alert) => String(alert._id) === messagesId) ?? null,
     [pageData.data, messagesId],
   )
+
+  // Deep-link desde las notificaciones: /empresa/alertas?ver=<id> abre el detalle;
+  // ?chat=<id> abre el chat. Se limpia la URL para que un refresh no reabra.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const ver = params.get('ver')
+    const chat = params.get('chat')
+    // Deep-link leído una vez al montar (no es un ciclo de render).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (ver) setSelectedId(ver)
+    else if (chat) setMessagesId(chat)
+    if (ver || chat) {
+      const url = new URL(window.location.href)
+      url.searchParams.delete('ver')
+      url.searchParams.delete('chat')
+      window.history.replaceState(null, '', url.pathname + url.search)
+    }
+  }, [])
 
   const rows = useMemo(() => {
     const needle = search.trim().toLowerCase()

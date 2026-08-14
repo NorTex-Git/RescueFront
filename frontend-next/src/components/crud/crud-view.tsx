@@ -3,7 +3,7 @@
 import { Icon } from '@/components/ui/icon'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
-import { useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { DefaultValues, FieldValues, Path } from 'react-hook-form'
 import { toast } from 'sonner'
 import type { ZodType } from 'zod'
@@ -182,6 +182,26 @@ export function CrudView<TItem, TValues extends FieldValues>({
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: resource.queryKey })
   const editing = modals.item
+
+  // Deep-link desde las notificaciones: ?ver=<id> abre el detalle del item al cargar.
+  // Se limpia la URL para que un refresh no reabra.
+  const openedFromUrl = useRef(false)
+  useEffect(() => {
+    if (openedFromUrl.current || items.length === 0) return
+    const ver = new URLSearchParams(window.location.search).get('ver')
+    if (!ver) {
+      openedFromUrl.current = true
+      return
+    }
+    const item = items.find((it) => resource.getId(it) === ver)
+    if (item) {
+      openedFromUrl.current = true
+      modals.openDetail(item)
+      const url = new URL(window.location.href)
+      url.searchParams.delete('ver')
+      window.history.replaceState(null, '', url.pathname + url.search)
+    }
+  }, [items, resource, modals])
 
   // Paginación en cliente: los datos ya están filtrados en memoria (`useFilters`).
   const pageSize = resource.pageSize ?? 8

@@ -39,6 +39,8 @@ type RealtimeContextValue = NotificationFeed & {
   hardwareTotal: number
   /** Última alerta entrante en la vista empresa (dispara el sonido). */
   incomingAlarm: IncomingAlarm | null
+  /** Id de la última alerta desactivada (para cortar el sonido si estaba sonando). */
+  deactivatedAlarmId: string | null
   status: ConnectionStatus
   refresh: () => Promise<unknown>
 }
@@ -80,6 +82,8 @@ export function RealtimeProvider({
   const queryClient = useQueryClient()
   const [status, setStatus] = useState<ConnectionStatus>('connecting')
   const [incomingAlarm, setIncomingAlarm] = useState<IncomingAlarm | null>(null)
+  // Id + nonce: un mismo id puede repetirse; el nonce fuerza el efecto en el notifier.
+  const [deactivatedAlarm, setDeactivatedAlarm] = useState<{ id: string; at: number } | null>(null)
   const seenEvents = useRef(new Set<string>())
   const notificationsKey = useMemo(
     () => ['notifications', empresaId ?? 'global', 'active'] as const,
@@ -176,6 +180,10 @@ export function RealtimeProvider({
         }
       } else if (event.type === 'alert.deactivated') {
         const id = String(event.entityId ?? alert?._id ?? '')
+        // Vista empresa: señal para cortar el sonido si esa alerta estaba sonando.
+        if (empresaId && id) {
+          setDeactivatedAlarm({ id, at: Date.now() })
+        }
         queryClient.setQueryData<NotificationFeed>(notificationsKey, (current) => {
           if (!current) return current
           const next = current.notifications.filter((item) => String(item._id) !== id)
@@ -393,12 +401,13 @@ export function RealtimeProvider({
       hardware: hardwareQuery.data ?? [],
       hardwareTotal: hardwareQuery.data?.length ?? 0,
       incomingAlarm,
+      deactivatedAlarmId: deactivatedAlarm?.id ?? null,
       status,
       refresh: async () => {
         await Promise.all([refetchAlerts(), refetchHardware()])
       },
     }),
-    [query.data, hardwareQuery.data, incomingAlarm, refetchAlerts, refetchHardware, status],
+    [query.data, hardwareQuery.data, incomingAlarm, deactivatedAlarm, refetchAlerts, refetchHardware, status],
   )
 
   return <RealtimeContext.Provider value={value}>{children}</RealtimeContext.Provider>

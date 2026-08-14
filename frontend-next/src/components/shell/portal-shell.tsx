@@ -65,8 +65,9 @@ export function PortalShell({
         initials={initials}
         menuOpen={menuOpen}
         onToggleMenu={() => setMenuOpen((value) => !value)}
-        alertsHref={userRole === 'Empresa' ? '/empresa/alertas' : undefined}
-        hardwareOnly={userRole !== 'Empresa'}
+        alertsHref={isEmpresa ? '/empresa/alertas' : undefined}
+        hardwareHref={isEmpresa ? '/empresa/hardware' : '/admin/hardware'}
+        hardwareOnly={!isEmpresa}
       />
 
       <div className="flex min-h-screen max-w-full overflow-x-clip bg-[var(--shell-bg)] pt-[68px]">

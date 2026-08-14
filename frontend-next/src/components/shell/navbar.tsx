@@ -19,6 +19,7 @@ export function Navbar({
   menuOpen,
   onToggleMenu,
   alertsHref,
+  hardwareHref,
   hardwareOnly,
 }: {
   title: string
@@ -27,6 +28,7 @@ export function Navbar({
   menuOpen: boolean
   onToggleMenu: () => void
   alertsHref?: string
+  hardwareHref?: string
   hardwareOnly?: boolean
 }) {
   const { theme, toggleTheme } = useTheme()
@@ -69,7 +71,11 @@ export function Navbar({
 
           <span className="hidden h-6 w-px bg-[var(--shell-border)] sm:block" />
 
-          <NotificationCenter alertsHref={alertsHref} hardwareOnly={hardwareOnly} />
+          <NotificationCenter
+            alertsHref={alertsHref}
+            hardwareHref={hardwareHref}
+            hardwareOnly={hardwareOnly}
+          />
 
           <button
             className="flex size-[38px] items-center justify-center rounded-full border border-[var(--shell-border)] bg-[var(--shell-bg)] text-[var(--shell-text)] transition-colors hover:bg-[var(--shell-accent-tile)]"

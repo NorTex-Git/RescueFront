@@ -22,7 +22,7 @@ function soundUrl(source: string) {
  * esperar la descarga cuando llega la alerta.
  */
 export function AlertSoundNotifier() {
-  const { incomingAlarm } = useRealtime()
+  const { incomingAlarm, deactivatedAlarmId } = useRealtime()
   const [active, setActive] = useState<IncomingAlarm | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const lastId = useRef<string | null>(null)
@@ -118,6 +118,21 @@ export function AlertSoundNotifier() {
       void audio.play().catch(() => {})
     }
   }, [incomingAlarm])
+
+  // Si la alerta que está sonando se desactiva (por WhatsApp/central/quien sea), corta.
+  useEffect(() => {
+    if (!deactivatedAlarmId || !active) return
+    if (String(active.alert._id ?? '') === deactivatedAlarmId) {
+      const audio = audioRef.current
+      if (audio) {
+        audio.pause()
+        audio.currentTime = 0
+      }
+      // Reacción a la señal realtime de desactivación (no es un ciclo de render).
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setActive(null)
+    }
+  }, [deactivatedAlarmId, active])
 
   function silence() {
     const audio = audioRef.current
