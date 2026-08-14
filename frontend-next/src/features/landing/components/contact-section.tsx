@@ -160,10 +160,10 @@ export function ContactSection() {
                 <small>Email corporativo</small>asesoria.rescue@gmail.com
               </span>
             </a>
-            <a href="https://wa.me/573108566009" target="_blank" rel="noreferrer">
+            <a href="https://wa.me/573058274556" target="_blank" rel="noreferrer">
               <Icon name="satellite-dish" />
               <span>
-                <small>WhatsApp 24/7</small>+57 310 856 6009
+                <small>WhatsApp 24/7</small>+57 305 827 4556
               </span>
             </a>
             <div className="contact-location">
