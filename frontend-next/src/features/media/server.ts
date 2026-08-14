@@ -85,9 +85,14 @@ export async function fetchMediaContent(
   const serviceBase = new URL(`${serverEnv.IMAGES_SERVICE_BASE_URL.replace(/\/+$/, '')}/`)
   const contentUrl = new URL(sourceUrl, serviceBase)
 
-  if (contentUrl.origin !== serviceBase.origin) {
+  // Se valida por hostname (seguridad: mismo servicio) y se fuerza el esquema/host
+  // configurado. Los recursos guardados a veces traen `http://` aunque el servicio se
+  // sirva por `https://`; comparar el origen exacto rompía el proxy (audio no sonaba).
+  if (contentUrl.hostname !== serviceBase.hostname) {
     throw new Error('La URL multimedia no pertenece al servicio configurado.')
   }
+  contentUrl.protocol = serviceBase.protocol
+  contentUrl.host = serviceBase.host
 
   return fetch(contentUrl.toString(), {
     headers: range ? { Range: range } : undefined,
