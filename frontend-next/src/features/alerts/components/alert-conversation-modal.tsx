@@ -29,6 +29,12 @@ function placeholderFor(type?: string): string {
   return `[${type || 'mensaje'}]`
 }
 
+/** Nombre del tipo de media para el estado "cargando". */
+function mediaKindLabel(message: AlertMessage): string {
+  const labels: Record<string, string> = { image: 'imagen', video: 'video', audio: 'audio', file: 'archivo' }
+  return labels[mediaKind(message)] ?? 'archivo'
+}
+
 function MessageMedia({ message }: { message: AlertMessage }) {
   // El backend guarda una ruta relativa (/api/...); el BFF de Next añade el prefijo.
   const src = `${API_PREFIX}${message.media_url}`
@@ -219,6 +225,14 @@ function MessageBubble({
                 {message.body}
               </p>
             )}
+          </div>
+        ) : message.media_pending ? (
+          <div className="mt-1.5 flex items-center gap-2 text-sm text-[var(--shell-text-muted)]">
+            <span
+              aria-hidden
+              className="size-4 shrink-0 animate-spin rounded-full border-2 border-current border-t-transparent"
+            />
+            Cargando {mediaKindLabel(message)}…
           </div>
         ) : (
           <p className="mt-1 whitespace-pre-wrap text-sm text-[var(--shell-text-strong)]">

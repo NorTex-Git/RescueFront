@@ -220,6 +220,18 @@ export function RealtimeProvider({
             return [...withoutDuplicate, update]
           })
         }
+      } else if (event.type === 'alert.message.updated') {
+        // La media terminó de descargarse: parchea el mensaje en su sitio (media_url,
+        // mime_type, media_pending) para cambiar el "cargando" por el archivo real.
+        const message = event.payload.message
+        const alertId = String(event.payload.alertId ?? event.entityId ?? '')
+        if (alertId && message && typeof message === 'object') {
+          const update = message as AlertMessage
+          queryClient.setQueryData<AlertMessage[]>(['alert', alertId, 'messages'], (current) => {
+            if (!current) return current
+            return current.map((item) => (item._id === update._id ? { ...item, ...update } : item))
+          })
+        }
       } else if (event.type === 'alert.message.reaction') {
         const alertId = String(event.payload.alertId ?? event.entityId ?? '')
         const messageId = String(event.payload.messageId ?? '')

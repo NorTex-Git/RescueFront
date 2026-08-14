@@ -20,6 +20,8 @@ export type AlertMessage = {
   /** Ruta relativa del archivo servido por el backend (imagen/audio/video/sticker). */
   media_url?: string | null
   mime_type?: string | null
+  /** True mientras la media se descarga en segundo plano (mostrar "cargando"). */
+  media_pending?: boolean | null
   /** Id de mensaje de WhatsApp (wamid). */
   wa_message_id?: string | null
   /** Cita del mensaje respondido (para pintar el hilo). */
